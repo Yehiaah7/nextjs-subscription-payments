@@ -24,8 +24,9 @@ html {
 
 html,
 body {
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue',
-    'Helvetica', sans-serif;
+  font-family:
+    -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue', 'Helvetica',
+    sans-serif;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
   @apply text-white bg-zinc-800 antialiased;
@@ -56,4 +57,17 @@ p a {
 
 .height-screen-helper {
   min-height: calc(100vh - 80px);
+}
+
+body.home-page {
+  background: #e9edf3;
+}
+
+body.home-page nav:first-of-type,
+body.home-page footer {
+  display: none;
+}
+
+body.home-page main#skip {
+  min-height: 100dvh;
 }
