@@ -59,15 +59,15 @@ p a {
   min-height: calc(100vh - 80px);
 }
 
-body.home-page {
+body.mobile-app-page {
   background: #e9edf3;
 }
 
-body.home-page nav:first-of-type,
-body.home-page footer {
+body.mobile-app-page nav:first-of-type,
+body.mobile-app-page footer {
   display: none;
 }
 
-body.home-page main#skip {
+body.mobile-app-page main#skip {
   min-height: 100dvh;
 }
