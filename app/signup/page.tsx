@@ -1,0 +1,72 @@
+import Link from 'next/link';
+import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import { signup } from '@/app/auth/actions';
+import { createClient } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
+
+export default async function SignupPage({
+  searchParams
+}: {
+  searchParams: { error?: string };
+}) {
+  const supabase = createClient();
+  let user = null;
+
+  try {
+    const {
+      data: { user: authUser }
+    } = await supabase.auth.getUser();
+    user = authUser;
+  } catch (error) {
+    user = null;
+  }
+
+  if (user) {
+    redirect('/dashboard');
+  }
+
+  return (
+    <div className="flex justify-center height-screen-helper">
+      <div className="w-full max-w-lg p-3 m-auto">
+        <Card title="Sign up" description="Create an account to start quizzes.">
+          <form action={signup} className="grid gap-3 mt-6">
+            <input
+              name="name"
+              type="text"
+              placeholder="Your name"
+              className="w-full p-3 rounded-md bg-zinc-800"
+            />
+            <input
+              name="email"
+              type="email"
+              required
+              placeholder="name@example.com"
+              className="w-full p-3 rounded-md bg-zinc-800"
+            />
+            <input
+              name="password"
+              type="password"
+              required
+              minLength={6}
+              placeholder="Password"
+              className="w-full p-3 rounded-md bg-zinc-800"
+            />
+            <Button type="submit" variant="slim" className="mt-2">
+              Create account
+            </Button>
+          </form>
+          {searchParams.error && (
+            <p className="mt-3 text-sm text-red-400">{searchParams.error}</p>
+          )}
+          <p className="mt-4 text-sm text-zinc-300">
+            Already have an account?{' '}
+            <Link href="/login" className="underline">
+              Log in
+            </Link>
+          </p>
+        </Card>
+      </div>
+    </div>
+  );
+}
