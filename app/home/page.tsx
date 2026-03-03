@@ -1,6 +1,5 @@
-import { createClient } from '@/utils/supabase/server';
 import { createUntypedClient } from '@/utils/supabase/untyped';
-import { redirect } from 'next/navigation';
+import { requireUser } from '@/utils/auth/require-user';
 import HomeScreen, { HomeTrack } from './HomeScreen';
 
 type TrackRow = {
@@ -15,21 +14,9 @@ type ModuleRow = {
 };
 
 export default async function HomePage() {
-  const supabase = createClient();
+  await requireUser();
+
   const db = createUntypedClient();
-
-  try {
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      redirect('/login');
-    }
-  } catch (error) {
-    redirect('/login');
-  }
-
   const { data: tracksData } = await db
     .from('tracks' as any)
     .select('id,title,description,type')
@@ -45,10 +32,13 @@ export default async function HomePage() {
     : { data: [] as ModuleRow[] };
 
   const modules = (modulesData ?? []) as ModuleRow[];
-  const modulesByTrackId = modules.reduce((acc: Record<string, number>, module: ModuleRow) => {
-    acc[module.track_id] = (acc[module.track_id] ?? 0) + 1;
-    return acc;
-  }, {});
+  const modulesByTrackId = modules.reduce(
+    (acc: Record<string, number>, module: ModuleRow) => {
+      acc[module.track_id] = (acc[module.track_id] ?? 0) + 1;
+      return acc;
+    },
+    {}
+  );
 
   const toHomeTrack = (track: TrackRow): HomeTrack => ({
     id: track.id,
@@ -60,8 +50,9 @@ export default async function HomePage() {
   const companyTracks = tracks
     .filter((track) => track.type === 'company')
     .map(toHomeTrack);
-
-  const skillTracks = tracks.filter((track) => track.type === 'skill').map(toHomeTrack);
+  const skillTracks = tracks
+    .filter((track) => track.type === 'skill')
+    .map(toHomeTrack);
 
   return <HomeScreen companyTracks={companyTracks} skillTracks={skillTracks} />;
 }

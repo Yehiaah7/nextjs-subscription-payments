@@ -1,19 +1,8 @@
 'use client';
 
-import {
-  Bell,
-  Briefcase,
-  CircleDot,
-  Clock3,
-  Flame,
-  Home,
-  Target,
-  Trophy,
-  User,
-  Users
-} from 'lucide-react';
-import Link from 'next/link';
-import { ReactNode, useEffect, useState } from 'react';
+import { Briefcase, Clock3, Package, Users } from 'lucide-react';
+import MobileScreen from '@/components/mobile/MobileScreen';
+import { type ReactNode, useState } from 'react';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
@@ -24,6 +13,12 @@ export type HomeTrack = {
   moduleCount: number;
 };
 
+const featuredProducts = [
+  { name: 'Instagram', type: 'Social Product', lessons: 12 },
+  { name: 'Notion', type: 'Productivity Suite', lessons: 9 },
+  { name: 'Canva', type: 'Design Platform', lessons: 8 }
+];
+
 export default function HomeScreen({
   companyTracks,
   skillTracks
@@ -33,251 +28,114 @@ export default function HomeScreen({
 }) {
   const [tab, setTab] = useState<MainTab>('companies');
 
-  useEffect(() => {
-    document.body.classList.add('home-page');
-
-    return () => {
-      document.body.classList.remove('home-page');
-    };
-  }, []);
-
   return (
-    <section className="bg-[#e9edf3] text-[#1f2937]">
-      <div className="mx-auto min-h-dvh w-full max-w-[590px] px-4 pt-10">
-        <header className="mb-6 flex items-start justify-between">
-          <h1 className="text-[48px] font-bold leading-[1.1] tracking-[-0.02em] text-[#111827]">
-            Product Gym Floor
-          </h1>
-          <div className="pt-2 text-right">
-            <p className="text-xs font-bold tracking-[0.12em] text-[#3b82f6]">
-              STREAK ⓘ
-            </p>
-            <p className="flex items-center justify-end gap-1 text-[34px] font-bold leading-none text-[#f97316]">
-              <Flame className="h-7 w-7 fill-current" />
-              12 Days
-            </p>
-          </div>
-        </header>
+    <MobileScreen>
+      <header className="mb-5">
+        <h1 className="text-4xl font-bold text-[#111827]">Practice Hub</h1>
+        <p className="mt-1 text-base font-medium text-[#64748b]">
+          Daily mobile practice for PM interviews.
+        </p>
+      </header>
 
-        <div className="mb-5 rounded-3xl bg-white px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.05)]">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xl font-bold uppercase tracking-[0.08em] text-[#2563eb]">
-                FREE TRIAL ACTIVE
-              </p>
-              <p className="text-2xl font-semibold text-[#64748b]">
-                7 days remaining in your Pro trial
-              </p>
-            </div>
-            <button className="rounded-full bg-[#ffbf00] px-5 py-2 text-xl font-bold uppercase tracking-[0.04em] text-[#111827]">
-              Upgrade
-            </button>
-          </div>
-        </div>
-
-        <div className="mb-6 rounded-3xl bg-[#cfe0ff] p-5">
-          <div className="mb-4 flex items-center gap-3">
-            <img
-              src="https://images.unsplash.com/photo-1546525848-3ce03ca516f6?auto=format&fit=crop&w=120&q=80"
-              alt="Ahmed Yehia avatar"
-              className="h-11 w-11 rounded-full object-cover"
-            />
-            <div>
-              <p className="text-4xl font-bold text-[#1e293b]">Ahmed Yehia</p>
-              <p className="text-xl font-bold uppercase tracking-[0.08em] text-[#2563eb]">
-                PRODUCT GYM MEMBER
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <StatBox
-              icon={<Trophy className="h-4 w-4 text-[#f59e0b]" />}
-              label="Rank"
-              value="#12"
-            />
-            <StatBox
-              icon={<Target className="h-4 w-4 text-[#10b981]" />}
-              label="Solved"
-              value="42"
-            />
-            <StatBox
-              icon={<Briefcase className="h-4 w-4 text-[#f97316]" />}
-              label="Solving Days"
-              value="32"
-            />
-          </div>
-        </div>
-
-        <div className="mb-4 flex items-center gap-2 text-[42px] font-bold leading-tight text-[#111827]">
-          <span>Practice</span>
-          <button className="flex items-center text-[#2563eb]">JUNIOR⌄</button>
-          <span>PM skills with:</span>
-        </div>
-
-        <div className="mb-4 grid grid-cols-3 rounded-full bg-[#dce3ec] p-1 text-center">
-          <TabButton
-            label="Companies"
-            active={tab === 'companies'}
-            onClick={() => setTab('companies')}
-          />
-          <TabButton
-            label="Skill Paths"
-            active={tab === 'skill-paths'}
-            onClick={() => setTab('skill-paths')}
-          />
-          <TabButton
-            label="Products"
-            active={tab === 'products'}
-            onClick={() => setTab('products')}
-          />
-        </div>
-
-        {tab === 'companies' && (
-          <div className="space-y-4 pb-28">
-            <SectionTitle title="Mock Interview Challenges" href="/companies" />
-            {companyTracks.length === 0 ? (
-              <EmptyState message="No published company tracks yet." />
-            ) : (
-              companyTracks.map((track) => (
-                <article key={track.id} className="rounded-3xl bg-white p-4">
-                  <div className="mb-3 flex items-start gap-3">
-                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f1f5f9] font-bold text-[#4285f4]">
-                      {track.title.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="text-4xl font-bold leading-none text-[#1e293b]">
-                        {track.title}
-                      </h3>
-                      <p className="mt-1 text-2xl font-medium text-[#64748b]">
-                        {track.description ?? 'Company challenge track'}
-                      </p>
-                      <div className="mt-1 flex items-center gap-4 text-xl font-bold text-[#94a3b8]">
-                        <span className="flex items-center gap-1">
-                          <CircleDot className="h-4 w-4" />
-                          {track.moduleCount} MODULES
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          TRACK
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              ))
-            )}
-          </div>
-        )}
-
-        {tab === 'skill-paths' && (
-          <div className="pb-28">
-            <SectionTitle title="Skill Path Challenges" />
-            <div className="mt-3 space-y-3">
-              {skillTracks.length === 0 ? (
-                <EmptyState message="No published skill tracks yet." />
-              ) : (
-                skillTracks.map((track) => (
-                  <article key={track.id} className="rounded-3xl bg-white p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-[38px] font-bold leading-tight text-[#1e293b]">
-                        {track.title}
-                      </h3>
-                      <button className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f1f5f9] text-[#cbd5e1]">
-                        ›
-                      </button>
-                    </div>
-                    <p className="mt-1 text-2xl font-medium text-[#64748b]">
-                      {track.description ?? 'Skill-building challenge track'}
-                    </p>
-                    <div className="mt-2 flex items-center gap-4 text-xl font-bold text-[#94a3b8]">
-                      <span className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {track.moduleCount} MODULES
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock3 className="h-4 w-4" />
-                        READ ONLY
-                      </span>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {tab === 'products' && (
-          <div className="pb-28">
-            <SectionTitle title="Products" />
-            <div className="mt-3 rounded-3xl bg-white p-7 text-center">
-              <p className="text-5xl font-bold text-[#1e293b]">Coming Soon</p>
-              <p className="mt-2 text-2xl font-medium text-[#94a3b8]">
-                Product-specific challenge tracks are on the way.
-              </p>
-            </div>
-          </div>
-        )}
+      <div className="mb-5 grid grid-cols-3 rounded-full bg-[#dce3ec] p-1 text-center">
+        <TabButton
+          label="Companies"
+          active={tab === 'companies'}
+          onClick={() => setTab('companies')}
+        />
+        <TabButton
+          label="Skill Paths"
+          active={tab === 'skill-paths'}
+          onClick={() => setTab('skill-paths')}
+        />
+        <TabButton
+          label="Products"
+          active={tab === 'products'}
+          onClick={() => setTab('products')}
+        />
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto grid w-full max-w-[590px] grid-cols-4 border-t border-[#e2e8f0] px-6 py-3">
-          <BottomItem icon={<Home className="h-6 w-6" />} label="Home" active />
-          <BottomItem
-            icon={<Trophy className="h-6 w-6" />}
-            label="Leaderboard"
-          />
-          <BottomItem icon={<Bell className="h-6 w-6" />} label="Alerts" />
-          <BottomItem icon={<User className="h-6 w-6" />} label="Profile" />
+      {tab === 'companies' && (
+        <div className="space-y-3">
+          {companyTracks.length === 0 ? (
+            <EmptyState message="No company challenges yet." />
+          ) : (
+            companyTracks.map((track) => (
+              <TrackCard
+                key={track.id}
+                track={track}
+                icon={<Briefcase className="h-5 w-5 text-[#2563eb]" />}
+              />
+            ))
+          )}
         </div>
-      </nav>
-    </section>
+      )}
+
+      {tab === 'skill-paths' && (
+        <div className="space-y-3">
+          {skillTracks.length === 0 ? (
+            <EmptyState message="No skill path challenges yet." />
+          ) : (
+            skillTracks.map((track) => (
+              <TrackCard
+                key={track.id}
+                track={track}
+                icon={<Users className="h-5 w-5 text-[#2563eb]" />}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === 'products' && (
+        <div className="space-y-3">
+          {featuredProducts.map((product) => (
+            <article key={product.name} className="rounded-3xl bg-white p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-2xl font-bold text-[#111827]">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm font-medium text-[#64748b]">
+                    {product.type}
+                  </p>
+                </div>
+                <Package className="h-5 w-5 text-[#2563eb]" />
+              </div>
+              <p className="mt-2 text-xs font-bold uppercase tracking-[0.08em] text-[#94a3b8]">
+                {product.lessons} Lessons
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
+    </MobileScreen>
+  );
+}
+
+function TrackCard({ track, icon }: { track: HomeTrack; icon: ReactNode }) {
+  return (
+    <article className="rounded-3xl bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-2xl font-bold text-[#111827]">{track.title}</h3>
+          <p className="text-sm font-medium text-[#64748b]">
+            {track.description ?? 'Practice set'}
+          </p>
+        </div>
+        {icon}
+      </div>
+      <p className="mt-2 flex items-center gap-1 text-xs font-bold uppercase tracking-[0.08em] text-[#94a3b8]">
+        <Clock3 className="h-4 w-4" /> {track.moduleCount} Modules
+      </p>
+    </article>
   );
 }
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="rounded-3xl bg-white p-5 text-center text-2xl font-semibold text-[#94a3b8]">
+    <div className="rounded-3xl bg-white p-4 text-center text-sm font-semibold text-[#94a3b8]">
       {message}
-    </div>
-  );
-}
-
-function StatBox({
-  icon,
-  label,
-  value
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-2xl bg-[#edf2f8] p-3 text-center">
-      <div className="mb-1 flex justify-center">{icon}</div>
-      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#94a3b8]">
-        {label}
-      </p>
-      <p className="text-4xl font-bold text-[#1e293b]">{value}</p>
-    </div>
-  );
-}
-
-function SectionTitle({ title, href }: { title: string; href?: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <h2 className="text-[40px] font-bold text-[#111827]">{title}</h2>
-      {href ? (
-        <Link
-          href={href}
-          className="text-xl font-bold uppercase tracking-[0.08em] text-[#2563eb]"
-        >
-          View all
-        </Link>
-      ) : (
-        <button className="text-xl font-bold uppercase tracking-[0.08em] text-[#2563eb]">
-          View all
-        </button>
-      )}
     </div>
   );
 }
@@ -294,32 +152,11 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full px-2 py-2 text-lg font-bold uppercase tracking-[0.08em] ${
+      className={`rounded-full px-2 py-2 text-xs font-bold uppercase tracking-[0.08em] ${
         active ? 'bg-white text-[#2563eb]' : 'text-[#64748b]'
       }`}
     >
       {label}
-    </button>
-  );
-}
-
-function BottomItem({
-  icon,
-  label,
-  active = false
-}: {
-  icon: ReactNode;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <button
-      className={`flex flex-col items-center gap-1 ${active ? 'text-[#2563eb]' : 'text-[#94a3b8]'}`}
-    >
-      {icon}
-      <span className="text-xs font-bold uppercase tracking-[0.08em]">
-        {label}
-      </span>
     </button>
   );
 }
