@@ -12,6 +12,7 @@ import {
   User,
   Users
 } from 'lucide-react';
+import Link from 'next/link';
 import { ReactNode, useEffect, useState } from 'react';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
@@ -133,7 +134,7 @@ export default function HomeScreen({
 
         {tab === 'companies' && (
           <div className="space-y-4 pb-28">
-            <SectionTitle title="Mock Interview Challenges" />
+            <SectionTitle title="Mock Interview Challenges" href="/companies" />
             {companyTracks.length === 0 ? (
               <EmptyState message="No published company tracks yet." />
             ) : (
@@ -261,13 +262,22 @@ function StatBox({
   );
 }
 
-function SectionTitle({ title }: { title: string }) {
+function SectionTitle({ title, href }: { title: string; href?: string }) {
   return (
     <div className="flex items-center justify-between">
       <h2 className="text-[40px] font-bold text-[#111827]">{title}</h2>
-      <button className="text-xl font-bold uppercase tracking-[0.08em] text-[#2563eb]">
-        View all
-      </button>
+      {href ? (
+        <Link
+          href={href}
+          className="text-xl font-bold uppercase tracking-[0.08em] text-[#2563eb]"
+        >
+          View all
+        </Link>
+      ) : (
+        <button className="text-xl font-bold uppercase tracking-[0.08em] text-[#2563eb]">
+          View all
+        </button>
+      )}
     </div>
   );
 }
