@@ -151,7 +151,6 @@ export default async function CompanyDetailsPage({
 
       return {
         id: module.id,
-        trackId: company.id,
         title: module.title,
         status,
         practicingCount,
@@ -161,6 +160,7 @@ export default async function CompanyDetailsPage({
 
     const solvedCount = challenges.filter((item) => item.status === 'solved').length;
     const inProgressCount = challenges.filter((item) => item.status === 'in-progress').length;
+    const practicingCount = formatCompact(1100 + (hashString(company.id + company.title) % 3900));
 
     const progressPercent = challenges.length
       ? hasAnyAttempts
@@ -173,6 +173,7 @@ export default async function CompanyDetailsPage({
         company={company}
         challenges={challenges}
         progressPercent={progressPercent}
+        practicingCount={practicingCount}
       />
     );
   } catch (error) {

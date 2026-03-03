@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, Clock3, UserRound } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, CircleDot, Clock3, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
@@ -8,7 +8,6 @@ export type ChallengeStatus = 'in-progress' | 'not-solved' | 'solved';
 
 export type CompanyChallenge = {
   id: string;
-  trackId: string;
   title: string;
   status: ChallengeStatus;
   practicingCount: string;
@@ -18,10 +17,10 @@ export type CompanyChallenge = {
 type FilterTab = 'all' | ChallengeStatus;
 
 const FILTERS: { key: FilterTab; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'in-progress', label: 'In-progress' },
-  { key: 'not-solved', label: 'Not solved' },
-  { key: 'solved', label: 'Solved' }
+  { key: 'all', label: 'ALL' },
+  { key: 'in-progress', label: 'IN-PROGRESS' },
+  { key: 'not-solved', label: 'NOT SOLVED' },
+  { key: 'solved', label: 'SOLVED' }
 ];
 
 const STATUS_STYLES: Record<ChallengeStatus, string> = {
@@ -31,19 +30,32 @@ const STATUS_STYLES: Record<ChallengeStatus, string> = {
 };
 
 const STATUS_LABELS: Record<ChallengeStatus, string> = {
-  'in-progress': 'In-progress',
-  'not-solved': 'Not solved',
-  solved: 'Solved'
+  'in-progress': 'IN PROGRESS',
+  'not-solved': 'NOT SOLVED',
+  solved: 'SOLVED'
 };
+
+function GoogleGlyph() {
+  return (
+    <span className="text-[24px] font-black leading-none" aria-hidden>
+      <span className="text-[#4285f4]">G</span>
+      <span className="text-[#ea4335]">•</span>
+      <span className="text-[#fbbc05]">•</span>
+      <span className="text-[#34a853]">•</span>
+    </span>
+  );
+}
 
 export default function CompanyDetailsScreen({
   company,
   challenges,
-  progressPercent
+  progressPercent,
+  practicingCount
 }: {
   company: { id: string; title: string; description: string | null };
   challenges: CompanyChallenge[];
   progressPercent: number;
+  practicingCount: string;
 }) {
   const [filter, setFilter] = useState<FilterTab>('all');
 
@@ -54,8 +66,8 @@ export default function CompanyDetailsScreen({
 
   return (
     <section className="min-h-dvh bg-[#e9edf3] px-4 py-6 text-[#1f2937]">
-      <div className="mx-auto w-full max-w-[590px]">
-        <header className="mb-5 flex items-center gap-3">
+      <div className="mx-auto w-full max-w-[560px]">
+        <header className="mb-4 flex items-center gap-3">
           <Link
             href="/companies"
             className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf1f6] text-[#94a3b8]"
@@ -63,42 +75,61 @@ export default function CompanyDetailsScreen({
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-[44px] font-bold leading-none tracking-[-0.02em] text-[#111827]">
-            Company Details
+          <h1 className="text-5xl font-bold leading-none tracking-[-0.02em] text-[#1f2937]">
+            {company.title}
           </h1>
         </header>
 
-        <article className="mb-4 rounded-3xl bg-[#f3f4f6] p-4">
+        <article className="mb-5 rounded-3xl bg-[#f3f5f7] p-4">
           <div className="mb-3 flex items-start gap-3">
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-3xl font-bold text-[#4285f4]">
-              {company.title.charAt(0).toUpperCase()}
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white">
+              <GoogleGlyph />
             </div>
             <div>
-              <h2 className="text-[38px] font-bold leading-none text-[#1f2937]">{company.title}</h2>
-              <p className="mt-1 text-2xl font-semibold leading-tight text-[#64748b]">
-                {company.description ?? 'Interview challenge collection'}
+              <h2 className="text-[40px] font-bold leading-none text-[#1f2937]">{company.title}</h2>
+              <p className="mt-1 text-[24px] font-semibold leading-tight text-[#7d8ea5]">
+                Focus: {company.description ?? 'Metrics · Product Sense'}
               </p>
+              <div className="mt-1 flex items-center gap-3 text-lg font-bold uppercase tracking-[0.03em] text-[#9caabf]">
+                <span className="flex items-center gap-1">
+                  <CircleDot className="h-4 w-4" />
+                  {challenges.length} Challenges
+                </span>
+                <span className="flex items-center gap-1">
+                  <UserRound className="h-4 w-4" />
+                  {practicingCount} Practicing
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="h-2 flex-1 rounded-full bg-[#e2e8f0]">
-              <div
-                className="h-full rounded-full bg-[#2563eb]"
-                style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }}
-              />
-            </div>
-            <span className="text-lg font-bold text-[#94a3b8]">{progressPercent}% complete</span>
+          <div className="mb-1 flex items-center justify-between text-base font-bold uppercase tracking-[0.06em]">
+            <span className="text-[#90a0b6]">Learning Progress</span>
+            <span className="text-[#2563eb]">{progressPercent}% Complete</span>
+          </div>
+          <div className="h-2.5 rounded-full bg-[#e4eaf1]">
+            <div
+              className="h-full rounded-full bg-[#2563eb]"
+              style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }}
+            />
           </div>
         </article>
 
-        <div className="mb-4 grid grid-cols-4 rounded-full bg-[#dce3ec] p-1 text-center text-sm font-semibold text-[#64748b]">
+        <div className="mb-4 flex items-center gap-2 text-[42px] font-bold leading-none text-[#1f2937]">
+          <span>Practice</span>
+          <span className="inline-flex items-center gap-1 text-[#2563eb]">
+            JUNIOR
+            <ChevronDown className="h-5 w-5" />
+          </span>
+        </div>
+
+        <div className="mb-4 grid grid-cols-4 rounded-full bg-[#dce3ec] p-1 text-center text-sm font-bold tracking-[0.02em] text-[#7f91a8]">
           {FILTERS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
               className={`rounded-full px-2 py-2 transition ${
-                filter === tab.key ? 'bg-white text-[#111827]' : 'hover:text-[#111827]'
+                filter === tab.key ? 'bg-white text-[#2563eb] shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : ''
               }`}
               type="button"
             >
@@ -109,23 +140,24 @@ export default function CompanyDetailsScreen({
 
         <div className="space-y-3 pb-8">
           {filteredChallenges.map((challenge) => (
-            <Link
-              key={challenge.id}
-              href={`/challenge/${challenge.trackId}/${challenge.id}`}
-              className="block rounded-3xl bg-white p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-[32px] font-bold leading-tight text-[#1f2937]">{challenge.title}</h3>
-                <span
-                  className={`rounded-full px-3 py-1 text-sm font-bold uppercase tracking-[0.04em] ${STATUS_STYLES[challenge.status]}`}
-                >
-                  {STATUS_LABELS[challenge.status]}
+            <Link key={challenge.id} href={`/challenge/${challenge.id}`} className="block rounded-3xl bg-[#f3f5f7] p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-[38px] font-bold leading-tight text-[#1f2937]">{challenge.title}</h3>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-[0.08em] ${STATUS_STYLES[challenge.status]}`}
+                  >
+                    {STATUS_LABELS[challenge.status]}
+                  </span>
+                </div>
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-[#edf1f6] text-[#c1ccdb]">
+                  <ChevronRight className="h-4 w-4" />
                 </span>
               </div>
-              <div className="mt-2 flex items-center gap-4 text-lg font-bold text-[#94a3b8]">
+              <div className="mt-1 flex items-center gap-4 text-lg font-bold uppercase tracking-[0.03em] text-[#9caabf]">
                 <span className="flex items-center gap-1">
                   <UserRound className="h-4 w-4" />
-                  {challenge.practicingCount} practicing
+                  {challenge.practicingCount} Practicing
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock3 className="h-4 w-4" />
