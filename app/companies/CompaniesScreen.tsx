@@ -33,7 +33,11 @@ export default function CompaniesScreen({
 
         <div className="space-y-4 pb-6">
           {companyTracks.map((track) => (
-            <article key={track.id} className="rounded-3xl bg-[#f3f4f6] p-4">
+            <Link
+              key={track.id}
+              href={`/companies/${track.id}`}
+              className="block rounded-3xl bg-[#f3f4f6] p-4"
+            >
               <div className="mb-4 flex items-start gap-3">
                 <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-3xl font-bold text-[#4285f4]">
                   G
@@ -70,17 +74,17 @@ export default function CompaniesScreen({
                 <span className="text-lg font-bold text-[#94a3b8]">
                   {track.progress}%
                 </span>
-                <button className="text-lg font-bold uppercase tracking-[0.08em] text-[#2563eb]">
+                <span className="text-lg font-bold uppercase tracking-[0.08em] text-[#2563eb]">
                   Resume
-                </button>
-                <button
+                </span>
+                <span
                   className="grid h-7 w-7 place-items-center rounded-full bg-[#e8eef9] text-[#60a5fa]"
                   aria-label={`Resume ${track.title}`}
                 >
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </span>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </div>
