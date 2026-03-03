@@ -18,7 +18,7 @@ export default async function Account() {
   ]);
 
   if (!user) {
-    return redirect('/signin');
+    return redirect('/login');
   }
 
   return (
