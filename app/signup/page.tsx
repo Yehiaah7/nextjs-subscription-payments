@@ -22,7 +22,7 @@ export default async function SignupPage({
   }
 
   if (user) {
-    redirect('/dashboard');
+    redirect('/home');
   }
 
   return (

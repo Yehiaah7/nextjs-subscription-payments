@@ -23,7 +23,7 @@ export default async function LoginPage({
   }
 
   if (user) {
-    redirect('/dashboard');
+    redirect('/home');
   }
 
   return (

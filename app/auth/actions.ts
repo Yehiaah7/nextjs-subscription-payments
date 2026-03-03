@@ -14,7 +14,7 @@ export async function login(formData: FormData) {
     return redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
-  return redirect('/dashboard');
+  return redirect('/home');
 }
 
 export async function signup(formData: FormData) {
@@ -41,7 +41,7 @@ export async function signup(formData: FormData) {
     return redirect('/login?message=Check your email to confirm your account.');
   }
 
-  return redirect('/dashboard');
+  return redirect('/home');
 }
 
 export async function logout() {
