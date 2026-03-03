@@ -29,7 +29,7 @@ export default async function HomePage() {
   }
 
   const { data: tracksData } = await supabase
-    .from('tracks')
+    .from('tracks' as any)
     .select('id,title,description,type')
     .eq('is_published', true)
     .in('type', ['company', 'skill'])
