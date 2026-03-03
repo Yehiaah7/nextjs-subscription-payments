@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
+import { createUntypedClient } from '@/utils/supabase/untyped';
 import { redirect } from 'next/navigation';
 import HomeScreen, { HomeTrack } from './HomeScreen';
 
@@ -15,6 +16,7 @@ type ModuleRow = {
 
 export default async function HomePage() {
   const supabase = createClient();
+  const db = createUntypedClient();
 
   try {
     const {
@@ -28,7 +30,7 @@ export default async function HomePage() {
     redirect('/login');
   }
 
-  const { data: tracksData } = await supabase
+  const { data: tracksData } = await db
     .from('tracks' as any)
     .select('id,title,description,type')
     .eq('is_published', true)
@@ -39,16 +41,14 @@ export default async function HomePage() {
   const trackIds = tracks.map((track) => track.id);
 
   const { data: modulesData } = trackIds.length
-    ? await supabase.from('modules').select('track_id').in('track_id', trackIds)
+    ? await db.from('modules').select('track_id').in('track_id', trackIds)
     : { data: [] as ModuleRow[] };
 
-  const modulesByTrackId = (modulesData ?? []).reduce<Record<string, number>>(
-    (acc, module) => {
-      acc[module.track_id] = (acc[module.track_id] ?? 0) + 1;
-      return acc;
-    },
-    {}
-  );
+  const modules = (modulesData ?? []) as ModuleRow[];
+  const modulesByTrackId = modules.reduce((acc: Record<string, number>, module: ModuleRow) => {
+    acc[module.track_id] = (acc[module.track_id] ?? 0) + 1;
+    return acc;
+  }, {});
 
   const toHomeTrack = (track: TrackRow): HomeTrack => ({
     id: track.id,
