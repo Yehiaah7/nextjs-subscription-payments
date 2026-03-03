@@ -6,44 +6,31 @@ import {
   CircleDot,
   Clock3,
   Flame,
-  Gauge,
   Home,
-  Medal,
   Target,
   Trophy,
   User,
-  Users,
-  Zap
+  Users
 } from 'lucide-react';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
-type SkillFilter = 'discovery' | 'strategy' | 'execution';
 
-const interviewChallenges = [1, 2, 3].map((item) => ({
-  id: item,
-  company: 'Google',
-  focus: 'Focus: Metrics • Product Sense',
-  challenges: '12 CHALLENGES',
-  practicing: '1.2K PRACTICING',
-  progress: 45
-}));
+export type HomeTrack = {
+  id: string;
+  title: string;
+  description: string | null;
+  moduleCount: number;
+};
 
-const skillPathRows = [
-  'Why is user retention dropping in the checkout flow?',
-  'Mastering User Interview Techniques',
-  'How to validate the "Social Proof" hypothesis for Gen Z?',
-  'Quantitative Data Analysis Skills'
-].map((title, index) => ({
-  id: index + 1,
-  title,
-  practicing: '60 PRACTICING',
-  duration: '3-5 MINS'
-}));
-
-export default function HomeScreen() {
+export default function HomeScreen({
+  companyTracks,
+  skillTracks
+}: {
+  companyTracks: HomeTrack[];
+  skillTracks: HomeTrack[];
+}) {
   const [tab, setTab] = useState<MainTab>('companies');
-  const [skillFilter, setSkillFilter] = useState<SkillFilter>('discovery');
 
   useEffect(() => {
     document.body.classList.add('home-page');
@@ -52,11 +39,6 @@ export default function HomeScreen() {
       document.body.classList.remove('home-page');
     };
   }, []);
-  const skillHeading = useMemo(() => {
-    if (skillFilter === 'strategy') return 'Strategy Challenges';
-    if (skillFilter === 'execution') return 'Execution Challenges';
-    return 'Discovery Challenges';
-  }, [skillFilter]);
 
   return (
     <section className="bg-[#e9edf3] text-[#1f2937]">
@@ -152,97 +134,73 @@ export default function HomeScreen() {
         {tab === 'companies' && (
           <div className="space-y-4 pb-28">
             <SectionTitle title="Mock Interview Challenges" />
-            {interviewChallenges.map((challenge) => (
-              <article key={challenge.id} className="rounded-3xl bg-white p-4">
-                <div className="mb-3 flex items-start gap-3">
-                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f1f5f9] font-bold text-[#4285f4]">
-                    G
-                  </div>
-                  <div>
-                    <h3 className="text-4xl font-bold leading-none text-[#1e293b]">
-                      {challenge.company}
-                    </h3>
-                    <p className="mt-1 text-2xl font-medium text-[#64748b]">
-                      {challenge.focus}
-                    </p>
-                    <div className="mt-1 flex items-center gap-4 text-xl font-bold text-[#94a3b8]">
-                      <span className="flex items-center gap-1">
-                        <CircleDot className="h-4 w-4" />
-                        {challenge.challenges}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {challenge.practicing}
-                      </span>
+            {companyTracks.length === 0 ? (
+              <EmptyState message="No published company tracks yet." />
+            ) : (
+              companyTracks.map((track) => (
+                <article key={track.id} className="rounded-3xl bg-white p-4">
+                  <div className="mb-3 flex items-start gap-3">
+                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f1f5f9] font-bold text-[#4285f4]">
+                      {track.title.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="text-4xl font-bold leading-none text-[#1e293b]">
+                        {track.title}
+                      </h3>
+                      <p className="mt-1 text-2xl font-medium text-[#64748b]">
+                        {track.description ?? 'Company challenge track'}
+                      </p>
+                      <div className="mt-1 flex items-center gap-4 text-xl font-bold text-[#94a3b8]">
+                        <span className="flex items-center gap-1">
+                          <CircleDot className="h-4 w-4" />
+                          {track.moduleCount} MODULES
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          TRACK
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 flex-1 rounded-full bg-[#e5e7eb]">
-                    <div
-                      className="h-2 rounded-full bg-[#2563eb]"
-                      style={{ width: `${challenge.progress}%` }}
-                    />
-                  </div>
-                  <span className="text-xl font-bold text-[#94a3b8]">45%</span>
-                  <button className="text-xl font-bold uppercase tracking-[0.06em] text-[#2563eb]">
-                    Resume
-                  </button>
-                  <button className="grid h-7 w-7 place-items-center rounded-full bg-[#eaf1ff] text-[#2563eb]">
-                    ›
-                  </button>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))
+            )}
           </div>
         )}
 
         {tab === 'skill-paths' && (
           <div className="pb-28">
-            <div className="mb-3 grid grid-cols-3 gap-2">
-              <FilterButton
-                icon={<Gauge className="h-4 w-4" />}
-                label="Discovery"
-                active={skillFilter === 'discovery'}
-                onClick={() => setSkillFilter('discovery')}
-              />
-              <FilterButton
-                icon={<Medal className="h-4 w-4" />}
-                label="Strategy"
-                active={skillFilter === 'strategy'}
-                onClick={() => setSkillFilter('strategy')}
-              />
-              <FilterButton
-                icon={<Zap className="h-4 w-4" />}
-                label="Execution"
-                active={skillFilter === 'execution'}
-                onClick={() => setSkillFilter('execution')}
-              />
-            </div>
-            <SectionTitle title={skillHeading} />
+            <SectionTitle title="Skill Path Challenges" />
             <div className="mt-3 space-y-3">
-              {skillPathRows.map((row) => (
-                <article key={row.id} className="rounded-3xl bg-white p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-[38px] font-bold leading-tight text-[#1e293b]">
-                      {row.title}
-                    </h3>
-                    <button className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f1f5f9] text-[#cbd5e1]">
-                      ›
-                    </button>
-                  </div>
-                  <div className="mt-2 flex items-center gap-4 text-xl font-bold text-[#94a3b8]">
-                    <span className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      {row.practicing}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock3 className="h-4 w-4" />
-                      {row.duration}
-                    </span>
-                  </div>
-                </article>
-              ))}
+              {skillTracks.length === 0 ? (
+                <EmptyState message="No published skill tracks yet." />
+              ) : (
+                skillTracks.map((track) => (
+                  <article key={track.id} className="rounded-3xl bg-white p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-[38px] font-bold leading-tight text-[#1e293b]">
+                        {track.title}
+                      </h3>
+                      <button className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f1f5f9] text-[#cbd5e1]">
+                        ›
+                      </button>
+                    </div>
+                    <p className="mt-1 text-2xl font-medium text-[#64748b]">
+                      {track.description ?? 'Skill-building challenge track'}
+                    </p>
+                    <div className="mt-2 flex items-center gap-4 text-xl font-bold text-[#94a3b8]">
+                      <span className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {track.moduleCount} MODULES
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock3 className="h-4 w-4" />
+                        READ ONLY
+                      </span>
+                    </div>
+                  </article>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -272,6 +230,14 @@ export default function HomeScreen() {
         </div>
       </nav>
     </section>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="rounded-3xl bg-white p-5 text-center text-2xl font-semibold text-[#94a3b8]">
+      {message}
+    </div>
   );
 }
 
@@ -322,30 +288,6 @@ function TabButton({
         active ? 'bg-white text-[#2563eb]' : 'text-[#64748b]'
       }`}
     >
-      {label}
-    </button>
-  );
-}
-
-function FilterButton({
-  icon,
-  label,
-  active,
-  onClick
-}: {
-  icon: ReactNode;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center justify-center gap-1 rounded-full px-2 py-2 text-lg font-bold uppercase tracking-[0.08em] ${
-        active ? 'bg-[#2563eb] text-white' : 'bg-[#edf2f7] text-[#64748b]'
-      }`}
-    >
-      {icon}
       {label}
     </button>
   );
