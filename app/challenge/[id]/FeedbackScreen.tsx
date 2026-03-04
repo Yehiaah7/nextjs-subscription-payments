@@ -2,12 +2,6 @@ import Link from 'next/link';
 
 type FeedbackVariant = 'correct' | 'wrong';
 
-type FeedbackScreenProps = {
-  trackId: string;
-  challengeId: string;
-  variant: FeedbackVariant;
-};
-
 const COPY = {
   correct: {
     title: 'Decision Correct',
@@ -42,10 +36,12 @@ function getNextChallengeId(challengeId: string) {
 }
 
 export default function FeedbackScreen({
-  trackId,
   challengeId,
   variant
-}: FeedbackScreenProps) {
+}: {
+  challengeId: string;
+  variant: FeedbackVariant;
+}) {
   const content = COPY[variant];
   const nextChallengeId = getNextChallengeId(challengeId);
 
@@ -66,9 +62,7 @@ export default function FeedbackScreen({
 
         <section className="rounded-3xl bg-white p-6 shadow-[0_12px_34px_rgba(15,23,42,0.07)]">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-slate-500">
-              Progress
-            </h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-slate-500">Progress</h2>
             <span
               className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] ${content.statusClass}`}
             >
@@ -101,13 +95,13 @@ export default function FeedbackScreen({
 
         <div className="mt-2 flex flex-col gap-3 sm:flex-row">
           <Link
-            href={`/challenge/${trackId}/${nextChallengeId}`}
+            href={`/challenge/${nextChallengeId}`}
             className="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#4f46e5] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#4338ca]"
           >
             Next Challenge
           </Link>
           <Link
-            href={`/companies/${trackId}`}
+            href="/tracks"
             className="inline-flex flex-1 items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
           >
             Return to Track
