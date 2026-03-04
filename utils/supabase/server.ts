@@ -15,17 +15,22 @@ export const createClient = () => {
     // Define a cookies object with methods for interacting with the cookie store and pass it to the client
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
+        get(name: string) {
+          return cookieStore.get(name)?.value;
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+        set(name: string, value: string, options: CookieOptions) {
           try {
-            cookiesToSet.forEach(
-              ({ name, value, options }: { name: string; value: string; options: CookieOptions }) =>
-                cookieStore.set(name, value, options)
-            );
-          } catch (error) {
+            cookieStore.set(name, value, options);
+          } catch {
             // If the set method is called from a Server Component, an error may occur
+            // This can be ignored if there is middleware refreshing user sessions
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set(name, '', { ...options, maxAge: 0 });
+          } catch {
+            // If the remove method is called from a Server Component, an error may occur
             // This can be ignored if there is middleware refreshing user sessions
           }
         }
