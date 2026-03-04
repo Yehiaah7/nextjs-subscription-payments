@@ -62,9 +62,12 @@ export default async function LoginPage({
               <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Gym password
               </label>
-              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-blue-600">
+              <Link
+                href="/forgot-password"
+                className="text-[11px] font-bold uppercase tracking-[0.08em] text-blue-600"
+              >
                 Forgot?
-              </span>
+              </Link>
             </div>
             <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4">
               <Lock className="h-4 w-4 text-slate-300" />
