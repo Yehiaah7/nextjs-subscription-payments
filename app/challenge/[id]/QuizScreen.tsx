@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 type Choice = {
   id: string;
@@ -111,6 +112,10 @@ const QUESTIONS: QuizQuestion[] = [
 export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selections, setSelections] = useState<Record<string, string>>({});
+  const searchParams = useSearchParams();
+
+  const companyId = searchParams.get('companyId');
+  const returnToTrackHref = companyId ? `/companies/${companyId}` : '/companies';
 
   const question = QUESTIONS[questionIndex];
   const selectedChoiceId = selections[question.id];
@@ -127,11 +132,16 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       : `/challenge/${challengeId}/wrong`;
   }, [challengeId, isLastQuestion, question.correctChoiceId, selectedChoiceId]);
 
+  const submitHref =
+    selectedChoiceId === question.correctChoiceId
+      ? `/challenge/${challengeId}/correct${companyId ? `?companyId=${companyId}` : ''}`
+      : `/challenge/${challengeId}/wrong${companyId ? `?companyId=${companyId}` : ''}`;
+
   return (
     <main className="mx-auto min-h-screen max-w-[460px] bg-[#eef2f6] px-4 py-5 text-[#111827]">
       <header className="mb-5 flex items-center justify-between">
         <Link
-          href="/tracks"
+          href={returnToTrackHref}
           className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#e3e8ef] text-[#8a97a7]"
           aria-label="Back to tracks"
         >
@@ -193,15 +203,18 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         </div>
       </section>
 
-      <section className="mt-5 rounded-3xl bg-white p-4">
-        <p className="text-xs font-black uppercase tracking-[0.1em] text-[#f59e0b]">{question.perspective.title}</p>
+      <details className="mt-5 rounded-3xl bg-white p-4" open>
+        <summary className="cursor-pointer list-none text-xs font-black uppercase tracking-[0.1em] text-[#f59e0b]">
+          Expert explanation
+        </summary>
+        <p className="mt-3 text-xs font-black uppercase tracking-[0.1em] text-[#f59e0b]">{question.perspective.title}</p>
         <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#97a1af]">
           {question.perspective.speaker} • {question.perspective.role}
         </p>
         <p className="mt-3 text-sm leading-relaxed text-[#475569]">{question.perspective.summary}</p>
-      </section>
+      </details>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      <div className="mt-6 grid grid-cols-2 gap-3 pb-6">
         <button
           type="button"
           onClick={() => setQuestionIndex((index) => Math.max(index - 1, 0))}
@@ -213,10 +226,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
         {nextHref ? (
           <Link
-            href={nextHref}
+            href={submitHref}
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#f59e0b] px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-white"
           >
-            Next <ChevronRight className="h-4 w-4" />
+            Submit <ChevronRight className="h-4 w-4" />
           </Link>
         ) : (
           <button

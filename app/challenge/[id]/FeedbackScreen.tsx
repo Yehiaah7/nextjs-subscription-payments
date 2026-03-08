@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 type FeedbackVariant = 'correct' | 'wrong';
 
@@ -52,8 +55,12 @@ export default function FeedbackScreen({
   challengeId: string;
   variant: FeedbackVariant;
 }) {
+  const searchParams = useSearchParams();
   const content = COPY[variant];
   const nextChallengeId = getNextChallengeId(challengeId);
+  const companyId = searchParams.get('companyId');
+  const returnToTrackHref = companyId ? `/companies/${companyId}` : '/companies';
+  const nextChallengeHref = `/challenge/${nextChallengeId}${companyId ? `?companyId=${companyId}` : ''}`;
 
   return (
     <main className="mx-auto min-h-screen max-w-[460px] bg-[#eef2f6] px-4 py-6 text-[#0f172a]">
@@ -137,13 +144,13 @@ export default function FeedbackScreen({
 
       <div className="mt-6 space-y-3 pb-4">
         <Link
-          href={`/challenge/${nextChallengeId}`}
+          href={nextChallengeHref}
           className="inline-flex w-full items-center justify-center rounded-2xl bg-[#2563eb] px-4 py-4 text-sm font-black uppercase tracking-[0.12em] text-white"
         >
           Next Challenge
         </Link>
         <Link
-          href="/tracks"
+          href={returnToTrackHref}
           className="inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-black text-[#2563eb]"
         >
           Return to Track
