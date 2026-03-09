@@ -28,10 +28,10 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
       role="navigation"
       aria-label="Bottom navigation"
       data-testid="bottom-nav"
-      className={`fixed bottom-0 left-0 right-0 z-[9999] bg-white ${className}`.trim()}
+      className={`fixed inset-x-0 bottom-0 z-[9999] border-t border-[#dce3ec] bg-white/95 backdrop-blur ${className}`.trim()}
       {...props}
     >
-      <div className="mx-auto grid w-full max-w-[460px] grid-cols-4 border-t border-[#dce3ec] px-5 py-3">
+      <div className="mx-auto grid w-full max-w-[420px] grid-cols-4 px-5 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
 
