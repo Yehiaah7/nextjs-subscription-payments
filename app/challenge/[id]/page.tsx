@@ -1,4 +1,5 @@
 import QuizScreen from './QuizScreen';
+import { requireUser } from '@/utils/auth/require-user';
 
 type QuizPageProps = {
   params: {
@@ -6,6 +7,8 @@ type QuizPageProps = {
   };
 };
 
-export default function QuizPage({ params }: QuizPageProps) {
+export default async function QuizPage({ params }: QuizPageProps) {
+  await requireUser();
+
   return <QuizScreen challengeId={params.id} />;
 }
