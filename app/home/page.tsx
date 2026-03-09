@@ -1,6 +1,7 @@
 import { createUntypedClient } from '@/utils/supabase/untyped';
 import { requireUser } from '@/utils/auth/require-user';
 import HomeScreen, { HomeTrack } from './HomeScreen';
+import { MOCK_COMPANIES } from '../companies/mock-data';
 
 type TrackRow = {
   id: string;
@@ -47,9 +48,19 @@ export default async function HomePage() {
     moduleCount: modulesByTrackId[track.id] ?? 0
   });
 
-  const companyTracks = tracks
+  const dbCompanyTracks = tracks
     .filter((track) => track.type === 'company')
     .map(toHomeTrack);
+
+  const companyTracks = dbCompanyTracks.length
+    ? dbCompanyTracks
+    : MOCK_COMPANIES.map((company) => ({
+        id: company.id,
+        title: company.title,
+        description: company.description ?? company.focus,
+        moduleCount: company.challengesCount
+      }));
+
   const skillTracks = tracks
     .filter((track) => track.type === 'skill')
     .map(toHomeTrack);

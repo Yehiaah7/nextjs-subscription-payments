@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, CircleDot, UserRound } from 'lucide-react';
 import Link from 'next/link';
+import { getCompanyHref } from './navigation';
 
 export type CompanyTrack = {
   id: string;
@@ -46,8 +47,8 @@ export default function CompaniesScreen({
           {companyTracks.map((track) => (
             <Link
               key={track.id}
-              href={`/companies/${track.id}`}
-              className="block rounded-[26px] bg-[#f3f5f7] px-4 py-3"
+              href={getCompanyHref(track.id)}
+              className="block cursor-pointer rounded-[26px] bg-[#f3f5f7] px-4 py-3"
             >
               <div className="mb-3 flex items-start gap-3">
                 <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white">
