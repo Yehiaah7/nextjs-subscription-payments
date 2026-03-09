@@ -48,7 +48,7 @@ export default async function LoginPage({
             <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4">
               <input
                 name="email"
-                type="email"
+                type="text"
                 required
                 placeholder="Enter your email or username"
                 className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"

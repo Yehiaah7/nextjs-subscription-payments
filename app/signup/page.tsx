@@ -47,6 +47,7 @@ export default async function SignupPage({
               </label>
               <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-3">
                 <input
+                  name="first_name"
                   type="text"
                   placeholder="First"
                   className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
@@ -60,6 +61,7 @@ export default async function SignupPage({
               </label>
               <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-3">
                 <input
+                  name="last_name"
                   type="text"
                   placeholder="Last"
                   className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
@@ -75,8 +77,12 @@ export default async function SignupPage({
             </label>
             <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4">
               <input
-                name="name"
+                name="username"
                 type="text"
+                required
+                minLength={3}
+                maxLength={20}
+                pattern="[A-Za-z0-9_]{3,20}"
                 placeholder="username"
                 className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
               />
@@ -110,6 +116,7 @@ export default async function SignupPage({
                 <span className="text-sm font-semibold">20</span>
               </div>
               <input
+                name="phone"
                 type="tel"
                 placeholder="123 456 7890"
                 className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
