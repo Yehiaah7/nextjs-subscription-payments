@@ -7,7 +7,13 @@ import MobileScreen from '@/components/mobile/MobileScreen';
 
 type ModalType = 'signout' | 'deactivation' | null;
 
-export default function ProfileScreen({ email }: { email: string }) {
+export default function ProfileScreen({
+  email,
+  fullName
+}: {
+  email: string;
+  fullName: string;
+}) {
   const [openModal, setOpenModal] = useState<ModalType>(null);
 
   return (
@@ -24,7 +30,7 @@ export default function ProfileScreen({ email }: { email: string }) {
             {email.charAt(0)}
           </div>
           <p className="mt-3 text-[40px] font-bold leading-none tracking-[-0.03em] text-[#101827]">
-            PM Member
+            {fullName}
           </p>
           <p className="mt-1 text-base font-black uppercase tracking-[0.13em] text-[#2d5eff]">
             Product Gym Member
