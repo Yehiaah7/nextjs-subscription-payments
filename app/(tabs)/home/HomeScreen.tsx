@@ -58,7 +58,20 @@ export default function HomeScreen({
       </div>
 
       {tab === 'companies' && (
-        <div className="space-y-3">
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[#94a3b8]">
+              Company Tracks
+            </p>
+            <Link
+              href="/companies/view-all"
+              className="text-xs font-black uppercase tracking-[0.12em] text-[#2563eb]"
+            >
+              View all
+            </Link>
+          </div>
+
+          <div className="space-y-3">
           {companyTracks.length === 0 ? (
             <EmptyState message="No company challenges yet." />
           ) : (
@@ -71,6 +84,7 @@ export default function HomeScreen({
               />
             ))
           )}
+          </div>
         </div>
       )}
 

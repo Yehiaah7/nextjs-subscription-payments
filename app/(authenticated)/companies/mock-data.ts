@@ -1,4 +1,4 @@
-import type { ChallengeStatus } from './[id]/CompanyDetailsScreen';
+import type { ChallengeStatus } from './[trackId]/CompanyDetailsScreen';
 
 export type MockCompany = {
   id: string;

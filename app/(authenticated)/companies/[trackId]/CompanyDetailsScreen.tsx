@@ -140,7 +140,7 @@ export default function CompanyDetailsScreen({
 
         <div className="space-y-3 pb-8">
           {filteredChallenges.map((challenge) => (
-            <Link key={challenge.id} href={`/challenge/${challenge.id}?company=${company.id}`} className="block rounded-3xl bg-[#f3f5f7] p-4">
+            <Link key={challenge.id} href={`/challenge/${company.id}?company=${company.id}`} className="block rounded-3xl bg-[#f3f5f7] p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <h3 className="text-[38px] font-bold leading-tight text-[#1f2937]">{challenge.title}</h3>
