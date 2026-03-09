@@ -92,7 +92,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const companyId = searchParams.get('company');
   const returnToTrackHref = companyId
     ? `/companies/${companyId}`
-    : '/companies';
+    : '/home';
 
   const nextHref = useMemo(() => {
     if (!selectedChoiceId) {
