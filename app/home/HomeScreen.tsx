@@ -3,6 +3,8 @@
 import { Briefcase, Clock3, Package, Users } from 'lucide-react';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import { type ReactNode, useState } from 'react';
+import Link from 'next/link';
+import { getCompanyHref } from '../companies/navigation';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
@@ -65,6 +67,7 @@ export default function HomeScreen({
                 key={track.id}
                 track={track}
                 icon={<Briefcase className="h-5 w-5 text-[#2563eb]" />}
+                href={getCompanyHref(track.id)}
               />
             ))
           )}
@@ -113,8 +116,16 @@ export default function HomeScreen({
   );
 }
 
-function TrackCard({ track, icon }: { track: HomeTrack; icon: ReactNode }) {
-  return (
+function TrackCard({
+  track,
+  icon,
+  href
+}: {
+  track: HomeTrack;
+  icon: ReactNode;
+  href?: string;
+}) {
+  const card = (
     <article className="rounded-3xl bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -130,6 +141,16 @@ function TrackCard({ track, icon }: { track: HomeTrack; icon: ReactNode }) {
       </p>
     </article>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block cursor-pointer">
+        {card}
+      </Link>
+    );
+  }
+
+  return card;
 }
 
 function EmptyState({ message }: { message: string }) {
