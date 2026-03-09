@@ -59,7 +59,7 @@ export default function FeedbackScreen({
   const content = COPY[variant];
   const nextChallengeId = getNextChallengeId(challengeId);
   const companyId = searchParams.get('company');
-  const returnToTrackHref = companyId ? `/companies/${companyId}` : '/companies';
+  const returnToTrackHref = companyId ? `/companies/${companyId}` : '/home';
   const nextChallengeHref = `/challenge/${nextChallengeId}${companyId ? `?company=${companyId}` : ''}`;
 
   return (

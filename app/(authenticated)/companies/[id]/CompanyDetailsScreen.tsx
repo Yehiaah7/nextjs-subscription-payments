@@ -69,7 +69,7 @@ export default function CompanyDetailsScreen({
       <div className="mx-auto w-full max-w-[560px]">
         <header className="mb-4 flex items-center gap-3">
           <Link
-            href="/companies"
+            href="/home"
             className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf1f6] text-[#94a3b8]"
             aria-label="Back to companies"
           >
