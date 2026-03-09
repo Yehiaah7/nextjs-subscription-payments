@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown, ChevronRight, Flame, Rocket, Trophy, Users } from 'lucide-react';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
 
@@ -32,6 +32,46 @@ export default function HomeScreen({
   userName: string;
 }) {
   const [tab, setTab] = useState<MainTab>('companies');
+  const [buildVersion, setBuildVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadBuildVersion = async () => {
+      try {
+        const response = await fetch('/api/version', { cache: 'no-store' });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as {
+          sha: string | null;
+          deployment: string | null;
+          env: string | null;
+        };
+
+        if (!mounted) {
+          return;
+        }
+
+        const shaShort = data.sha ? data.sha.slice(0, 7) : 'unknown';
+        const deployment = data.deployment ?? 'unknown';
+        const environment = data.env ?? 'unknown';
+
+        setBuildVersion(`Build: ${shaShort} • ${deployment} • ${environment}`);
+      } catch {
+        // Intentionally ignore badge fetch failures.
+      }
+    };
+
+    void loadBuildVersion();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const initials = useMemo(
     () =>
       userName
@@ -153,6 +193,11 @@ export default function HomeScreen({
           ))}
         </div>
       )}
+      {buildVersion ? (
+        <p className="pointer-events-none fixed bottom-20 left-3 z-50 rounded bg-black/60 px-2 py-1 text-[10px] font-medium text-white">
+          {buildVersion}
+        </p>
+      ) : null}
     </section>
   );
 }
