@@ -3,6 +3,7 @@
 import { Bell, Home, Trophy, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ComponentProps } from 'react';
 
 const navItems = [
   { href: '/home', label: 'Home', icon: Home },
@@ -11,13 +12,16 @@ const navItems = [
   { href: '/profile', label: 'Profile', icon: User }
 ];
 
-export default function BottomNav() {
+type BottomNavProps = ComponentProps<'nav'>;
+
+export default function BottomNav({ className = '', ...props }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
     <nav
       data-testid="bottom-nav"
-      className="fixed bottom-0 left-0 right-0 z-[9999] bg-white"
+      className={`fixed bottom-0 left-0 right-0 z-[9999] bg-white ${className}`.trim()}
+      {...props}
     >
       <div className="mx-auto grid w-full max-w-[460px] grid-cols-4 border-t border-[#dce3ec] px-5 py-3">
         {navItems.map(({ href, label, icon: Icon }) => {

@@ -4,7 +4,7 @@ import { Briefcase, Clock3, Package, Users } from 'lucide-react';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import { type ReactNode, useState } from 'react';
 import Link from 'next/link';
-import { getCompanyHref } from '../companies/navigation';
+import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
