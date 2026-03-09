@@ -52,9 +52,9 @@ const deterministicStatus = (seed: string): ChallengeStatus => {
 export default async function CompanyDetailsPage({
   params
 }: {
-  params: { id: string };
+  params: { trackId: string };
 }) {
-  const { id } = params;
+  const { trackId } = params;
 
   const supabase = createClient();
   const db = createUntypedClient();
@@ -73,7 +73,7 @@ export default async function CompanyDetailsPage({
     const { data: trackData, error } = await db
       .from('tracks' as any)
       .select('id,title,description')
-      .eq('id', id)
+      .eq('id', trackId)
       .eq('type', 'company')
       .eq('is_published', true)
       .maybeSingle();
@@ -86,7 +86,7 @@ export default async function CompanyDetailsPage({
   }
 
   if (!company) {
-    const mockCompany = getMockCompanyById(id);
+    const mockCompany = getMockCompanyById(trackId);
 
     if (!mockCompany) {
       notFound();

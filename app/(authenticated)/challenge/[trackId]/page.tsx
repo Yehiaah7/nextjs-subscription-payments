@@ -3,12 +3,12 @@ import { requireUser } from '@/utils/auth/require-user';
 
 type QuizPageProps = {
   params: {
-    id: string;
+    trackId: string;
   };
 };
 
 export default async function QuizPage({ params }: QuizPageProps) {
   await requireUser();
 
-  return <QuizScreen challengeId={params.id} />;
+  return <QuizScreen challengeId={params.trackId} />;
 }

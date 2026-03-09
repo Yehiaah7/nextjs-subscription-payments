@@ -100,7 +100,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     }
 
     const resultRoute =
-      selectedChoiceId === 'A' || selectedChoiceId === 'B'
+      selectedChoiceId === 'A'
         ? 'correct'
         : 'wrong';
     const querySuffix = companyId ? `?company=${companyId}` : '';
