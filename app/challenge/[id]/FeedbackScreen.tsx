@@ -58,9 +58,9 @@ export default function FeedbackScreen({
   const searchParams = useSearchParams();
   const content = COPY[variant];
   const nextChallengeId = getNextChallengeId(challengeId);
-  const companyId = searchParams.get('companyId');
+  const companyId = searchParams.get('company');
   const returnToTrackHref = companyId ? `/companies/${companyId}` : '/companies';
-  const nextChallengeHref = `/challenge/${nextChallengeId}${companyId ? `?companyId=${companyId}` : ''}`;
+  const nextChallengeHref = `/challenge/${nextChallengeId}${companyId ? `?company=${companyId}` : ''}`;
 
   return (
     <main className="mx-auto min-h-screen max-w-[460px] bg-[#eef2f6] px-4 py-6 text-[#0f172a]">

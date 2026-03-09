@@ -89,7 +89,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   );
   const searchParams = useSearchParams();
 
-  const companyId = searchParams.get('companyId');
+  const companyId = searchParams.get('company');
   const returnToTrackHref = companyId
     ? `/companies/${companyId}`
     : '/companies';
@@ -103,7 +103,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       selectedChoiceId === 'A' || selectedChoiceId === 'B'
         ? 'correct'
         : 'wrong';
-    const querySuffix = companyId ? `?companyId=${companyId}` : '';
+    const querySuffix = companyId ? `?company=${companyId}` : '';
 
     return `/challenge/${challengeId}/${resultRoute}${querySuffix}`;
   }, [challengeId, companyId, selectedChoiceId]);
