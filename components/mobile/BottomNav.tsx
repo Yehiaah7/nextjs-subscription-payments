@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ComponentProps } from 'react';
 
+const visibleRoutes = new Set(['/home', '/leaderboard', '/alerts', '/profile']);
+
 const navItems = [
   { href: '/home', label: 'Home', icon: Home },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
@@ -12,13 +14,19 @@ const navItems = [
   { href: '/profile', label: 'Profile', icon: User }
 ];
 
-type BottomNavProps = ComponentProps<'nav'>;
+type BottomNavProps = ComponentProps<'div'>;
 
 export default function BottomNav({ className = '', ...props }: BottomNavProps) {
   const pathname = usePathname();
 
+  if (!visibleRoutes.has(pathname)) {
+    return null;
+  }
+
   return (
-    <nav
+    <div
+      role="navigation"
+      aria-label="Bottom navigation"
       data-testid="bottom-nav"
       className={`fixed bottom-0 left-0 right-0 z-[9999] bg-white ${className}`.trim()}
       {...props}
@@ -43,6 +51,6 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
           );
         })}
       </div>
-    </nav>
+    </div>
   );
 }
