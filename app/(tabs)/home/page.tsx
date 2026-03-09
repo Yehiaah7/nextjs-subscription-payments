@@ -1,7 +1,7 @@
 import { createUntypedClient } from '@/utils/supabase/untyped';
 import { requireUser } from '@/utils/auth/require-user';
 import HomeScreen, { HomeTrack } from './HomeScreen';
-import { MOCK_COMPANIES } from '../companies/mock-data';
+import { MOCK_COMPANIES } from '@/app/(authenticated)/companies/mock-data';
 
 type TrackRow = {
   id: string;
