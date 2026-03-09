@@ -10,10 +10,12 @@ export default function MobileAppLayout({
   showBottomNav = false
 }: MobileAppLayoutProps) {
   return (
-    <section className="min-h-dvh overflow-visible bg-[#e9edf3] text-[#1f2937]">
+    <section className="min-h-dvh bg-[#e9edf3] text-[#1f2937]">
       <main
-        className={`mx-auto w-full max-w-[460px] overflow-visible px-4 pt-6 sm:pt-8 ${
-          showBottomNav ? 'pb-24' : 'pb-8'
+        className={`mx-auto w-full max-w-[420px] px-4 pt-6 sm:pt-8 ${
+          showBottomNav
+            ? 'pb-[calc(96px+env(safe-area-inset-bottom))]'
+            : 'pb-8'
         }`}
       >
         {children}
