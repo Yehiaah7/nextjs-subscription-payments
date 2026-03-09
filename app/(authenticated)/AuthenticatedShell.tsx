@@ -11,9 +11,9 @@ export default function AuthenticatedShell({ children }: PropsWithChildren) {
   const showBottomNav = TAB_ROUTES.has(pathname);
 
   return (
-    <section className="min-h-dvh bg-[#e9edf3] text-[#1f2937]">
+    <section className="min-h-dvh overflow-visible bg-[#e9edf3] text-[#1f2937]">
       <main
-        className={`mx-auto w-full max-w-[460px] px-4 pt-6 sm:pt-8 ${
+        className={`mx-auto w-full max-w-[460px] overflow-visible px-4 pt-6 sm:pt-8 ${
           showBottomNav ? 'pb-[90px]' : ''
         }`}
       >
