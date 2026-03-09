@@ -1,4 +1,5 @@
 import FeedbackScreen from '../FeedbackScreen';
+import { requireUser } from '@/utils/auth/require-user';
 
 type WrongPageProps = {
   params: {
@@ -6,6 +7,8 @@ type WrongPageProps = {
   };
 };
 
-export default function WrongPage({ params }: WrongPageProps) {
+export default async function WrongPage({ params }: WrongPageProps) {
+  await requireUser();
+
   return <FeedbackScreen challengeId={params.id} variant="wrong" />;
 }
