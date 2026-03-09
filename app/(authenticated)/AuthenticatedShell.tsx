@@ -12,13 +12,13 @@ export default function AuthenticatedShell({ children }: PropsWithChildren) {
 
   return (
     <section className="min-h-dvh bg-[#e9edf3] text-[#1f2937]">
-      <div
+      <main
         className={`mx-auto w-full max-w-[460px] px-4 pt-6 sm:pt-8 ${
-          showBottomNav ? 'pb-24' : 'pb-0'
+          showBottomNav ? 'pb-[90px]' : ''
         }`}
       >
         {children}
-      </div>
+      </main>
       {showBottomNav ? <BottomNav /> : null}
     </section>
   );
