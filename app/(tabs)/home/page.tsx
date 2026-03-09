@@ -15,7 +15,7 @@ type ModuleRow = {
 };
 
 export default async function HomePage() {
-  await requireUser();
+  const user = await requireUser();
 
   const db = createUntypedClient();
   const { data: tracksData } = await db
@@ -45,7 +45,9 @@ export default async function HomePage() {
     id: track.id,
     title: track.title,
     description: track.description,
-    moduleCount: modulesByTrackId[track.id] ?? 0
+    moduleCount: modulesByTrackId[track.id] ?? 0,
+    practicingCount: '1.2K',
+    progress: 45
   });
 
   const dbCompanyTracks = tracks
@@ -58,12 +60,26 @@ export default async function HomePage() {
         id: company.id,
         title: company.title,
         description: company.description ?? company.focus,
-        moduleCount: company.challengesCount
+        moduleCount: company.challengesCount,
+        practicingCount: company.practicingCount,
+        progress: company.progress
       }));
 
   const skillTracks = tracks
     .filter((track) => track.type === 'skill')
     .map(toHomeTrack);
 
-  return <HomeScreen companyTracks={companyTracks} skillTracks={skillTracks} />;
+  const displayName =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split('@')[0] ||
+    'Product Gym Member';
+
+  return (
+    <HomeScreen
+      companyTracks={companyTracks}
+      skillTracks={skillTracks}
+      userName={displayName}
+    />
+  );
 }
