@@ -80,6 +80,11 @@ export default async function HomePage() {
       companyTracks={companyTracks}
       skillTracks={skillTracks}
       userName={displayName}
+      userStats={{
+        rank: '#12',
+        solved: '42',
+        solvingDays: '32'
+      }}
     />
   );
 }
