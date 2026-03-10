@@ -2,7 +2,7 @@
 
 import { ReactNode, useState } from 'react';
 import Link from 'next/link';
-import { CalendarDays, CheckCircle2, Crown, Globe2, Medal, Trophy } from 'lucide-react';
+import { BadgeCheck, CalendarDays, CheckCircle2, Crown, Globe2, Medal, Trophy } from 'lucide-react';
 import { logout } from '@/app/auth/actions';
 import MobileScreen from '@/components/mobile/MobileScreen';
 
@@ -39,18 +39,24 @@ export default function ProfileScreen({ email, fullName }: { email: string; full
           </div>
         </section>
 
-        <section className="rounded-[16px] bg-[var(--profile-pro-bg)] p-3 text-white">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-[20px] font-bold tracking-[-0.4px]">Pro Gym Pass</h2>
-            <span className="rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-1 text-[8px] font-black uppercase tracking-[0.8px]">Best Value</span>
+        <section className="rounded-[16px] border border-[#1447e6] bg-[#447dfd] p-3 text-white">
+          <div className="flex items-center gap-2">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-[rgba(255,255,255,0.2)] text-white">
+              <BadgeCheck className="h-4 w-4" />
+            </span>
+            <h2 className="text-[16px] font-bold tracking-[-0.4px]">Pro Gym Pass</h2>
           </div>
-          <ul className="mt-3 space-y-2 text-[10px] font-semibold text-[#dbeafe]">
-            <li>• Unlimited mock challenges from top companies</li>
-            <li>• Deep feedback from FAANG PMs</li>
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-[1px] text-[#dbeafe]">FOUNDATION LEVEL</p>
+          <ul className="mt-3 space-y-1 text-[12px] font-medium leading-4 text-[#dbeafe]">
+            <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />All company assignments unlocked</li>
+            <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />Unlimited daily challenges</li>
+            <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />Decision quality analytics</li>
           </ul>
-          <Link href="/profile/subscription" className="mt-4 inline-flex h-[43px] w-full items-center justify-center rounded-[12px] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#1c398e]">
-            Manage Subscription
-          </Link>
+          <div className="mt-3 rounded-[14px] bg-[#155dfc] p-2">
+            <Link href="/profile/subscription" className="inline-flex h-[43px] w-full items-center justify-center rounded-[999px] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#1c398e]">
+              Upgrade to Pro
+            </Link>
+          </div>
         </section>
 
         <Link href="/profile/edit" className="flex h-[82px] items-center justify-between rounded-[16px] border border-[#d7e3f7] bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
