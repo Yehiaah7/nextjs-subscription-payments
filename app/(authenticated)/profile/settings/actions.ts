@@ -18,6 +18,22 @@ function normalizePhoneNational(value: string) {
   return compact;
 }
 
+function isProfileSchemaMismatch(error: { message?: string; code?: string } | null) {
+  if (!error) return false;
+
+  const message = (error.message || '').toLowerCase();
+  const code = (error.code || '').toLowerCase();
+
+  return (
+    code === 'pgrst204' ||
+    code === '42p01' ||
+    message.includes('schema cache') ||
+    message.includes("column 'first_name'") ||
+    message.includes('relation "profiles" does not exist') ||
+    message.includes("relation 'profiles' does not exist")
+  );
+}
+
 export async function updateAccountPreferences(formData: FormData) {
   const user = await requireUser();
   const first_name = String(formData.get('first_name') || '').trim();
@@ -67,6 +83,12 @@ export async function updateAccountPreferences(formData: FormData) {
     );
 
   if (profileError) {
+    if (isProfileSchemaMismatch(profileError)) {
+      return redirect(
+        '/profile/settings?error=Profile%20settings%20could%20not%20be%20saved%20because%20the%20database%20schema%20is%20out%20of%20date.%20Please%20run%20the%20latest%20Supabase%20migrations%20for%20the%20profiles%20table.'
+      );
+    }
+
     if (profileError.message.toLowerCase().includes('username')) {
       return redirect('/profile/settings?error=This%20username%20is%20already%20taken.');
     }
