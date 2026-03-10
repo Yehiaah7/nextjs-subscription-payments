@@ -18,7 +18,7 @@ type ProGymPassCardProps = {
 
 export default function ProGymPassCard({
   onUpgrade,
-  managePlansHref = '/plans',
+  managePlansHref = '/profile/subscription',
   managePlansLabel = 'View Plans',
   variant = 'profile',
   id
