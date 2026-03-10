@@ -20,7 +20,7 @@ export type HomeTrack = {
   title: string;
   description: string | null;
   moduleCount: number;
-  seniority: Seniority;
+  challengeCountsBySeniority?: Partial<Record<Seniority, number>>;
   practicingCount?: string;
   progress?: number;
 };
@@ -107,9 +107,21 @@ export default function HomeScreen({
       )
     : [];
 
-  const filteredCompanyTracks = companyTracks.filter(
-    (track) => track.seniority === selectedSeniority
-  );
+  const filteredCompanyTracks = companyTracks
+    .map((track) => ({
+      ...track,
+      moduleCount:
+        track.challengeCountsBySeniority?.[selectedSeniority] ?? track.moduleCount
+    }))
+    .filter((track) => track.moduleCount > 0)
+    .reduce<HomeTrack[]>((acc, track) => {
+      if (acc.some((existing) => existing.id === track.id)) {
+        return acc;
+      }
+
+      acc.push(track);
+      return acc;
+    }, []);
 
   useEffect(() => {
     const stored = window.localStorage.getItem('home-selected-seniority');
@@ -141,9 +153,12 @@ export default function HomeScreen({
             <div className="rounded-lg bg-primary-soft p-1.5">
               <Rocket className="h-3.5 w-3.5 text-primary" />
             </div>
-            <p className="text-[11px] font-bold">
-              7 Days remaining in your Pro trial
-            </p>
+            <div>
+              <p className="t-label text-primary">Free Trial Active</p>
+              <p className="text-[11px] font-semibold text-muted">
+                7 Days remaining in your Pro trial
+              </p>
+            </div>
           </div>
           <button className="rounded-pill bg-amber-400 px-2.5 py-1 t-label text-amber-950">
             Upgrade
