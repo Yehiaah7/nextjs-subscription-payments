@@ -1,6 +1,10 @@
 import { createUntypedClient } from '@/utils/supabase/untyped';
 import { requireUser } from '@/utils/auth/require-user';
-import HomeScreen, { HomeTrack } from './HomeScreen';
+import HomeScreen, {
+  HomeTrack,
+  SkillPathCategory,
+  SkillPathChallenge
+} from './HomeScreen';
 import { MOCK_COMPANIES } from '@/app/(authenticated)/companies/mock-data';
 
 type TrackRow = {
@@ -12,6 +16,22 @@ type TrackRow = {
 
 type ModuleRow = {
   track_id: string;
+};
+
+type SkillPathCategoryRow = {
+  id: string;
+  key: string;
+  title: string;
+  sort_order: number;
+};
+
+type SkillPathChallengeRow = {
+  id: string;
+  category_id: string;
+  title: string;
+  practicing_count: number;
+  duration_min: number;
+  duration_max: number;
 };
 
 export default async function HomePage() {
@@ -65,9 +85,29 @@ export default async function HomePage() {
         progress: company.progress
       }));
 
-  const skillTracks = tracks
-    .filter((track) => track.type === 'skill')
-    .map(toHomeTrack);
+  const { data: skillPathCategoriesData } = await db
+    .from('skill_path_categories' as any)
+    .select('id,key,title,sort_order')
+    .order('sort_order', { ascending: true });
+
+  const skillPathCategories = (skillPathCategoriesData ??
+    []) as SkillPathCategoryRow[];
+
+  const { data: skillPathChallengesData } = skillPathCategories.length
+    ? await db
+        .from('skill_path_challenges' as any)
+        .select(
+          'id,category_id,title,practicing_count,duration_min,duration_max'
+        )
+        .in(
+          'category_id',
+          skillPathCategories.map((category) => category.id)
+        )
+        .order('created_at', { ascending: true })
+    : { data: [] as SkillPathChallengeRow[] };
+
+  const skillPathChallenges = (skillPathChallengesData ??
+    []) as SkillPathChallengeRow[];
 
   const displayName =
     user.user_metadata?.full_name ||
@@ -78,7 +118,23 @@ export default async function HomePage() {
   return (
     <HomeScreen
       companyTracks={companyTracks}
-      skillTracks={skillTracks}
+      skillPathCategories={skillPathCategories.map<SkillPathCategory>(
+        (category) => ({
+          id: category.id,
+          key: category.key,
+          title: category.title
+        })
+      )}
+      skillPathChallenges={skillPathChallenges.map<SkillPathChallenge>(
+        (challenge) => ({
+          id: challenge.id,
+          categoryId: challenge.category_id,
+          title: challenge.title,
+          practicingCount: challenge.practicing_count,
+          durationMin: challenge.duration_min,
+          durationMax: challenge.duration_max
+        })
+      )}
       userName={displayName}
       userStats={{
         rank: '#12',
