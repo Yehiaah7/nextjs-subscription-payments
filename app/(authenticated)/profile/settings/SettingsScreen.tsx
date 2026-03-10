@@ -13,7 +13,8 @@ type ProfileValues = {
   username: string | null;
   phone: string | null;
   phone_country: string | null;
-  phone_dial_code: string | null;
+  phone_country_code: string | null;
+  phone_dial_code?: string | null;
   phone_national: string | null;
   phone_e164: string | null;
 };
@@ -52,7 +53,7 @@ function parsePhoneFromProfile(profile: ProfileValues) {
       national = existingE164.slice(byDial.dialCode.length);
       return {
         phone_country: byDial.code,
-        phone_dial_code: byDial.dialCode,
+        phone_country_code: byDial.dialCode,
         phone_national: national
       };
     }
@@ -60,7 +61,8 @@ function parsePhoneFromProfile(profile: ProfileValues) {
 
   return {
     phone_country: fallbackCountry.code,
-    phone_dial_code: profile.phone_dial_code ?? fallbackCountry.dialCode,
+    phone_country_code:
+      profile.phone_country_code ?? profile.phone_dial_code ?? fallbackCountry.dialCode,
     phone_national: national
   };
 }
@@ -84,14 +86,14 @@ export default function SettingsScreen({
       last_name: profile.last_name ?? '',
       username: profile.username ?? '',
       phone_country: parsedPhone.phone_country,
-      phone_dial_code: parsedPhone.phone_dial_code,
+      phone_country_code: parsedPhone.phone_country_code,
       phone_national: parsedPhone.phone_national,
       email
     }),
     [
       email,
       parsedPhone.phone_country,
-      parsedPhone.phone_dial_code,
+      parsedPhone.phone_country_code,
       parsedPhone.phone_national,
       profile.first_name,
       profile.last_name,
@@ -143,7 +145,7 @@ export default function SettingsScreen({
 
             <PhoneField
               phoneCountry={formValues.phone_country}
-              phoneDialCode={formValues.phone_dial_code}
+              phoneDialCode={formValues.phone_country_code}
               phoneNational={formValues.phone_national}
               onCountryChange={(countryCode) => {
                 const selectedCountry =
@@ -153,7 +155,7 @@ export default function SettingsScreen({
                 setFormValues((prev) => ({
                   ...prev,
                   phone_country: selectedCountry.code,
-                  phone_dial_code: selectedCountry.dialCode
+                  phone_country_code: selectedCountry.dialCode
                 }));
               }}
               onNationalChange={(value) =>
@@ -194,6 +196,23 @@ export default function SettingsScreen({
             {error && (
               <p className="text-xs font-medium text-red-500">{error}</p>
             )}
+            {!formValues.username.trim() && (
+              <p className="text-xs font-medium text-red-500">
+                Username is required.
+              </p>
+            )}
+
+            <input
+              type="hidden"
+              name="changed_fields"
+              value={JSON.stringify(
+                Object.keys(formValues).filter(
+                  (key) =>
+                    formValues[key as keyof typeof formValues] !==
+                    initialValues[key as keyof typeof initialValues]
+                )
+              )}
+            />
 
             <div className="flex justify-end gap-2 pt-1">
               <button
@@ -205,7 +224,14 @@ export default function SettingsScreen({
               </button>
               <button
                 type="submit"
-                className="h-[43px] w-[90px] rounded-[12px] bg-[#2563eb] text-[10px] font-black uppercase tracking-[1px] text-white"
+                disabled={
+                  !Object.keys(formValues).some(
+                    (key) =>
+                      formValues[key as keyof typeof formValues] !==
+                      initialValues[key as keyof typeof initialValues]
+                  ) || !formValues.username.trim()
+                }
+                className="h-[43px] w-[90px] rounded-[12px] bg-[#2563eb] text-[10px] font-black uppercase tracking-[1px] text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Save
               </button>
@@ -340,7 +366,7 @@ function PhoneField({
             ))}
           </select>
         </label>
-        <input type="hidden" name="phone_dial_code" value={phoneDialCode} />
+        <input type="hidden" name="phone_country_code" value={phoneDialCode} />
         <input
           type="tel"
           name="phone_national"

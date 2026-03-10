@@ -6,6 +6,15 @@ import { createClient } from '@/utils/supabase/server';
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
 const PASSWORD_MIN_LENGTH = 8;
+const ALLOWED_PROFILE_FIELDS = new Set([
+  'first_name',
+  'last_name',
+  'username',
+  'phone_country',
+  'phone_country_code',
+  'phone_national',
+  'email'
+]);
 
 function normalizePhoneNational(value: string) {
   const compact = value.replace(/\s+/g, '');
@@ -18,6 +27,21 @@ function normalizePhoneNational(value: string) {
   return compact;
 }
 
+function parseChangedFields(raw: FormDataEntryValue | null) {
+  if (!raw || typeof raw !== 'string') return [] as string[];
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [] as string[];
+    return parsed.filter(
+      (field): field is string =>
+        typeof field === 'string' && ALLOWED_PROFILE_FIELDS.has(field)
+    );
+  } catch {
+    return [] as string[];
+  }
+}
+
 function isProfileSchemaMismatch(error: { message?: string; code?: string } | null) {
   if (!error) return false;
 
@@ -28,9 +52,9 @@ function isProfileSchemaMismatch(error: { message?: string; code?: string } | nu
     code === 'pgrst204' ||
     code === '42p01' ||
     message.includes('schema cache') ||
-    message.includes("column 'first_name'") ||
-    message.includes('relation "profiles" does not exist') ||
-    message.includes("relation 'profiles' does not exist")
+    message.includes('could not find') ||
+    message.includes('column') ||
+    message.includes('relation "profiles"')
   );
 }
 
@@ -41,12 +65,15 @@ export async function updateAccountPreferences(formData: FormData) {
   const username = String(formData.get('username') || '')
     .trim()
     .toLowerCase();
-  const phone = String(formData.get('phone') || '').trim();
   const phone_country = String(formData.get('phone_country') || 'EG').trim().toUpperCase();
-  const phone_dial_code = String(formData.get('phone_dial_code') || '+20').trim();
+  const phone_country_code = String(formData.get('phone_country_code') || '+20').trim();
   const phone_national_raw = String(formData.get('phone_national') || '').trim();
   const email = String(formData.get('email') || '').trim();
-  const name = [first_name, last_name].filter(Boolean).join(' ').trim();
+  const changedFields = parseChangedFields(formData.get('changed_fields'));
+
+  if (!username) {
+    return redirect('/profile/settings?error=Username%20is%20required.');
+  }
 
   if (!USERNAME_PATTERN.test(username)) {
     return redirect(
@@ -60,43 +87,79 @@ export async function updateAccountPreferences(formData: FormData) {
     return redirect('/profile/settings?error=Phone%20number%20must%20contain%20digits%20only.');
   }
 
-  const phone_e164 = phone_national ? `${phone_dial_code}${phone_national}` : '';
+  const phone_e164 = phone_national ? `${phone_country_code}${phone_national}` : '';
+  const phone = phone_e164 || null;
+  const name = [first_name, last_name].filter(Boolean).join(' ').trim();
 
   const supabase = createClient();
 
-  const { error: profileError } = await (supabase as any)
-    .from('profiles')
-    .upsert(
-      {
-        id: user.id,
-        first_name,
-        last_name,
-        username,
-        phone: phone_e164 || phone,
-        phone_country,
-        phone_dial_code,
-        phone_national: phone_national || null,
-        phone_e164: phone_e164 || null,
-        name: name || user.email || username
-      },
-      { onConflict: 'id' }
-    );
+  const usernameChanged = changedFields.includes('username');
+  if (usernameChanged) {
+    const { data: existingUsername, error: usernameCheckError } = await (supabase as any)
+      .from('profiles')
+      .select('id')
+      .ilike('username', username)
+      .neq('id', user.id)
+      .limit(1)
+      .maybeSingle();
 
-  if (profileError) {
-    if (isProfileSchemaMismatch(profileError)) {
-      return redirect(
-        '/profile/settings?error=Profile%20settings%20could%20not%20be%20saved%20because%20the%20database%20schema%20is%20out%20of%20date.%20Please%20run%20the%20latest%20Supabase%20migrations%20for%20the%20profiles%20table.'
-      );
+    if (usernameCheckError) {
+      return redirect(`/profile/settings?error=${encodeURIComponent(usernameCheckError.message)}`);
     }
 
-    if (profileError.message.toLowerCase().includes('username')) {
+    if (existingUsername) {
       return redirect('/profile/settings?error=This%20username%20is%20already%20taken.');
     }
-
-    return redirect(`/profile/settings?error=${encodeURIComponent(profileError.message)}`);
   }
 
-  if (email && email !== user.email) {
+  const profileUpdates: Record<string, string | null> = {};
+
+  if (changedFields.includes('first_name')) profileUpdates.first_name = first_name || null;
+  if (changedFields.includes('last_name')) profileUpdates.last_name = last_name || null;
+  if (changedFields.includes('username')) profileUpdates.username = username;
+
+  const phoneFieldChanged =
+    changedFields.includes('phone_country') ||
+    changedFields.includes('phone_country_code') ||
+    changedFields.includes('phone_national');
+
+  if (phoneFieldChanged) {
+    profileUpdates.phone_country = phone_country;
+    profileUpdates.phone_country_code = phone_country_code;
+    profileUpdates.phone_national = phone_national || null;
+    profileUpdates.phone_e164 = phone;
+    profileUpdates.phone = phone;
+  }
+
+  if (Object.keys(profileUpdates).length > 0) {
+    profileUpdates.name = name || user.email || username;
+
+    const { error: profileError } = await (supabase as any)
+      .from('profiles')
+      .upsert(
+        {
+          id: user.id,
+          ...profileUpdates
+        },
+        { onConflict: 'id' }
+      );
+
+    if (profileError) {
+      if (isProfileSchemaMismatch(profileError)) {
+        return redirect(
+          '/profile/settings?error=Profile%20settings%20could%20not%20be%20saved%20because%20the%20database%20schema%20is%20out%20of%20date.%20Please%20run%20the%20latest%20Supabase%20migrations%20for%20the%20profiles%20table.'
+        );
+      }
+
+      if (profileError.message.toLowerCase().includes('username')) {
+        return redirect('/profile/settings?error=This%20username%20is%20already%20taken.');
+      }
+
+      return redirect(`/profile/settings?error=${encodeURIComponent(profileError.message)}`);
+    }
+  }
+
+  if (changedFields.includes('email') && email && email !== user.email) {
     const { error: emailError } = await supabase.auth.updateUser({ email });
 
     if (emailError) {
