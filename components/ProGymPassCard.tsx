@@ -11,8 +11,8 @@ type ProGymPassCardProps = {
 export default function ProGymPassCard({ onUpgrade, variant = 'profile', id }: ProGymPassCardProps) {
   const buttonClassName =
     variant === 'plans'
-      ? 'mt-3 h-[49px] w-full rounded-[16px] bg-[#155dfc] px-[72px] py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-white'
-      : 'mt-3 inline-flex h-[43px] w-full items-center justify-center rounded-[999px] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#1c398e]';
+      ? 'mt-3 h-[49px] w-full rounded-full bg-white px-[72px] py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[#1c398e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1c398e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#447dfd]'
+      : 'mt-3 inline-flex h-[43px] w-full items-center justify-center rounded-full bg-white text-[10px] font-black uppercase tracking-[1px] text-[#1c398e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1c398e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#447dfd]';
 
   return (
     <section id={id} className="rounded-[16px] border border-[#1447e6] bg-[#447dfd] p-3 text-white">
