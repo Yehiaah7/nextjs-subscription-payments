@@ -13,6 +13,7 @@ type ProGymPassCardProps = {
   managePlansHref?: string;
   managePlansLabel?: string;
   variant?: 'profile' | 'plans';
+  showViewPlans?: boolean;
   id?: string;
 };
 
@@ -21,6 +22,7 @@ export default function ProGymPassCard({
   managePlansHref = '/profile/subscription',
   managePlansLabel = 'View Plans',
   variant = 'profile',
+  showViewPlans = true,
   id
 }: ProGymPassCardProps) {
   const router = useRouter();
@@ -86,9 +88,11 @@ export default function ProGymPassCard({
       <button type="button" onClick={handleUpgrade} disabled={isUpgrading} className={primaryButtonClassName}>
         {isUpgrading ? 'Loading...' : 'Upgrade to Pro'}
       </button>
-      <Link href={managePlansHref} className={secondaryButtonClassName}>
-        {managePlansLabel}
-      </Link>
+      {showViewPlans ? (
+        <Link href={managePlansHref} className={secondaryButtonClassName}>
+          {managePlansLabel}
+        </Link>
+      ) : null}
     </section>
   );
 }
