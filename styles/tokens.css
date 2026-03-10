@@ -1,5 +1,7 @@
 :root {
-  --color-bg: #f8fafc;
+  --app-font-sans: 'Geist', -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue', 'Helvetica', sans-serif;
+
+  --color-bg: #eff6ff;
   --color-container: #ffffff;
   --color-surface-muted: #eef2f6;
   --color-surface-soft: #e2e8f0;
@@ -9,9 +11,6 @@
   --color-text-muted: #94a3b8;
   --color-primary: #155dfc;
   --color-primary-soft: #dbeafe;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-success: #16a34a;
 
   --radius-card: 16px;
   --radius-pill: 999px;
@@ -20,22 +19,62 @@
   --shadow-button: 0 6px 16px rgba(15, 23, 42, 0.1);
   --shadow-card: 0 2px 10px rgba(15, 23, 42, 0.06);
 
+  --lb-title-size: 24px;
+  --lb-title-line: 1.4;
+  --lb-title-track: -0.6px;
+  --lb-title-color: #0f172a;
+  --lb-tabbar-height: 39px;
+  --lb-tabbar-radius: 1000px;
+  --lb-tabbar-bg: #dbeafe;
+  --lb-tabbar-stroke: #bfdbfe;
+  --lb-tab-active-bg: #ffffff;
+  --lb-tab-active-color: #1d4ed8;
+  --lb-tab-active-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  --lb-tab-inactive-color: #64748b;
+  --lb-card-bg: #ffffff;
+  --lb-card-stroke: #dbeafe;
+  --lb-card-radius: 16px;
+  --lb-name-color: #0f172a;
+  --lb-role-color: #64748b;
+  --lb-score-bg: #eff6ff;
+  --lb-score-color: #1d4ed8;
+  --lb-solved-color: #64748b;
+  --lb-meta-color: #94a3b8;
+  --lb-divider: #dbeafe;
+  --lb-avatar-bg: #3b82f6;
+
+  --profile-title-color: #0f172a;
+  --profile-card-radius: 16px;
+  --profile-main-bg: #dbeafe;
+  --profile-main-stroke: #bedbff;
+  --profile-avatar-bg: #60a5fa;
+  --profile-member-color: #2563eb;
+  --profile-pro-bg: linear-gradient(180deg, #1d4ed8 0%, #1e3a8a 100%);
+  --profile-pro-badge-bg: rgba(255, 255, 255, 0.2);
+  --profile-container-effect: 0px 25px 50px -12px #1c398e;
+
+  --alerts-title-size: 24px;
+  --alerts-title-track: -0.6px;
+  --alerts-title-color: #0f172a;
+  --alerts-card-bg: #ffffff;
+  --alerts-card-stroke: #dbeafe;
+  --alerts-card-radius: 16px;
+  --alerts-heading-color: #0f172a;
+  --alerts-time-color: #64748b;
+  --alerts-body-color: #475569;
+
   --font-weight-title: 700;
   --font-weight-label: 800;
   --font-weight-body: 500;
-
   --font-size-title: 24px;
   --line-height-title: 1.4;
   --letter-spacing-title: -0.025em;
-
   --font-size-card-title: 16px;
   --line-height-card-title: 1.35;
   --letter-spacing-card-title: 0;
-
   --font-size-body: 14px;
   --line-height-body: 1.45;
   --letter-spacing-body: 0;
-
   --font-size-label: 10px;
   --line-height-label: 1.5;
   --letter-spacing-label: 0.1em;
