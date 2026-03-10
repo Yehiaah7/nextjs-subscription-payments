@@ -17,7 +17,7 @@ export default async function PlansPage() {
   return (
     <MobileScreen>
       <section className="mx-auto w-full max-w-[361px] px-4 pt-6">
-        <ProGymPassCard variant="plans" managePlansLabel="Manage Plans" />
+        <ProGymPassCard variant="plans" managePlansLabel="Manage Plans" showViewPlans={false} />
       </section>
       <Pricing user={user} products={products ?? []} subscription={subscription} />
     </MobileScreen>

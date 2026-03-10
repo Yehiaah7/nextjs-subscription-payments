@@ -24,11 +24,11 @@ export default function SubscriptionScreen() {
         </header>
 
         <section className="h-[57px] rounded-[16px] border border-[#2b7fff] bg-[#155dfc] p-3 text-white">
-          <p className="text-[10px] font-black uppercase leading-[1] tracking-[1px] text-[#dbeafe]">Trial in progress</p>
+          <p className="text-[10px] font-black uppercase leading-[1] tracking-[1px] text-white">Trial in progress</p>
           <p className="mt-1 text-[11px] font-bold">You are currently enjoying a Pro Trial.</p>
         </section>
 
-        <ProGymPassCard id="pro" variant="plans" />
+        <ProGymPassCard id="pro" variant="plans" showViewPlans={false} />
 
         <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3">
           <div className="flex items-center gap-2">
