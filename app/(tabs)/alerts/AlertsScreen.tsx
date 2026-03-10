@@ -4,18 +4,18 @@ import MobileScreen from '@/components/mobile/MobileScreen';
 
 const alerts = [
   {
-    title: 'New company challenge unlocked',
-    message: 'You can now start the Airbnb mock interview set.',
-    time: '2m ago'
+    title: 'New Company Mock',
+    message: 'A new Tesla product strategy challenge is now available.',
+    time: 'Just now'
   },
   {
-    title: 'Weekly leaderboard update',
-    message: 'You moved up to #2 this week. Keep your streak going!',
-    time: '1h ago'
+    title: 'Weekly Rank Updated',
+    message: 'You moved up to #12 on the leaderboard this week.',
+    time: '2h ago'
   },
   {
-    title: 'Trial reminder',
-    message: 'Your Pro trial has 7 days left. Upgrade any time.',
+    title: 'Subscription Reminder',
+    message: 'Your Pro Gym Pass trial ends in 7 days.',
     time: 'Today'
   }
 ];
@@ -23,23 +23,23 @@ const alerts = [
 export default function AlertsScreen() {
   return (
     <MobileScreen>
-      <header className="mb-5">
-        <h1 className="t-title">Alerts</h1>
-      </header>
+      <section className="mx-auto w-full max-w-[361px]">
+        <header className="mb-4">
+          <h1 className="text-[var(--alerts-title-size)] font-bold leading-[1.4] tracking-[var(--alerts-title-track)] text-[var(--alerts-title-color)]">Alerts</h1>
+        </header>
 
-      <div className="space-y-3">
-        {alerts.map((alert) => (
-          <article key={alert.title} className="app-card">
-            <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
-              {alert.time}
-            </p>
-            <h2 className="mt-1 text-xl font-bold text-text">
-              {alert.title}
-            </h2>
-            <p className="mt-1 text-sm text-muted">{alert.message}</p>
-          </article>
-        ))}
-      </div>
+        <div className="space-y-4">
+          {alerts.map((alert) => (
+            <article key={alert.title} className="h-[82px] w-full rounded-[var(--alerts-card-radius)] border border-[var(--alerts-card-stroke)] bg-[var(--alerts-card-bg)] p-3">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="truncate text-[14px] font-bold tracking-[-0.35px] text-[var(--alerts-heading-color)]">{alert.title}</h2>
+                <p className="shrink-0 text-[10px] font-bold text-[var(--alerts-time-color)]">{alert.time}</p>
+              </div>
+              <p className="mt-2 line-clamp-2 text-[12px] font-medium leading-[1.35] text-[var(--alerts-body-color)]">{alert.message}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </MobileScreen>
   );
 }
