@@ -7,10 +7,10 @@ export default function SubscriptionScreen() {
   return (
     <MobileScreen>
       <header className="mb-5 flex items-center gap-3">
-        <Link href="/profile" className="grid h-9 w-9 place-items-center rounded-xl bg-[#eef2f6] text-2xl text-[#97a6ba]">
+        <Link href="/profile" className="grid h-9 w-9 place-items-center rounded-xl bg-surface-muted text-2xl text-muted">
           ‹
         </Link>
-        <h1 className="text-[52px] font-black leading-none tracking-[-0.03em] text-[#111827]">Gym Pass</h1>
+        <h1 className="text-[52px] font-black leading-none tracking-[-0.03em] text-text">Gym Pass</h1>
       </header>
 
       <section className="rounded-2xl bg-[#1f5dea] px-4 py-3 text-white">
@@ -18,7 +18,7 @@ export default function SubscriptionScreen() {
         <p className="mt-1 text-sm font-semibold">You are currently enjoying a Pro Trial.</p>
       </section>
 
-      <section className="mt-5 rounded-[24px] bg-[#f8fafc] p-5">
+      <section className="mt-5 rounded-card bg-bg p-5">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-[56px] font-black leading-none tracking-[-0.03em] text-[#0f172a]">Standard</h2>
@@ -41,7 +41,7 @@ export default function SubscriptionScreen() {
         </button>
       </section>
 
-      <section className="mt-5 rounded-[24px] bg-gradient-to-b from-[#2148c7] to-[#12235f] p-5 text-white">
+      <section className="mt-5 rounded-card bg-gradient-to-b from-[#2148c7] to-[#12235f] p-5 text-white">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-[56px] font-black leading-none tracking-[-0.03em]">Pro Gym Pass</h2>

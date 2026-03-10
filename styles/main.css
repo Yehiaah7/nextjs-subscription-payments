@@ -1,3 +1,5 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,7 +31,9 @@ body {
     sans-serif;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
-  @apply text-white bg-zinc-800 antialiased;
+  @apply antialiased;
+  color: var(--color-text-main);
+  background: var(--color-bg);
 }
 
 body {
@@ -60,7 +64,7 @@ p a {
 }
 
 body.mobile-app-page {
-  background: #e9edf3;
+  background: var(--color-bg);
 }
 
 body.mobile-app-page nav:first-of-type,
@@ -70,4 +74,45 @@ body.mobile-app-page footer {
 
 body.mobile-app-page main#skip {
   min-height: 100dvh;
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-dvh w-full max-w-[393px] mx-auto px-4 pt-6;
+    background: var(--color-bg);
+    color: var(--color-text-main);
+  }
+
+  .app-shell-nav {
+    padding-bottom: calc(68px + 12px + env(safe-area-inset-bottom));
+  }
+
+  .app-shell-page {
+    @apply pb-6;
+  }
+
+  .app-card {
+    @apply w-full p-3;
+    max-width: 361px;
+    border-radius: var(--radius-card);
+    background: var(--color-container);
+    box-shadow: var(--shadow-card);
+  }
+
+  .app-segment {
+    @apply p-1;
+    width: 361px;
+    max-width: 100%;
+    height: 39px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-soft);
+    border: 1px solid var(--color-border);
+  }
+
+  .t-title { font-size: var(--font-size-title); font-weight: var(--font-weight-title); line-height: var(--line-height-title); letter-spacing: var(--letter-spacing-title); }
+  .t-card-title { font-size: var(--font-size-card-title); font-weight: var(--font-weight-title); line-height: var(--line-height-card-title); letter-spacing: var(--letter-spacing-card-title); }
+  .t-body-muted { font-size: var(--font-size-body); font-weight: var(--font-weight-body); line-height: var(--line-height-body); letter-spacing: var(--letter-spacing-body); color: var(--color-text-subtle); }
+  .t-label { font-size: var(--font-size-label); font-weight: var(--font-weight-label); line-height: var(--line-height-label); letter-spacing: var(--letter-spacing-label); text-transform: uppercase; }
+  .t-button { font-size: 12px; font-weight: var(--font-weight-label); letter-spacing: .08em; text-transform: uppercase; }
+  .t-streak { font-size: 14px; font-weight: var(--font-weight-title); line-height: 1.4; }
 }

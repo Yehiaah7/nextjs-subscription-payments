@@ -364,12 +364,12 @@ export default function LeaderboardScreen() {
   return (
     <MobileScreen>
       <header className="mb-6 pt-1">
-        <h1 className="text-5xl font-extrabold leading-none tracking-[-0.02em] text-[#1e293b]">
+        <h1 className="t-title text-[32px]">
           Leaderboard
         </h1>
       </header>
 
-      <div className="mb-4 grid grid-cols-2 rounded-[30px] bg-[#dce2ea] p-1 shadow-[inset_0_1px_1px_rgba(255,255,255,0.45)]">
+      <div className="app-segment mb-4 grid grid-cols-2 shadow-none">
         <SegmentButton
           label="Weekly"
           active={tab === 'weekly'}
@@ -418,11 +418,11 @@ function LeaderCard({
 }) {
   return (
     <article
-      className={`relative rounded-[22px] bg-[#f7f8fa] px-3 py-3.5 ${
+      className={`relative app-card relative ${
         highlighted ? 'ring-2 ring-[#ffd5ad]' : ''
       }`}
     >
-      <span className="absolute left-1 top-1 rounded-md bg-[#2463ff] px-2 py-[1px] text-[11px] font-bold text-white">
+      <span className="absolute left-1 top-1 rounded-md bg-primary px-2 py-[1px] text-[11px] font-bold text-white">
         {leader.rank}
       </span>
 
@@ -436,10 +436,10 @@ function LeaderCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h2 className="truncate text-2xl font-extrabold leading-tight text-[#1f2937]">
+              <h2 className="truncate text-2xl font-extrabold leading-tight text-text">
                 {leader.name}
               </h2>
-              <p className="truncate text-base font-semibold leading-tight text-[#7c8ca3]">
+              <p className="truncate text-base font-semibold leading-tight text-muted">
                 {leader.title}
               </p>
             </div>
@@ -512,8 +512,8 @@ function SegmentButton({
       onClick={onClick}
       className={`rounded-[26px] py-3 text-sm font-extrabold uppercase tracking-[0.12em] transition-all ${
         active
-          ? 'bg-white text-[#2463ff] shadow-[0_2px_8px_rgba(15,23,42,0.12)]'
-          : 'text-[#7f8ea5]'
+          ? 'bg-container text-primary shadow-button'
+          : 'text-muted'
       }`}
       type="button"
     >

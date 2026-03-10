@@ -28,7 +28,7 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
       role="navigation"
       aria-label="Bottom navigation"
       data-testid="bottom-nav"
-      className={`fixed inset-x-0 bottom-0 z-[9999] bg-white ${className}`.trim()}
+      className={`fixed inset-x-0 bottom-0 z-[9999] bg-container ${className}`.trim()}
       {...props}
     >
       <div className="mx-auto w-full max-w-[393px] px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
@@ -41,13 +41,11 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                 key={href}
                 href={href}
                 className={`flex h-full flex-col items-center justify-center gap-0.5 ${
-                  active ? 'text-[#155dfc]' : 'text-[#62748e]'
+                  active ? 'text-primary' : 'text-muted'
                 }`}
               >
                 <Icon className="h-[18px] w-[18px]" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.9px]">
-                  {label}
-                </span>
+                <span className="t-label">{label}</span>
               </Link>
             );
           })}

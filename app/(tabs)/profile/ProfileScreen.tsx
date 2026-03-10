@@ -19,14 +19,14 @@ export default function ProfileScreen({
   return (
     <MobileScreen>
       <header className="mb-5">
-        <h1 className="text-[52px] font-black leading-none tracking-[-0.03em] text-[#111827]">
+        <h1 className="t-title text-[40px]">
           Profile
         </h1>
       </header>
 
       <section className="rounded-[26px] bg-[#c5d3e8] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]">
         <div className="flex flex-col items-center">
-          <div className="grid h-28 w-28 place-items-center overflow-hidden rounded-[22px] bg-[#89a4c6] text-4xl font-black uppercase text-white">
+          <div className="grid h-28 w-28 place-items-center overflow-hidden rounded-card bg-[#89a4c6] text-4xl font-black uppercase text-white">
             {email.charAt(0)}
           </div>
           <p className="mt-3 text-[40px] font-bold leading-none tracking-[-0.03em] text-[#101827]">
@@ -45,7 +45,7 @@ export default function ProfileScreen({
         </div>
       </section>
 
-      <section className="mt-5 rounded-[24px] bg-gradient-to-b from-[#2453e8] to-[#1f327f] p-5 text-white">
+      <section className="mt-5 rounded-card bg-gradient-to-b from-[#2453e8] to-[#1f327f] p-5 text-white">
         <div className="flex items-center justify-between">
           <h2 className="text-4xl font-bold leading-none tracking-[-0.03em]">
             Pro Gym Pass
@@ -70,13 +70,13 @@ export default function ProfileScreen({
 
       <Link
         href="/profile/edit"
-        className="mt-5 flex items-center justify-between rounded-[24px] bg-[#f3f4f6] px-5 py-5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.2)]"
+        className="mt-5 flex items-center justify-between rounded-card bg-[#f3f4f6] px-5 py-5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.2)]"
       >
         <div>
           <p className="text-xs font-black uppercase tracking-[0.14em] text-[#b6c0cf]">
             Settings
           </p>
-          <p className="text-2xl font-bold leading-none text-[#1f2937]">
+          <p className="text-2xl font-bold leading-none text-text">
             Preferences &amp; Security
           </p>
         </div>
@@ -87,9 +87,9 @@ export default function ProfileScreen({
 
       <button
         onClick={() => setOpenModal('signout')}
-        className="mt-4 w-full rounded-[22px] bg-[#f8fafc] px-5 py-5 text-left shadow-[inset_0_0_0_1px_rgba(148,163,184,0.16)]"
+        className="mt-4 w-full rounded-card bg-bg px-5 py-5 text-left shadow-[inset_0_0_0_1px_rgba(148,163,184,0.16)]"
       >
-        <p className="text-3xl font-bold leading-none text-[#1f2937]">
+        <p className="text-3xl font-bold leading-none text-text">
           Sign Out
         </p>
         <p className="mt-1 text-sm font-semibold text-[#bfcbda]">
@@ -99,7 +99,7 @@ export default function ProfileScreen({
 
       <button
         onClick={() => setOpenModal('deactivation')}
-        className="mt-4 w-full rounded-[22px] bg-[#f8fafc] px-5 py-5 text-left shadow-[inset_0_0_0_1px_rgba(254,202,202,0.7)]"
+        className="mt-4 w-full rounded-card bg-bg px-5 py-5 text-left shadow-[inset_0_0_0_1px_rgba(254,202,202,0.7)]"
       >
         <p className="text-3xl font-bold leading-none text-[#ef4444]">
           Deactivate Account
@@ -109,7 +109,7 @@ export default function ProfileScreen({
         </p>
       </button>
 
-      <p className="mt-6 text-center text-xs font-black uppercase tracking-[0.24em] text-[#c4cedb]">
+      <p className="mt-6 text-center text-xs font-black uppercase tracking-[0.24em] text-muted">
         Product Gym v2.4.0
       </p>
 
@@ -144,11 +144,11 @@ export default function ProfileScreen({
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-3xl bg-[#ecf0f5] px-4 py-3 text-center">
+    <article className="app-card bg-surface-muted px-4 py-3 text-center">
       <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#9caabf]">
         {label}
       </p>
-      <p className="mt-1 text-[34px] font-black leading-none tracking-[-0.03em] text-[#1f2937]">
+      <p className="mt-1 text-[34px] font-black leading-none tracking-[-0.03em] text-text">
         {value}
       </p>
     </article>

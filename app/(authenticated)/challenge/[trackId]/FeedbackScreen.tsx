@@ -46,7 +46,7 @@ export default function FeedbackScreen({ variant }: { variant: FeedbackVariant }
   const nextChallengeHref = returnToTrackHref;
 
   return (
-    <main className="mx-auto min-h-screen max-w-[460px] bg-[#eef2f6] px-4 py-6 text-[#0f172a]">
+    <section className="text-text">
       <section className="mt-12 flex flex-col items-center text-center">
         <div
           className={`inline-flex h-24 w-24 items-center justify-center rounded-[24px] bg-white text-5xl font-bold ${content.iconClass} ${content.iconGlowClass}`}
@@ -67,20 +67,20 @@ export default function FeedbackScreen({ variant }: { variant: FeedbackVariant }
         </div>
       </section>
 
-      <section className="mt-14 rounded-2xl bg-white p-5 shadow-[0_6px_18px_rgba(15,23,42,0.07)]">
+      <section className="mt-14 app-card">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#94a3b8]">
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted">
               Challenge Progress
             </p>
             <p className="mt-2 text-[33px] font-black leading-none tracking-[-0.03em] text-[#0f172a]">
               75% Complete
             </p>
-            <p className="mt-1 text-sm font-semibold text-[#64748b]">Problem 4 of 5</p>
+            <p className="mt-1 text-sm font-semibold text-muted">Problem 4 of 5</p>
           </div>
 
           <div className="text-right">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#94a3b8]">Status</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted">Status</p>
             <p
               className={`mt-2 text-xs font-black uppercase tracking-[0.14em] ${content.progressStatusClass}`}
             >
@@ -90,15 +90,15 @@ export default function FeedbackScreen({ variant }: { variant: FeedbackVariant }
         </div>
       </section>
 
-      <section className="mt-5 rounded-3xl bg-white p-6 shadow-[0_6px_18px_rgba(15,23,42,0.07)]">
+      <section className="mt-5 app-card p-6">
         <div>
           <p className="text-3xl font-black tracking-[-0.02em] text-[#0f172a]">{content.insightTitle}</p>
-          <p className="mt-1 text-sm font-black uppercase tracking-[0.14em] text-[#2563eb]">
+          <p className="mt-1 text-sm font-black uppercase tracking-[0.14em] text-primary">
             {content.insightSubtitle}
           </p>
         </div>
 
-        <div className="mt-5 rounded-3xl bg-[#f3f6fa] p-5">
+        <div className="mt-5 rounded-3xl bg-surface-muted p-5">
           <p className="text-xl font-bold leading-relaxed text-[#475569]">“{content.insight}”</p>
         </div>
       </section>
@@ -106,17 +106,17 @@ export default function FeedbackScreen({ variant }: { variant: FeedbackVariant }
       <div className="mt-6 space-y-3 pb-4">
         <Link
           href={nextChallengeHref}
-          className="inline-flex w-full items-center justify-center rounded-2xl bg-[#2563eb] px-4 py-4 text-sm font-black uppercase tracking-[0.12em] text-white"
+          className="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-4 py-4 text-sm font-black uppercase tracking-[0.12em] text-white"
         >
           Next Challenge
         </Link>
         <Link
           href={returnToTrackHref}
-          className="inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-black text-[#2563eb]"
+          className="inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-black text-primary"
         >
           Return to Track
         </Link>
       </div>
-    </main>
+    </section>
   );
 }
