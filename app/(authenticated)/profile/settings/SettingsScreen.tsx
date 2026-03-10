@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ReactNode, useMemo, useState } from 'react';
 import { logout } from '@/app/auth/actions';
 import MobileScreen from '@/components/mobile/MobileScreen';
+import PasswordField from '@/components/ui/PasswordField';
 import { changePassword, updateAccountPreferences } from './actions';
 
 type ProfileValues = {
@@ -393,20 +394,39 @@ function Field({
       <p className="mb-1 text-[9px] font-black uppercase tracking-[1px] text-[#94a3b8]">
         {label}
       </p>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        defaultValue={defaultValue}
-        onChange={(event) => onChange?.(event.target.value)}
-        readOnly={readOnly}
-        required={required}
-        minLength={minLength}
-        maxLength={maxLength}
-        pattern={pattern}
-        title={title}
-        className="h-[43px] w-full rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc] px-3 text-[14px] font-medium text-[var(--profile-title-color)]"
-      />
+      {type === 'password' ? (
+        <PasswordField
+          name={name}
+          value={value}
+          defaultValue={defaultValue}
+          onChange={(event) => onChange?.(event.target.value)}
+          readOnly={readOnly}
+          required={required}
+          minLength={minLength}
+          maxLength={maxLength}
+          pattern={pattern}
+          title={title}
+          autoComplete={name === 'currentPassword' ? 'current-password' : 'new-password'}
+          containerClassName="flex h-[43px] w-full items-center rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc] px-3"
+          inputClassName="h-full w-full bg-[#f8fafc] text-[14px] font-medium text-[var(--profile-title-color)] outline-none"
+          iconClassName="h-4 w-4 text-[#94a3b8]"
+        />
+      ) : (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          defaultValue={defaultValue}
+          onChange={(event) => onChange?.(event.target.value)}
+          readOnly={readOnly}
+          required={required}
+          minLength={minLength}
+          maxLength={maxLength}
+          pattern={pattern}
+          title={title}
+          className="h-[43px] w-full rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc] px-3 text-[14px] font-medium text-[var(--profile-title-color)]"
+        />
+      )}
     </div>
   );
 }

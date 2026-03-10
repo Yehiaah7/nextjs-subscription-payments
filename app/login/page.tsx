@@ -1,9 +1,10 @@
 // redeploy
 import Link from 'next/link';
-import { ChevronLeft, Eye, Lock, UserRound } from 'lucide-react';
+import { ChevronLeft, Lock, UserRound } from 'lucide-react';
 import { login } from '@/app/auth/actions';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import PasswordField from '@/components/ui/PasswordField';
 
 export default async function LoginPage({
   searchParams
@@ -69,17 +70,16 @@ export default async function LoginPage({
                 Forgot?
               </Link>
             </div>
-            <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4">
-              <Lock className="h-4 w-4 text-slate-300" />
-              <input
-                name="password"
-                type="password"
-                required
-                placeholder="Password"
-                className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
-              />
-              <Eye className="h-4 w-4 text-slate-300" />
-            </div>
+            <PasswordField
+              name="password"
+              required
+              autoComplete="current-password"
+              placeholder="Password"
+              containerClassName="flex h-12 items-center gap-2 rounded-2xl bg-white px-4"
+              inputClassName="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
+              leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
+              iconClassName="h-4 w-4 text-slate-300"
+            />
           </div>
 
           <button

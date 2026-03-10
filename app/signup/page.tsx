@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { ChevronLeft, Eye, Lock, Mail, Phone, UserRound } from 'lucide-react';
+import { ChevronLeft, Lock, Mail, Phone, UserRound } from 'lucide-react';
 import { signup } from '@/app/auth/actions';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import PasswordField from '@/components/ui/PasswordField';
 
 export default async function SignupPage({
   searchParams
@@ -129,18 +130,17 @@ export default async function SignupPage({
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Gym password
             </label>
-            <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4">
-              <Lock className="h-4 w-4 text-slate-300" />
-              <input
-                name="password"
-                type="password"
-                required
-                minLength={6}
-                placeholder="Password"
-                className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
-              />
-              <Eye className="h-4 w-4 text-slate-300" />
-            </div>
+            <PasswordField
+              name="password"
+              required
+              minLength={6}
+              autoComplete="new-password"
+              placeholder="Password"
+              containerClassName="flex h-12 items-center gap-2 rounded-2xl bg-white px-4"
+              inputClassName="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
+              leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
+              iconClassName="h-4 w-4 text-slate-300"
+            />
           </div>
 
           <button
