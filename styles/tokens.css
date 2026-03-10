@@ -1,0 +1,42 @@
+:root {
+  --color-bg: #f8fafc;
+  --color-container: #ffffff;
+  --color-surface-muted: #eef2f6;
+  --color-surface-soft: #e2e8f0;
+  --color-border: #dbe5f0;
+  --color-text-main: #0f172b;
+  --color-text-subtle: #62748e;
+  --color-text-muted: #94a3b8;
+  --color-primary: #155dfc;
+  --color-primary-soft: #dbeafe;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-success: #16a34a;
+
+  --radius-card: 16px;
+  --radius-pill: 999px;
+  --radius-button: 12px;
+
+  --shadow-button: 0 6px 16px rgba(15, 23, 42, 0.1);
+  --shadow-card: 0 2px 10px rgba(15, 23, 42, 0.06);
+
+  --font-weight-title: 700;
+  --font-weight-label: 800;
+  --font-weight-body: 500;
+
+  --font-size-title: 24px;
+  --line-height-title: 1.4;
+  --letter-spacing-title: -0.025em;
+
+  --font-size-card-title: 16px;
+  --line-height-card-title: 1.35;
+  --letter-spacing-card-title: 0;
+
+  --font-size-body: 14px;
+  --line-height-body: 1.45;
+  --letter-spacing-body: 0;
+
+  --font-size-label: 10px;
+  --line-height-label: 1.5;
+  --letter-spacing-label: 0.1em;
+}

@@ -40,20 +40,20 @@ export default function ProfileEditScreen({
       <header className="mb-4 flex items-center gap-3">
         <Link
           href="/profile"
-          className="grid h-9 w-9 place-items-center rounded-xl bg-[#eef2f6] text-2xl text-[#97a6ba]"
+          className="grid h-9 w-9 place-items-center rounded-xl bg-surface-muted text-2xl text-muted"
         >
           ‹
         </Link>
-        <h1 className="text-[48px] font-black leading-none tracking-[-0.03em] text-[#111827]">
+        <h1 className="text-[48px] font-black leading-none tracking-[-0.03em] text-text">
           Settings
         </h1>
       </header>
 
-      <section className="rounded-[24px] border border-[#e5e9f0] bg-[#f8fafc] p-4 shadow-[0_1px_4px_rgba(15,23,42,0.08)]">
-        <h2 className="text-3xl font-bold leading-none text-[#111827]">
+      <section className="rounded-card border border-border bg-bg p-4 shadow-[0_1px_4px_rgba(15,23,42,0.08)]">
+        <h2 className="text-3xl font-bold leading-none text-text">
           Account Preferences
         </h2>
-        <p className="mt-2 text-sm font-semibold text-[#95a2b3]">
+        <p className="mt-2 text-sm font-semibold text-muted">
           Manage your identity and subscription across the Gym Floor.
         </p>
 
@@ -100,7 +100,7 @@ export default function ProfileEditScreen({
           {status && <p className="mt-3 text-sm font-semibold text-emerald-600">{status}</p>}
           {error && <p className="mt-3 text-sm font-semibold text-red-500">{error}</p>}
 
-          <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#e4e9f0] pt-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border pt-4">
             <button
               type="button"
               onClick={() => setFormValues(initialValues)}
@@ -148,7 +148,7 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <p className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-[#c1c9d4]">
+      <p className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-muted">
         {label}
       </p>
       <input

@@ -109,11 +109,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   }, [challengeId, companyId, selectedChoiceId]);
 
   return (
-    <main className="mx-auto min-h-screen max-w-[460px] bg-[#e9edf2] px-4 pb-5 pt-5 text-[#111827] md:mt-6 md:rounded-[28px] md:shadow-[0_20px_45px_rgba(15,23,42,0.12)]">
+    <section className="text-text">
       <header className="mb-5 flex items-center justify-between">
         <Link
           href={returnToTrackHref}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#e1e6ed] text-[#9da9b8]"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-surface-muted text-muted"
           aria-label="Back to tracks"
         >
           <ChevronLeft className="h-5 w-5" />
@@ -125,19 +125,19 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         </div>
       </header>
 
-      <p className="text-xs font-black uppercase tracking-[0.12em] text-[#2f64ff]">
+      <p className="text-xs font-black uppercase tracking-[0.12em] text-primary">
         {QUESTION.category}
       </p>
-      <h1 className="mt-3 text-[40px] font-black leading-[1.04] tracking-[-0.03em] text-[#1f2937]">
+      <h1 className="mt-3 text-[40px] font-black leading-[1.04] tracking-[-0.03em] text-text">
         {QUESTION.title}
       </h1>
 
-      <section className="mt-5 rounded-3xl bg-[#dde3ea] p-4">
+      <section className="mt-5 rounded-3xl bg-surface-soft p-4">
         <p className="text-[31px] font-bold leading-[1.28] text-[#5c6f85]">
           {QUESTION.prompt}
         </p>
 
-        <p className="mt-4 rounded-2xl bg-[#eef2f6] p-4 text-[28px] font-black leading-[1.3] text-[#445064]">
+        <p className="mt-4 rounded-2xl bg-surface-muted p-4 text-[28px] font-black leading-[1.3] text-[#445064]">
           "{QUESTION.context}"
         </p>
       </section>
@@ -156,28 +156,28 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                 key={choice.id}
                 type="button"
                 onClick={() => setSelectedChoiceId(choice.id)}
-                className={`w-full rounded-3xl border p-4 text-left transition ${
+                className={`w-full rounded-card border p-4 text-left transition ${
                   active
-                    ? 'border-[#3f63ff] bg-[#edf1ff] shadow-[0_8px_22px_rgba(63,99,255,0.2)]'
-                    : 'border-[#d4dbe5] bg-[#e9edf2]'
+                    ? 'border-primary bg-primary-soft shadow-[0_8px_22px_rgba(63,99,255,0.2)]'
+                    : 'border-border bg-bg'
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <span
                     className={`mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-black ${
                       active
-                        ? 'bg-[#3f63ff] text-white'
-                        : 'bg-[#e2e7ee] text-[#8fa0b5]'
+                        ? 'bg-primary text-white'
+                        : 'bg-surface-muted text-muted'
                     }`}
                   >
                     {choice.id}
                   </span>
 
                   <div>
-                    <p className="text-[31px] font-black leading-tight text-[#1f2937]">
+                    <p className="text-[31px] font-black leading-tight text-text">
                       {choice.title}
                     </p>
-                    <p className="mt-2 text-[26px] font-semibold leading-[1.3] text-[#728399]">
+                    <p className="mt-2 text-[26px] font-semibold leading-[1.3] text-muted">
                       {choice.description}
                     </p>
                   </div>
@@ -188,7 +188,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         </div>
       </section>
 
-      <details className="mt-5 rounded-3xl bg-white p-4" open>
+      <details className="mt-5 app-card" open>
         <summary className="cursor-pointer list-none text-center text-xs font-black uppercase tracking-[0.14em] text-[#f59e0b]">
           ✧ Expert Explanation
         </summary>
@@ -229,7 +229,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         <button
           type="button"
           disabled
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#d7dee8] bg-[#f0f3f7] px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#a2afbe]"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface-muted px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-muted"
         >
           <ChevronLeft className="h-4 w-4" /> Previous
         </button>
@@ -251,6 +251,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           </button>
         )}
       </div>
-    </main>
+    </section>
   );
 }

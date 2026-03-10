@@ -24,19 +24,19 @@ export default function AlertsScreen() {
   return (
     <MobileScreen>
       <header className="mb-5">
-        <h1 className="text-4xl font-bold text-[#111827]">Alerts</h1>
+        <h1 className="t-title">Alerts</h1>
       </header>
 
       <div className="space-y-3">
         {alerts.map((alert) => (
-          <article key={alert.title} className="rounded-3xl bg-white p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#94a3b8]">
+          <article key={alert.title} className="app-card">
+            <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
               {alert.time}
             </p>
-            <h2 className="mt-1 text-xl font-bold text-[#111827]">
+            <h2 className="mt-1 text-xl font-bold text-text">
               {alert.title}
             </h2>
-            <p className="mt-1 text-sm text-[#64748b]">{alert.message}</p>
+            <p className="mt-1 text-sm text-muted">{alert.message}</p>
           </article>
         ))}
       </div>
