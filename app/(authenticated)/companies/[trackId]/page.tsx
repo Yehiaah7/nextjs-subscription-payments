@@ -5,6 +5,7 @@ import CompanyDetailsScreen, {
   ChallengeStatus,
   CompanyChallenge
 } from './CompanyDetailsScreen';
+import { Seniority } from '@/components/seniority/constants';
 import { getMockChallenges, getMockCompanyById } from '../mock-data';
 
 type TrackRow = {
@@ -18,6 +19,7 @@ type ModuleRow = {
   track_id: string;
   title: string;
   sort_order: number;
+  seniority: Seniority | null;
 };
 
 type QuizRow = {
@@ -112,7 +114,7 @@ export default async function CompanyDetailsPage({
   try {
     const { data: modulesData, error } = await db
       .from('modules' as any)
-      .select('id,track_id,title,sort_order')
+      .select('id,track_id,title,sort_order,seniority')
       .eq('track_id', company.id)
       .order('sort_order', { ascending: true });
 
@@ -219,7 +221,8 @@ export default async function CompanyDetailsPage({
       title: module.title,
       status,
       practicingCount,
-      duration
+      duration,
+      seniority: module.seniority ?? 'junior'
     };
   });
 

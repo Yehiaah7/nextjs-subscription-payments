@@ -1,17 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  CheckCircle2,
-  ChevronDown,
-  ChevronRight,
-  Flame,
-  Rocket,
-  Trophy,
-  UserRound
-} from 'lucide-react';
+import { CheckCircle2, ChevronRight, Flame, Rocket, Trophy, UserRound } from 'lucide-react';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
+import SeniorityDropdown from '@/components/seniority/SeniorityDropdown';
+import {
+  SENIORITY_OPTIONS,
+  SENIORITY_STORAGE_KEY,
+  Seniority
+} from '@/components/seniority/constants';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
@@ -24,8 +22,6 @@ export type HomeTrack = {
   practicingCount?: string;
   progress?: number;
 };
-
-export type Seniority = 'junior' | 'mid' | 'senior';
 
 export type SkillPathCategory = {
   id: string;
@@ -47,14 +43,6 @@ type UserStats = {
   solved: string;
   solvingDays: string;
 };
-
-const seniorityLabels: Record<Seniority, string> = {
-  junior: 'Junior',
-  mid: 'Mid-level',
-  senior: 'Senior'
-};
-
-const seniorityOptions: Seniority[] = ['junior', 'mid', 'senior'];
 
 const featuredProducts = [
   { name: 'Instagram', type: 'Social Product', lessons: 12 },
@@ -78,7 +66,6 @@ export default function HomeScreen({
   const [tab, setTab] = useState<MainTab>('companies');
   const [selectedSeniority, setSelectedSeniority] =
     useState<Seniority>('junior');
-  const [showSeniorityMenu, setShowSeniorityMenu] = useState(false);
   const defaultSkillCategoryKey =
     skillPathCategories.find((category) => category.key === 'discovery')?.key ??
     skillPathCategories[0]?.key ??
@@ -124,14 +111,14 @@ export default function HomeScreen({
     }, []);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem('home-selected-seniority');
-    if (stored && seniorityOptions.includes(stored as Seniority)) {
+    const stored = window.localStorage.getItem(SENIORITY_STORAGE_KEY);
+    if (stored && SENIORITY_OPTIONS.includes(stored as Seniority)) {
       setSelectedSeniority(stored as Seniority);
     }
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem('home-selected-seniority', selectedSeniority);
+    window.localStorage.setItem(SENIORITY_STORAGE_KEY, selectedSeniority);
   }, [selectedSeniority]);
 
   return (
@@ -231,39 +218,10 @@ export default function HomeScreen({
           <div className="mb-3 flex items-center justify-between">
             <h3 className="t-card-title flex items-center gap-1.5">
               <span>Practice</span>
-              <span className="relative inline-flex">
-                <button
-                  type="button"
-                  onClick={() => setShowSeniorityMenu((current) => !current)}
-                  className="inline-flex items-center gap-1 rounded-pill bg-primary-soft px-2 py-0.5 text-primary"
-                  aria-haspopup="menu"
-                  aria-expanded={showSeniorityMenu}
-                >
-                  {seniorityLabels[selectedSeniority]}
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </button>
-                {showSeniorityMenu && (
-                  <div className="absolute left-0 top-full z-10 mt-1 min-w-[120px] rounded-card border border-line bg-container p-1 shadow-card">
-                    {seniorityOptions.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => {
-                          setSelectedSeniority(option);
-                          setShowSeniorityMenu(false);
-                        }}
-                        className={`block w-full rounded-md px-2 py-1 text-left text-[12px] font-semibold leading-[1.35] ${
-                          selectedSeniority === option
-                            ? 'bg-primary-soft text-primary'
-                            : 'text-text hover:bg-surface-soft'
-                        }`}
-                      >
-                        {seniorityLabels[option]}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </span>
+              <SeniorityDropdown
+                selected={selectedSeniority}
+                onSelect={setSelectedSeniority}
+              />
               <span>PM skills</span>
             </h3>
             <Link href="/companies/view-all" className="t-label text-primary">

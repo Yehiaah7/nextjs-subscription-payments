@@ -1,11 +1,7 @@
 import { createUntypedClient } from '@/utils/supabase/untyped';
 import { requireUser } from '@/utils/auth/require-user';
-import HomeScreen, {
-  HomeTrack,
-  Seniority,
-  SkillPathCategory,
-  SkillPathChallenge
-} from './HomeScreen';
+import HomeScreen, { HomeTrack, SkillPathCategory, SkillPathChallenge } from './HomeScreen';
+import { Seniority } from '@/components/seniority/constants';
 import { MOCK_COMPANIES } from '@/app/(authenticated)/companies/mock-data';
 
 type TrackRow = {
