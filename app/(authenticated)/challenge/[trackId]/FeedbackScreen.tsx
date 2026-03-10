@@ -5,17 +5,32 @@ import { useSearchParams } from 'next/navigation';
 
 type FeedbackVariant = 'correct' | 'wrong';
 
-const COPY = {
+type VariantCopy = {
+  title: string;
+  statusText: string;
+  statusTextClass: string;
+  topContainerClass: string;
+  topContainerShadow: string;
+  icon: string;
+  iconClass: string;
+  progressStatus: string;
+  progressChipClass: string;
+  insightTitle: string;
+  insightSubtitle: string;
+  insight: string;
+};
+
+const COPY: Record<FeedbackVariant, VariantCopy> = {
   correct: {
     title: 'Decision Correct',
     statusText: 'High Strategic Precision',
-    statusClass: 'text-[#09b47a]',
-    statusDotClass: 'bg-[#09b47a]',
+    statusTextClass: 'text-[#009966]',
+    topContainerClass: 'bg-[#eff2ff] border-[#c6d2ff]',
+    topContainerShadow: 'shadow-[0_25px_50px_-12px_rgba(0,188,125,0.45)]',
     icon: '✓',
-    iconClass: 'text-[#09b47a]',
-    iconGlowClass: 'shadow-[0_10px_35px_rgba(9,180,122,0.28)]',
+    iconClass: 'text-[#009966]',
     progressStatus: 'Mastery',
-    progressStatusClass: 'text-[#09b47a]',
+    progressChipClass: 'bg-[#ecfdf3] text-[#009966]',
     insightTitle: 'Strategic Logic',
     insightSubtitle: 'Validation',
     insight:
@@ -24,99 +39,110 @@ const COPY = {
   wrong: {
     title: 'Decision Incorrect',
     statusText: 'Suboptimal Outcome',
-    statusClass: 'text-[#ff3347]',
-    statusDotClass: 'bg-[#ff3347]',
+    statusTextClass: 'text-[#e7000b]',
+    topContainerClass: 'bg-[#eff2ff] border-[#c6d2ff]',
+    topContainerShadow: 'shadow-[0_25px_50px_-12px_rgba(251,44,54,0.45)]',
     icon: '✕',
-    iconClass: 'text-[#ff3347]',
-    iconGlowClass: 'shadow-[0_10px_35px_rgba(255,51,71,0.24)]',
-    progressStatus: 'Learning',
-    progressStatusClass: 'text-[#f59e0b]',
+    iconClass: 'text-[#e7000b]',
+    progressStatus: 'In Progress',
+    progressChipClass: 'bg-[#fffbeb] text-[#e17100]',
     insightTitle: 'Corrective Insight',
     insightSubtitle: 'Gap Analysis',
     insight:
       'While the immediate revenue gains are tempting, this decision risks the long-term health of the ecosystem. A Senior PM must weigh short-term metrics against platform stability and user trust.'
   }
-} as const;
+};
 
-export default function FeedbackScreen({ variant }: { variant: FeedbackVariant }) {
-  const searchParams = useSearchParams();
+function ChallengeResultScreen({
+  variant,
+  nextChallengeHref,
+  returnToTrackHref
+}: {
+  variant: FeedbackVariant;
+  nextChallengeHref: string;
+  returnToTrackHref: string;
+}) {
   const content = COPY[variant];
-  const companyId = searchParams.get('company');
-  const returnToTrackHref = companyId ? `/companies/${companyId}` : '/home';
-  const nextChallengeHref = returnToTrackHref;
 
   return (
-    <section className="text-text">
-      <section className="mt-12 flex flex-col items-center text-center">
+    <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 pb-4 text-[#0f172b]">
+      <section className="flex flex-col items-center text-center">
         <div
-          className={`inline-flex h-24 w-24 items-center justify-center rounded-[24px] bg-white text-5xl font-bold ${content.iconClass} ${content.iconGlowClass}`}
+          className={`inline-flex h-[74px] items-center justify-center rounded-full border px-6 ${content.topContainerClass} ${content.topContainerShadow}`}
           aria-hidden
         >
-          {content.icon}
+          <span className={`text-[30px] font-bold ${content.iconClass}`}>{content.icon}</span>
         </div>
 
-        <h1 className="mt-10 text-6xl font-black leading-[1.05] tracking-[-0.03em]">
+        <h1 className="mt-4 text-[40px] font-bold leading-[1.05] tracking-[-0.03em]">
           {content.title}
         </h1>
 
-        <div
-          className={`mt-8 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] ${content.statusClass}`}
+        <p
+          className={`mt-2 text-[10px] font-black uppercase tracking-[0.1em] ${content.statusTextClass}`}
         >
-          <span className={`h-2 w-2 rounded-full ${content.statusDotClass}`} />
           {content.statusText}
-        </div>
+        </p>
       </section>
 
-      <section className="mt-14 app-card">
-        <div className="flex items-start justify-between gap-4">
+      <section className="h-[78px] w-full rounded-2xl bg-white p-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted">
+            <p className="text-[9px] font-black uppercase tracking-[0.1em] text-[#64748b]">
               Challenge Progress
             </p>
-            <p className="mt-2 text-[33px] font-black leading-none tracking-[-0.03em] text-[#0f172a]">
-              75% Complete
-            </p>
-            <p className="mt-1 text-sm font-semibold text-muted">Problem 4 of 5</p>
+            <p className="mt-1 text-sm font-black leading-none text-[#0f172b]">75% Complete</p>
+            <p className="mt-1 text-[10px] font-bold leading-3 text-[#62748e]">Problem 4 of 5</p>
           </div>
 
-          <div className="text-right">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-muted">Status</p>
-            <p
-              className={`mt-2 text-xs font-black uppercase tracking-[0.14em] ${content.progressStatusClass}`}
-            >
-              {content.progressStatus}
-            </p>
-          </div>
+          <span
+            className={`inline-flex rounded-[1000px] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.06em] ${content.progressChipClass}`}
+          >
+            {content.progressStatus}
+          </span>
         </div>
       </section>
 
-      <section className="mt-5 app-card p-6">
-        <div>
-          <p className="text-3xl font-black tracking-[-0.02em] text-[#0f172a]">{content.insightTitle}</p>
-          <p className="mt-1 text-sm font-black uppercase tracking-[0.14em] text-primary">
-            {content.insightSubtitle}
-          </p>
-        </div>
+      <section className="w-full rounded-2xl bg-white p-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
+        <p className="text-lg font-bold leading-6 text-[#0f172b]">{content.insightTitle}</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">
+          {content.insightSubtitle}
+        </p>
 
-        <div className="mt-5 rounded-3xl bg-surface-muted p-5">
-          <p className="text-xl font-bold leading-relaxed text-[#475569]">“{content.insight}”</p>
+        <div className="mt-3 rounded-2xl bg-[#f8fafc] p-3">
+          <p className="text-sm font-medium leading-[22.75px] text-[#45556c]">“{content.insight}”</p>
         </div>
       </section>
 
-      <div className="mt-6 space-y-3 pb-4">
+      <div className="space-y-2 pt-1">
         <Link
           href={nextChallengeHref}
-          className="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-4 py-4 text-sm font-black uppercase tracking-[0.12em] text-white"
+          className="inline-flex h-[45px] w-full items-center justify-center rounded-2xl bg-[#155dfc] text-sm font-bold text-white"
         >
           Next Challenge
         </Link>
         <Link
           href={returnToTrackHref}
-          className="inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-black text-primary"
+          className="inline-flex w-full items-center justify-center py-2 text-sm font-bold text-[#155dfc]"
         >
           Return to Track
         </Link>
       </div>
     </section>
+  );
+}
+
+export default function FeedbackScreen({ variant }: { variant: FeedbackVariant }) {
+  const searchParams = useSearchParams();
+  const companyId = searchParams.get('company');
+  const returnToTrackHref = companyId ? `/companies/${companyId}` : '/home';
+  const nextChallengeHref = returnToTrackHref;
+
+  return (
+    <ChallengeResultScreen
+      variant={variant}
+      nextChallengeHref={nextChallengeHref}
+      returnToTrackHref={returnToTrackHref}
+    />
   );
 }
