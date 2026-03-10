@@ -179,3 +179,31 @@ export async function createStripePortal(currentPath: string) {
     }
   }
 }
+
+export async function checkoutWithDefaultPrice(
+  redirectPath: string = '/account'
+): Promise<CheckoutResponse> {
+  const supabase = createClient();
+
+  const { data: prices } = await supabase
+    .from('prices')
+    .select('*')
+    .eq('active', true)
+    .eq('type', 'recurring')
+    .order('unit_amount', { ascending: true })
+    .limit(1);
+
+  const price = prices?.[0];
+
+  if (!price) {
+    return {
+      errorRedirect: getErrorRedirect(
+        redirectPath,
+        'No active subscription price found.',
+        'Please try again later or contact a system administrator.'
+      )
+    };
+  }
+
+  return checkoutWithStripe(price, redirectPath);
+}
