@@ -29,8 +29,8 @@ export default function ProfileEditScreen({ email, profile, status, error }: { e
     <MobileScreen>
       <section className="mx-auto w-full max-w-[361px]">
         <header className="mb-4 flex items-center gap-3">
-          <Link href="/profile" className="grid h-8 w-8 place-items-center rounded-full bg-white text-xl text-[#64748b]">‹</Link>
-          <h1 className="text-[24px] font-bold tracking-[-0.6px] text-[var(--profile-title-color)]">Edit Profile</h1>
+          <Link href="/profile" className="grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff]">‹</Link>
+          <h1 className="text-[24px] font-bold tracking-[-0.6px] text-[#0f172b]">Edit Profile</h1>
         </header>
 
         <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3">
