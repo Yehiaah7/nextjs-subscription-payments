@@ -2,6 +2,7 @@ import { createUntypedClient } from '@/utils/supabase/untyped';
 import { requireUser } from '@/utils/auth/require-user';
 import HomeScreen, {
   HomeTrack,
+  Seniority,
   SkillPathCategory,
   SkillPathChallenge
 } from './HomeScreen';
@@ -12,6 +13,7 @@ type TrackRow = {
   title: string;
   description: string | null;
   type: 'company' | 'skill';
+  seniority: Seniority | null;
 };
 
 type ModuleRow = {
@@ -40,7 +42,7 @@ export default async function HomePage() {
   const db = createUntypedClient();
   const { data: tracksData } = await db
     .from('tracks' as any)
-    .select('id,title,description,type')
+    .select('id,title,description,type,seniority')
     .eq('is_published', true)
     .in('type', ['company', 'skill'])
     .order('title', { ascending: true });
@@ -66,6 +68,7 @@ export default async function HomePage() {
     title: track.title,
     description: track.description,
     moduleCount: modulesByTrackId[track.id] ?? 0,
+    seniority: track.seniority ?? 'junior',
     practicingCount: '1.2K',
     progress: 45
   });
@@ -81,6 +84,7 @@ export default async function HomePage() {
         title: company.title,
         description: company.description ?? company.focus,
         moduleCount: company.challengesCount,
+        seniority: company.seniority,
         practicingCount: company.practicingCount,
         progress: company.progress
       }));

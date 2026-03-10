@@ -4,6 +4,7 @@ export type MockCompany = {
   id: string;
   title: string;
   focus: string;
+  seniority: 'junior' | 'mid' | 'senior';
   challengesCount: number;
   practicingCount: string;
   progress: number;
@@ -16,6 +17,7 @@ export const MOCK_COMPANIES: MockCompany[] = [
     title: 'Google',
     focus: 'Metrics • Product Sense',
     description: 'Metrics • Product Sense',
+    seniority: 'junior',
     challengesCount: 12,
     practicingCount: '1.2K',
     progress: 45
@@ -25,6 +27,7 @@ export const MOCK_COMPANIES: MockCompany[] = [
     title: 'Meta',
     focus: 'Execution • Growth',
     description: 'Execution • Growth',
+    seniority: 'junior',
     challengesCount: 14,
     practicingCount: '1.8K',
     progress: 62
@@ -34,6 +37,7 @@ export const MOCK_COMPANIES: MockCompany[] = [
     title: 'Amazon',
     focus: 'Product Strategy • Analytics',
     description: 'Product Strategy • Analytics',
+    seniority: 'mid',
     challengesCount: 11,
     practicingCount: '2.1K',
     progress: 38
@@ -43,6 +47,7 @@ export const MOCK_COMPANIES: MockCompany[] = [
     title: 'Microsoft',
     focus: 'B2B • Systems Thinking',
     description: 'B2B • Systems Thinking',
+    seniority: 'mid',
     challengesCount: 10,
     practicingCount: '1.4K',
     progress: 57
@@ -52,6 +57,7 @@ export const MOCK_COMPANIES: MockCompany[] = [
     title: 'Airbnb',
     focus: 'Marketplace • Experimentation',
     description: 'Marketplace • Experimentation',
+    seniority: 'senior',
     challengesCount: 13,
     practicingCount: '980',
     progress: 51
@@ -61,6 +67,7 @@ export const MOCK_COMPANIES: MockCompany[] = [
     title: 'Stripe',
     focus: 'Payments • Platform',
     description: 'Payments • Platform',
+    seniority: 'senior',
     challengesCount: 15,
     practicingCount: '1.6K',
     progress: 69
