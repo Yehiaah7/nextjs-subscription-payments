@@ -7,9 +7,6 @@ import MobileScreen from '@/components/mobile/MobileScreen';
 import ProGymPassCard from '@/components/ProGymPassCard';
 
 export default function ProfileScreen({ email, fullName }: { email: string; fullName: string }) {
-const router = useRouter();
-const [openModal, setOpenModal] = useState<ModalType>(null);
-
   return (
     <MobileScreen>
       <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4">
@@ -20,13 +17,19 @@ const [openModal, setOpenModal] = useState<ModalType>(null);
         <section className="rounded-[var(--profile-card-radius)] border border-[var(--profile-main-stroke)] bg-[var(--profile-main-bg)] p-3">
           <div className="flex flex-col items-center">
             <div className="relative">
-              <div className="grid h-[80px] w-[80px] place-items-center rounded-full bg-[var(--profile-avatar-bg)] text-2xl font-bold uppercase text-white">{email.charAt(0)}</div>
+              <div className="grid h-[80px] w-[80px] place-items-center rounded-full bg-[var(--profile-avatar-bg)] text-2xl font-bold uppercase text-white">
+                {email.charAt(0)}
+              </div>
+
               <span className="absolute -right-0.5 -top-0.5 grid h-6 w-6 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[#2563eb]">
                 <Crown className="h-3.5 w-3.5" />
               </span>
             </div>
+
             <p className="mt-3 text-center text-[16px] font-bold tracking-[-0.3px] text-[#0f172b]">{fullName}</p>
-            <p className="mt-1 text-[10px] font-black uppercase tracking-[1px] text-[var(--profile-member-color)]">PRODUCT GYM MEMBER</p>
+            <p className="mt-1 text-[10px] font-black uppercase tracking-[1px] text-[var(--profile-member-color)]">
+              PRODUCT GYM MEMBER
+            </p>
           </div>
 
           <div className="mt-5 grid grid-cols-3 gap-2">
@@ -40,7 +43,10 @@ const [openModal, setOpenModal] = useState<ModalType>(null);
 
         <ProGymPassCard variant="profile" managePlansLabel="Manage Plans" />
 
-        <Link href="/profile/settings" className="flex h-[82px] items-center justify-between rounded-[16px] border border-[#d7e3f7] bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+        <Link
+          href="/profile/settings"
+          className="flex h-[82px] items-center justify-between rounded-[16px] border border-[#d7e3f7] bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+        >
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.9px] text-[#cad5e2]">Settings</p>
             <p className="text-[12px] font-bold tracking-[-0.3px] text-[#0f172b]">Preferences & Security</p>
