@@ -24,12 +24,62 @@ const formatLoginError = (message: string) => {
 
 const sanitizeUsername = (value: string) => value.trim().toLowerCase();
 
+const DEFAULT_PHONE_COUNTRY = 'EG';
+const DEFAULT_PHONE_DIAL_CODE = '+20';
+
+function normalizePhoneNational(value: string) {
+  const compact = value.replace(/\s+/g, '');
+  if (!compact) return '';
+
+  if (!/^\d+$/.test(compact)) {
+    return null;
+  }
+
+  return compact;
+}
+
+function derivePhoneFields(phoneValue: string) {
+  const trimmed = phoneValue.trim();
+
+  if (!trimmed) {
+    return {
+      phone: null,
+      phone_country: DEFAULT_PHONE_COUNTRY,
+      phone_dial_code: DEFAULT_PHONE_DIAL_CODE,
+      phone_national: null,
+      phone_e164: null
+    };
+  }
+
+  const compact = trimmed.replace(/\s+/g, '');
+  const withoutPlus = compact.startsWith('+') ? compact.slice(1) : compact;
+  const national = normalizePhoneNational(
+    withoutPlus.startsWith('20') ? withoutPlus.slice(2) : withoutPlus
+  );
+
+  if (national === null) {
+    return null;
+  }
+
+  const phone_e164 = `${DEFAULT_PHONE_DIAL_CODE}${national}`;
+
+  return {
+    phone: phone_e164,
+    phone_country: DEFAULT_PHONE_COUNTRY,
+    phone_dial_code: DEFAULT_PHONE_DIAL_CODE,
+    phone_national: national,
+    phone_e164
+  };
+}
+
 export async function login(formData: FormData) {
   const identifier = String(formData.get('email') || '').trim();
   const password = String(formData.get('password') || '').trim();
 
   if (!identifier || !password) {
-    return redirect('/login?error=Please enter your email%20or%20username%20and%20password.');
+    return redirect(
+      '/login?error=Please enter your email%20or%20username%20and%20password.'
+    );
   }
 
   const supabase = createClient();
@@ -46,14 +96,17 @@ export async function login(formData: FormData) {
       .maybeSingle();
 
     if (profileError) {
-      return redirect(`/login?error=${encodeURIComponent(profileError.message)}`);
+      return redirect(
+        `/login?error=${encodeURIComponent(profileError.message)}`
+      );
     }
 
     if (!profile) {
       return redirect('/login?error=Username%20not%20found.');
     }
 
-    const { data: authUserResult, error: userError } = await adminClient.auth.admin.getUserById(profile.id);
+    const { data: authUserResult, error: userError } =
+      await adminClient.auth.admin.getUserById(profile.id);
 
     if (userError) {
       return redirect(`/login?error=${encodeURIComponent(userError.message)}`);
@@ -69,7 +122,9 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return redirect(`/login?error=${encodeURIComponent(formatLoginError(error.message))}`);
+    return redirect(
+      `/login?error=${encodeURIComponent(formatLoginError(error.message))}`
+    );
   }
 
   return redirect('/home');
@@ -87,6 +142,14 @@ export async function signup(formData: FormData) {
   if (!USERNAME_PATTERN.test(username)) {
     return redirect(
       '/signup?error=Username%20must%20be%203-20%20characters%20using%20only%20letters%2C%20numbers%2C%20or%20underscores.'
+    );
+  }
+
+  const parsedPhone = derivePhoneFields(phone);
+
+  if (!parsedPhone) {
+    return redirect(
+      '/signup?error=Phone%20number%20must%20contain%20digits%20only.'
     );
   }
 
@@ -111,7 +174,7 @@ export async function signup(formData: FormData) {
         first_name,
         last_name,
         username,
-        phone
+        phone: parsedPhone.phone ?? ''
       },
       emailRedirectTo: getURL('auth/callback')
     }
@@ -127,7 +190,9 @@ export async function signup(formData: FormData) {
   }
 
   const emailIdentities =
-    data.user?.identities?.filter((identity) => identity?.provider === 'email') ?? [];
+    data.user?.identities?.filter(
+      (identity) => identity?.provider === 'email'
+    ) ?? [];
   if (emailIdentities.length === 0) {
     return redirect(
       `/signup?error=${encodeURIComponent('An account with this email already exists. Please sign in instead.')}`
@@ -137,21 +202,31 @@ export async function signup(formData: FormData) {
   const userId = data.user?.id;
 
   if (userId) {
-    const { error: upsertError } = await (adminClient as any).from('profiles').upsert({
-      id: userId,
-      name,
-      first_name,
-      last_name,
-      username,
-      phone
-    });
+    const { error: upsertError } = await (adminClient as any)
+      .from('profiles')
+      .upsert({
+        id: userId,
+        name,
+        first_name,
+        last_name,
+        username,
+        phone: parsedPhone.phone,
+        phone_country: parsedPhone.phone_country,
+        phone_dial_code: parsedPhone.phone_dial_code,
+        phone_national: parsedPhone.phone_national,
+        phone_e164: parsedPhone.phone_e164
+      });
 
     if (upsertError) {
       if (upsertError.message.toLowerCase().includes('username')) {
-        return redirect('/signup?error=This%20username%20is%20already%20taken.');
+        return redirect(
+          '/signup?error=This%20username%20is%20already%20taken.'
+        );
       }
 
-      return redirect(`/signup?error=${encodeURIComponent(upsertError.message)}`);
+      return redirect(
+        `/signup?error=${encodeURIComponent(upsertError.message)}`
+      );
     }
   }
 
@@ -166,7 +241,9 @@ export async function forgotPassword(formData: FormData) {
   const email = String(formData.get('email') || '').trim();
 
   if (!email) {
-    return redirect('/forgot-password?error=Please enter a valid email address.');
+    return redirect(
+      '/forgot-password?error=Please enter a valid email address.'
+    );
   }
 
   const supabase = createClient();
@@ -175,10 +252,14 @@ export async function forgotPassword(formData: FormData) {
   });
 
   if (error) {
-    return redirect(`/forgot-password?error=${encodeURIComponent(error.message)}`);
+    return redirect(
+      `/forgot-password?error=${encodeURIComponent(error.message)}`
+    );
   }
 
-  return redirect('/forgot-password?message=Password reset link sent. Please check your email.');
+  return redirect(
+    '/forgot-password?message=Password reset link sent. Please check your email.'
+  );
 }
 
 export async function resetPassword(formData: FormData) {
@@ -186,7 +267,9 @@ export async function resetPassword(formData: FormData) {
   const passwordConfirm = String(formData.get('passwordConfirm') || '').trim();
 
   if (password.length < 6) {
-    return redirect('/reset-password?error=Password must be at least 6 characters.');
+    return redirect(
+      '/reset-password?error=Password must be at least 6 characters.'
+    );
   }
 
   if (password !== passwordConfirm) {
@@ -197,10 +280,14 @@ export async function resetPassword(formData: FormData) {
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    return redirect(`/reset-password?error=${encodeURIComponent(error.message)}`);
+    return redirect(
+      `/reset-password?error=${encodeURIComponent(error.message)}`
+    );
   }
 
-  return redirect('/login?message=Password updated successfully. Please sign in.');
+  return redirect(
+    '/login?message=Password updated successfully. Please sign in.'
+  );
 }
 
 export async function logout() {
