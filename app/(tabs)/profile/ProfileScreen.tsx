@@ -2,14 +2,17 @@
 
 import { ReactNode, useState } from 'react';
 import Link from 'next/link';
-import { BadgeCheck, CalendarDays, CheckCircle2, Crown, Globe2, Medal, Trophy } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { CalendarDays, CheckCircle2, Crown, Globe2, Medal, Trophy } from 'lucide-react';
 import { logout } from '@/app/auth/actions';
 import MobileScreen from '@/components/mobile/MobileScreen';
+import ProGymPassCard from '@/components/ProGymPassCard';
 
 type ModalType = 'signout' | 'deactivation' | null;
 
 export default function ProfileScreen({ email, fullName }: { email: string; fullName: string }) {
   const [openModal, setOpenModal] = useState<ModalType>(null);
+  const router = useRouter();
 
   return (
     <MobileScreen>
@@ -39,25 +42,7 @@ export default function ProfileScreen({ email, fullName }: { email: string; full
           </div>
         </section>
 
-        <section className="rounded-[16px] border border-[#1447e6] bg-[#447dfd] p-3 text-white">
-          <div className="flex items-center gap-2">
-            <span className="grid h-7 w-7 place-items-center rounded-full bg-[rgba(255,255,255,0.2)] text-white">
-              <BadgeCheck className="h-4 w-4" />
-            </span>
-            <h2 className="text-[16px] font-bold tracking-[-0.4px]">Pro Gym Pass</h2>
-          </div>
-          <p className="mt-1 text-[10px] font-bold uppercase tracking-[1px] text-[#dbeafe]">FOUNDATION LEVEL</p>
-          <ul className="mt-3 space-y-1 text-[12px] font-medium leading-4 text-[#dbeafe]">
-            <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />All company assignments unlocked</li>
-            <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />Unlimited daily challenges</li>
-            <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />Decision quality analytics</li>
-          </ul>
-          <div className="mt-3 rounded-[14px] bg-[#155dfc] p-2">
-            <Link href="/profile/subscription" className="inline-flex h-[43px] w-full items-center justify-center rounded-[999px] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#1c398e]">
-              Upgrade to Pro
-            </Link>
-          </div>
-        </section>
+        <ProGymPassCard onUpgrade={() => router.push('/profile/subscription?focus=pro')} variant="profile" />
 
         <Link href="/profile/edit" className="flex h-[82px] items-center justify-between rounded-[16px] border border-[#d7e3f7] bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
           <div>
