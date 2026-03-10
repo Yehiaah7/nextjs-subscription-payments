@@ -2,7 +2,6 @@
 
 import { ReactNode, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { CalendarDays, CheckCircle2, Crown, Globe2, Medal, Trophy } from 'lucide-react';
 import { logout } from '@/app/auth/actions';
 import MobileScreen from '@/components/mobile/MobileScreen';
@@ -12,7 +11,6 @@ type ModalType = 'signout' | 'deactivation' | null;
 
 export default function ProfileScreen({ email, fullName }: { email: string; fullName: string }) {
   const [openModal, setOpenModal] = useState<ModalType>(null);
-  const router = useRouter();
 
   return (
     <MobileScreen>
@@ -42,7 +40,7 @@ export default function ProfileScreen({ email, fullName }: { email: string; full
           </div>
         </section>
 
-        <ProGymPassCard onUpgrade={() => router.push('/profile/subscription?focus=pro')} variant="profile" />
+        <ProGymPassCard variant="profile" managePlansLabel="Manage Plans" />
 
         <Link href="/profile/edit" className="flex h-[82px] items-center justify-between rounded-[16px] border border-[#d7e3f7] bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
           <div>
