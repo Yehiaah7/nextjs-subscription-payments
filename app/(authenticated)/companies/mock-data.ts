@@ -1,4 +1,5 @@
 import type { ChallengeStatus } from './[trackId]/CompanyDetailsScreen';
+import type { Seniority } from '@/components/seniority/constants';
 
 export type MockCompany = {
   id: string;
@@ -80,6 +81,7 @@ export type MockChallenge = {
   status: ChallengeStatus;
   practicingCount: string;
   duration: string;
+  seniority: Seniority;
 };
 
 const baseChallenges = [
@@ -100,13 +102,16 @@ const statusPattern: ChallengeStatus[] = [
   'in-progress'
 ];
 
+const seniorityPattern: Seniority[] = ['junior', 'mid', 'senior', 'junior', 'mid', 'senior'];
+
 export const getMockChallenges = (companyId: string): MockChallenge[] =>
   baseChallenges.map((challenge, index) => ({
     id: `${companyId}-${challenge.slug}`,
     title: challenge.title,
     status: statusPattern[index % statusPattern.length],
     practicingCount: `${650 + index * 120}`,
-    duration: challenge.duration
+    duration: challenge.duration,
+    seniority: seniorityPattern[index % seniorityPattern.length]
   }));
 
 export const getMockCompanyById = (id: string) =>
