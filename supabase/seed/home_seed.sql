@@ -43,14 +43,15 @@ set
   is_published = excluded.is_published,
   seniority = excluded.seniority;
 
-insert into public.modules (track_id, title, sort_order)
+insert into public.modules (track_id, title, sort_order, seniority)
 values
-  ('11111111-1111-1111-1111-111111111111', 'North Star Metric Tradeoffs', 1),
-  ('11111111-1111-1111-1111-111111111111', 'Checkout Drop-off Investigation', 2),
-  ('22222222-2222-2222-2222-222222222222', 'Launch Readiness Drill', 1),
-  ('33333333-3333-3333-3333-333333333333', 'Problem Framing Basics', 1),
-  ('33333333-3333-3333-3333-333333333333', 'Interview Plan Design', 2),
-  ('44444444-4444-4444-4444-444444444444', 'Opportunity Sizing', 1)
+  ('11111111-1111-1111-1111-111111111111', 'North Star Metric Tradeoffs', 1, 'junior'),
+  ('11111111-1111-1111-1111-111111111111', 'Checkout Drop-off Investigation', 2, 'mid'),
+  ('22222222-2222-2222-2222-222222222222', 'Launch Readiness Drill', 1, 'mid'),
+  ('22222222-2222-2222-2222-222222222222', 'Cross-team Stakeholder Alignment', 2, 'senior'),
+  ('33333333-3333-3333-3333-333333333333', 'Problem Framing Basics', 1, 'junior'),
+  ('33333333-3333-3333-3333-333333333333', 'Interview Plan Design', 2, 'mid'),
+  ('44444444-4444-4444-4444-444444444444', 'Opportunity Sizing', 1, 'senior')
 on conflict do nothing;
 
 insert into public.skill_path_categories (key, title, sort_order)

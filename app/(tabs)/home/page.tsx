@@ -18,6 +18,7 @@ type TrackRow = {
 
 type ModuleRow = {
   track_id: string;
+  seniority: Seniority | null;
 };
 
 type SkillPathCategoryRow = {
@@ -50,14 +51,23 @@ export default async function HomePage() {
   const tracks = (tracksData ?? []) as TrackRow[];
   const trackIds = tracks.map((track) => track.id);
 
-  const { data: modulesData } = trackIds.length
-    ? await db.from('modules').select('track_id').in('track_id', trackIds)
-    : { data: [] as ModuleRow[] };
+  const { data: modulesData, error: modulesError } = trackIds.length
+    ? await db
+        .from('modules')
+        .select('track_id,seniority')
+        .in('track_id', trackIds)
+    : { data: [] as ModuleRow[], error: null };
 
-  const modules = (modulesData ?? []) as ModuleRow[];
-  const modulesByTrackId = modules.reduce(
-    (acc: Record<string, number>, module: ModuleRow) => {
-      acc[module.track_id] = (acc[module.track_id] ?? 0) + 1;
+  const { data: legacyModulesData } = modulesError
+    ? await db.from('modules').select('track_id').in('track_id', trackIds)
+    : { data: [] as Array<Pick<ModuleRow, 'track_id'>> };
+
+  const modules = ((modulesError ? legacyModulesData : modulesData) ?? []) as ModuleRow[];
+  const challengeCountsByTrackId = modules.reduce(
+    (acc: Record<string, Record<Seniority, number>>, module: ModuleRow) => {
+      const seniority = module.seniority ?? 'junior';
+      acc[module.track_id] ??= { junior: 0, mid: 0, senior: 0 };
+      acc[module.track_id][seniority] += 1;
       return acc;
     },
     {}
@@ -67,8 +77,13 @@ export default async function HomePage() {
     id: track.id,
     title: track.title,
     description: track.description,
-    moduleCount: modulesByTrackId[track.id] ?? 0,
-    seniority: track.seniority ?? 'junior',
+    moduleCount: Object.values(challengeCountsByTrackId[track.id] ?? {}).reduce(
+      (total, count) => total + count,
+      0
+    ),
+    challengeCountsBySeniority: challengeCountsByTrackId[track.id] ?? {
+      [track.seniority ?? 'junior']: 1
+    },
     practicingCount: '1.2K',
     progress: 45
   });
@@ -84,7 +99,7 @@ export default async function HomePage() {
         title: company.title,
         description: company.description ?? company.focus,
         moduleCount: company.challengesCount,
-        seniority: company.seniority,
+        challengeCountsBySeniority: { [company.seniority]: company.challengesCount },
         practicingCount: company.practicingCount,
         progress: company.progress
       }));
