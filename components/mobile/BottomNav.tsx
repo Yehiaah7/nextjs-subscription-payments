@@ -28,28 +28,30 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
       role="navigation"
       aria-label="Bottom navigation"
       data-testid="bottom-nav"
-      className={`fixed inset-x-0 bottom-0 z-[9999] border-t border-[#dce3ec] bg-white/95 backdrop-blur ${className}`.trim()}
+      className={`fixed inset-x-0 bottom-0 z-[9999] bg-white ${className}`.trim()}
       {...props}
     >
-      <div className="mx-auto grid w-full max-w-[420px] grid-cols-4 px-5 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href;
+      <div className="mx-auto w-full max-w-[393px] px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
+        <div className="grid h-[44px] grid-cols-4">
+          {navItems.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href;
 
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex flex-col items-center gap-1 ${
-                active ? 'text-[#2563eb]' : 'text-[#94a3b8]'
-              }`}
-            >
-              <Icon className="h-6 w-6" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.08em]">
-                {label}
-              </span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex h-full flex-col items-center justify-center gap-0.5 ${
+                  active ? 'text-[#155dfc]' : 'text-[#62748e]'
+                }`}
+              >
+                <Icon className="h-[18px] w-[18px]" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.9px]">
+                  {label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
