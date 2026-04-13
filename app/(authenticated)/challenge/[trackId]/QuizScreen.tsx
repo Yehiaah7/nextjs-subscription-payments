@@ -9,9 +9,10 @@ import { createClient } from '@/utils/supabase/client';
 type Question = {
   id: string;
   prompt: string;
+  feedback: string | null;
   sort_order: number;
   points: number;
-  options: { id: string; label: string; sort_order: number; is_correct: boolean; feedback: string | null }[];
+  options: { id: string; label: string; sort_order: number; is_correct: boolean }[];
 };
 
 type Quiz = {
@@ -60,7 +61,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       const { data: quizData } = await supabase
         .from('quizzes')
         .select(
-          'id,title,module_id,pass_score,modules(title),questions(id,prompt,sort_order,points,options(id,label,sort_order,is_correct,feedback))'
+          'id,title,module_id,pass_score,modules(title),questions(id,prompt,feedback,sort_order,points,options(id,label,sort_order,is_correct))'
         )
         .eq('id', challengeId)
         .single();
@@ -102,7 +103,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
       const { data: answersData } = await supabase
         .from('answers')
-        .select('question_id,option_id,points_awarded,text_answer,options(is_correct,feedback)')
+        .select('question_id,option_id,points_awarded,text_answer,options(is_correct)')
         .eq('attempt_id', effectiveAttempt.id);
 
       const nextStates: Record<string, AttemptState> = {};
@@ -113,7 +114,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           answeredCorrect: Boolean(answer.options?.is_correct),
           hadWrongBefore: Boolean(parsedMeta.hadWrongBefore),
           pointsAwarded: answer.points_awarded ?? 0,
-          feedbackText: answer.options?.feedback ?? ''
+          feedbackText: normalizedQuiz.questions.find((question) => question.id === answer.question_id)?.feedback ?? ''
         };
       }
 
@@ -156,12 +157,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         answeredCorrect: option.is_correct,
         hadWrongBefore,
         pointsAwarded,
-        feedbackText: option.feedback ?? ''
+        feedbackText: question.feedback ?? ''
       }
     };
     setAttemptStates(nextStates);
-
-    if (!option.is_correct) return;
 
     const allQuestionsCorrect = quiz?.questions.every(
       (quizQuestion) =>
@@ -201,7 +200,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   }
 
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
-  const canMoveNext = reviewMode || currentState.answeredCorrect;
+  const answeredCount = Object.keys(attemptStates).length;
+  const canMoveNext = reviewMode || Boolean(currentState.selectedOptionId);
 
   return (
     <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 pb-4 text-text">
@@ -221,7 +221,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       <div className="h-2 rounded-pill bg-surface-soft">
         <div
           className="h-full rounded-pill bg-primary"
-          style={{ width: `${((activeIndex + 1) / Math.max(quiz.questions.length, 1)) * 100}%` }}
+          style={{ width: `${(answeredCount / Math.max(quiz.questions.length, 1)) * 100}%` }}
         />
       </div>
 
@@ -275,7 +275,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           })}
       </section>
 
-      {currentState.selectedOptionId ? (
+      {currentState.selectedOptionId || reviewMode ? (
         <div
           className={`rounded-2xl p-3 text-sm ${
             currentState.answeredCorrect ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'
@@ -284,7 +284,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           <p className="font-black uppercase tracking-[0.08em]">
             {currentState.answeredCorrect ? 'Correct' : 'Incorrect'}
           </p>
-          <p>{currentState.feedbackText}</p>
+          <p>{currentQuestion.feedback ?? currentState.feedbackText}</p>
         </div>
       ) : null}
 

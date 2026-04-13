@@ -8,7 +8,7 @@ type TrackRow = {
   id: string;
   title: string;
   description: string | null;
-  type: 'company' | 'skill';
+  type: 'company';
 };
 
 type QuizRow = {
@@ -24,8 +24,6 @@ type QuizRow = {
 };
 
 const SENIORITIES: Seniority[] = ['junior', 'mid', 'senior'];
-const CATEGORY_ORDER = ['Discovery', 'Strategy', 'Execution', 'Metrics', 'Frameworks'];
-
 export default async function HomePage() {
   const user = await requireUser();
   const db = createUntypedClient();
@@ -34,7 +32,7 @@ export default async function HomePage() {
     .from('tracks')
     .select('id,title,description,type')
     .eq('is_published', true)
-    .in('type', ['company', 'skill'])
+    .eq('type', 'company')
     .order('title', { ascending: true });
 
   const tracks = (tracksData ?? []) as TrackRow[];
@@ -49,8 +47,7 @@ export default async function HomePage() {
 
   const quizzes = (quizzesData ?? []) as QuizRow[];
 
-  const companyTracks = tracks.filter((track) => track.type === 'company');
-  const skillTracks = tracks.filter((track) => track.type === 'skill');
+  const companyTracks = tracks;
 
   const challengesByTrackAndLevel = quizzes.reduce(
     (acc: Record<string, Record<Seniority, number>>, quiz) => {
@@ -82,33 +79,6 @@ export default async function HomePage() {
     };
   });
 
-  const skillCategories: SkillPathCategory[] = skillTracks
-    .sort(
-      (a, b) =>
-        CATEGORY_ORDER.indexOf(a.title) - CATEGORY_ORDER.indexOf(b.title) ||
-        a.title.localeCompare(b.title)
-    )
-    .map((track) => ({
-      id: track.id,
-      key: track.title.toLowerCase(),
-      title: track.title
-    }));
-
-  const skillChallenges: SkillPathChallenge[] = quizzes
-    .filter((quiz) => {
-      const trackId = quiz.modules?.track_id;
-      return !!trackId && skillTracks.some((track) => track.id === trackId);
-    })
-    .map((quiz) => ({
-      id: quiz.id,
-      categoryId: quiz.modules?.track_id ?? '',
-      title: quiz.title,
-      level: (quiz.difficulty ?? 'junior') as Seniority,
-      practicingCount: 0,
-      durationMin: 5,
-      durationMax: 10
-    }));
-
   const displayName =
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
@@ -118,8 +88,8 @@ export default async function HomePage() {
   return (
     <HomeScreen
       companyTracks={companyCards}
-      skillPathCategories={skillCategories}
-      skillPathChallenges={skillChallenges}
+      skillPathCategories={[] as SkillPathCategory[]}
+      skillPathChallenges={[] as SkillPathChallenge[]}
       userName={displayName}
       userStats={{ rank: '#12', solved: '42', solvingDays: '32' }}
     />

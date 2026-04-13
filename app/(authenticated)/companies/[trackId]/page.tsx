@@ -109,6 +109,14 @@ export default async function CompanyDetailsPage({
     : { data: [] as AnswerRow[] };
   const answers = (answersData ?? []) as AnswerRow[];
 
+  const answeredCountByAttempt = answers.reduce(
+    (acc: Record<string, number>, answer) => {
+      acc[answer.attempt_id] = (acc[answer.attempt_id] ?? 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
   const correctAnswersByAttempt = answers.reduce(
     (acc: Record<string, Set<string>>, answer) => {
       if (!answer.options?.is_correct) return acc;
@@ -129,6 +137,7 @@ export default async function CompanyDetailsPage({
 
   const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
     const latestAttempt = latestAttemptByQuizId[quiz.id];
+    const answeredSteps = latestAttempt ? (answeredCountByAttempt[latestAttempt.id] ?? 0) : 0;
     const correctSteps = latestAttempt
       ? (correctAnswersByAttempt[latestAttempt.id]?.size ?? 0)
       : 0;
@@ -151,6 +160,7 @@ export default async function CompanyDetailsPage({
       practicingCount: '0',
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
       seniority: (quiz.difficulty ?? 'junior') as Seniority,
+      answeredSteps,
       completedSteps: correctSteps,
       totalSteps,
       score,

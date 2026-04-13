@@ -45,12 +45,6 @@ type UserStats = {
   solvingDays: string;
 };
 
-const featuredProducts = [
-  { name: 'Instagram', type: 'Social Product', lessons: 12 },
-  { name: 'Notion', type: 'Productivity Suite', lessons: 9 },
-  { name: 'Canva', type: 'Design Platform', lessons: 8 }
-];
-
 export default function HomeScreen({
   companyTracks,
   skillPathCategories,
@@ -289,14 +283,7 @@ export default function HomeScreen({
       )}
       {tab === 'products' && (
         <div className="space-y-4">
-          {featuredProducts.map((product) => (
-            <SimpleCard
-              key={product.name}
-              title={product.name}
-              subtitle={product.type}
-              meta={`${product.lessons} lessons`}
-            />
-          ))}
+          <EmptyState message="No products yet." />
         </div>
       )}
     </section>
