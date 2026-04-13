@@ -21,7 +21,8 @@
     "supabase:push": "npx supabase db push",
     "supabase:pull": "npx supabase db pull",
     "seed:productgym": "tsx scripts/seed-productgym.ts",
-    "seed:companies": "tsx scripts/seed-companies-from-excel.ts"
+    "seed:companies": "tsx scripts/seed-companies-from-excel.ts",
+    "seed:content": "tsx scripts/seed-content.ts"
   },
   "dependencies": {
     "@radix-ui/react-toast": "^1.1.5",

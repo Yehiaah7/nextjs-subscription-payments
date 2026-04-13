@@ -18,6 +18,7 @@ export type CompanyChallenge = {
   practicingCount: string;
   duration: string;
   seniority: Seniority;
+  answeredSteps: number;
   completedSteps: number;
   totalSteps: number;
   score: number;
@@ -177,7 +178,7 @@ export default function CompanyDetailsScreen({
               </div>
               <div className="mt-3">
                 <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
-                  {challenge.completedSteps}/{challenge.totalSteps} steps correct
+                  {challenge.answeredSteps}/{challenge.totalSteps} steps answered
                 </div>
                 <div className="h-2 rounded-pill bg-surface-soft">
                   <div
@@ -185,7 +186,7 @@ export default function CompanyDetailsScreen({
                     style={{
                       width: `${
                         challenge.totalSteps
-                          ? (challenge.completedSteps / challenge.totalSteps) * 100
+                          ? (challenge.answeredSteps / challenge.totalSteps) * 100
                           : 0
                       }%`
                     }}
