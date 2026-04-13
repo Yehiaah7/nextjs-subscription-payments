@@ -15,8 +15,6 @@ type QuizRow = {
   id: string;
   title: string;
   difficulty: Seniority | null;
-  module_id: string;
-  modules: { title: string } | null;
 };
 
 type QuestionRow = {
@@ -29,6 +27,7 @@ type AttemptRow = {
   quiz_id: string;
   submitted_at: string | null;
   passed: boolean | null;
+  score: number | null;
   started_at: string;
 };
 
@@ -71,7 +70,7 @@ export default async function CompanyDetailsPage({
 
   const { data: quizzesData } = await db
     .from('quizzes')
-    .select('id,title,difficulty,module_id,modules(title)')
+    .select('id,title,difficulty')
     .eq('modules.track_id', company.id)
     .order('title', { ascending: true });
 
@@ -86,7 +85,7 @@ export default async function CompanyDetailsPage({
   const { data: attemptsData } = quizIds.length
     ? await db
         .from('attempts')
-        .select('id,quiz_id,submitted_at,passed,started_at')
+        .select('id,quiz_id,submitted_at,passed,score,started_at')
         .eq('user_id', user.id)
         .in('quiz_id', quizIds)
         .order('started_at', { ascending: false })
@@ -134,11 +133,13 @@ export default async function CompanyDetailsPage({
       ? (correctAnswersByAttempt[latestAttempt.id]?.size ?? 0)
       : 0;
     const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;
+    const isSubmitted = Boolean(latestAttempt?.submitted_at);
+    const score = latestAttempt?.score ?? 0;
 
     const status = latestAttempt
       ? latestAttempt.passed
         ? 'solved'
-        : latestAttempt.submitted_at
+        : isSubmitted
           ? 'not-solved'
           : 'in-progress'
       : 'not-solved';
@@ -151,7 +152,10 @@ export default async function CompanyDetailsPage({
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
       seniority: (quiz.difficulty ?? 'junior') as Seniority,
       completedSteps: correctSteps,
-      totalSteps
+      totalSteps,
+      score,
+      retake: isSubmitted && score < 60,
+      reviewAvailable: isSubmitted && score >= 60
     };
   });
 
