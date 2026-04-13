@@ -2,254 +2,260 @@
 
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
-type Choice = {
-  id: 'A' | 'B' | 'C' | 'D';
-  title: string;
-  description: string;
-};
-
-type QuizQuestion = {
-  category: string;
-  title: string;
+type Question = {
+  id: string;
   prompt: string;
-  context: string;
-  timerLabel: string;
-  choices: Choice[];
-  perspective: {
-    speaker: string;
-    role: string;
-    title: string;
-    summary: string;
-  }[];
+  sort_order: number;
+  explanation: string | null;
+  points: number;
+  options: { id: string; label: string; sort_order: number; is_correct: boolean }[];
 };
 
-const QUESTION: QuizQuestion = {
-  category: 'Strategic Prioritization',
-  title: 'Trust vs. Engagement Dilemma',
-  prompt:
-    'A major data leak has been discovered. Engineers can patch it in 48 hours, but it will cause a 15% drop in session duration for the next week during a critical quarterly reporting period.',
-  context: 'Business metrics or User safety? You have 3 minutes to decide.',
-  timerLabel: '2:53',
-  choices: [
-    {
-      id: 'A',
-      title: 'Immediate Patch',
-      description:
-        'Prioritize the fix now. Accept the engagement hit and prepare the PR team.'
-    },
-    {
-      id: 'B',
-      title: 'Soft Patch',
-      description:
-        'Apply a temporary fix that maintains engagement but leaves a 5% vulnerability risk.'
-    },
-    {
-      id: 'C',
-      title: 'Staged Rollout',
-      description:
-        'Roll out the patch to high-risk regions first to minimize global impact.'
-    },
-    {
-      id: 'D',
-      title: 'Postpone and Bundle',
-      description: 'Delay the patch to next week to clear the reporting period.'
-    }
-  ],
-  perspective: [
-    {
-      speaker: 'Sarah',
-      role: 'Group PM @ Meta',
-      title: "Sarah Chen's Perspective",
-      summary:
-        "Trust is the ultimate currency. At Meta's scale, sacrificing safety for short-term reporting engagement is a one-way door decision you can't undo."
-    },
-    {
-      speaker: 'Marcus',
-      role: 'Director PM',
-      title: "Marcus James's Perspective",
-      summary:
-        'Great PMs optimize for resilience, not just quarter-end numbers. Preserving trust compounds value far beyond a temporary performance dip.'
-    },
-    {
-      speaker: 'Elena',
-      role: 'Staff PM',
-      title: "Elena Rivera's Perspective",
-      summary:
-        'Users forgive downtime and temporary friction. They rarely forgive breaches of trust. The strategic bet is clear: protect users first.'
-    }
-  ]
+type Quiz = {
+  id: string;
+  title: string;
+  module_id: string;
+  modules: { title: string } | null;
+  pass_score: number | null;
+  questions: Question[];
 };
 
-function ChallengeQuestionCard({ question }: { question: QuizQuestion }) {
-  return (
-    <section className="w-full max-w-[361px] rounded-2xl bg-white p-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
-      <p className="text-sm font-normal leading-5 text-[#45556c]">{question.prompt}</p>
-
-      <p className="mt-3 rounded-2xl bg-white p-3 text-[11px] font-bold leading-4 text-[#0f172b] shadow-[0_1px_2px_0_rgba(0,0,0,0.06)]">
-        “{question.context}”
-      </p>
-    </section>
-  );
-}
-
-function ChallengeAnswerOptionCard({
-  choice,
-  active,
-  onSelect
-}: {
-  choice: Choice;
-  active: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`h-[81px] w-full max-w-[361px] rounded-2xl border p-3 text-left shadow-[0_1px_2px_-1px_rgba(0,0,0,0.3)] transition ${
-        active
-          ? 'border-[#bfd5ff] bg-[#eff6ff]'
-          : 'border-[#e2e8f0] bg-white'
-      }`}
-    >
-      <div className="flex items-start gap-3">
-        <span
-          className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-            active
-              ? 'bg-[#155dfc] text-white'
-              : 'bg-[#f1f5f9] text-[#0f172b]'
-          }`}
-        >
-          {choice.id}
-        </span>
-
-        <div className="min-w-0">
-          <p className="text-sm font-bold leading-5 text-[#0f172b]">{choice.title}</p>
-          <p className="text-xs font-medium leading-4 text-[#62748e]">{choice.description}</p>
-        </div>
-      </div>
-    </button>
-  );
-}
+type AnswerMeta = { hadWrongBefore: boolean };
 
 export default function QuizScreen({ challengeId }: { challengeId: string }) {
-  const [selectedChoiceId, setSelectedChoiceId] = useState<Choice['id'] | null>(
-    null
-  );
+  const supabase = useMemo(() => createClient() as any, []);
   const searchParams = useSearchParams();
-
   const companyId = searchParams.get('company');
   const returnToTrackHref = companyId ? `/companies/${companyId}` : '/home';
 
-  const nextHref = useMemo(() => {
-    if (!selectedChoiceId) {
-      return null;
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(false);
+  const [selections, setSelections] = useState<Record<string, string>>({});
+  const [feedback, setFeedback] = useState<Record<string, { correct: boolean; text: string }>>({});
+
+  const currentQuestion = quiz?.questions[activeIndex];
+
+  const loadQuiz = async () => {
+    const { data: quizData } = await supabase
+      .from('quizzes')
+      .select('id,title,module_id,pass_score,modules(title),questions(id,prompt,sort_order,explanation,points,options(id,label,sort_order,is_correct))')
+      .eq('id', challengeId)
+      .single();
+
+    if (!quizData) return;
+
+    const normalizedQuiz = {
+      ...quizData,
+      questions: (quizData.questions ?? []).sort(
+        (a: Question, b: Question) => a.sort_order - b.sort_order
+      )
+    } as Quiz;
+
+    setQuiz(normalizedQuiz);
+
+    const { data: existingAttempt } = await supabase
+      .from('attempts')
+      .select('id,submitted_at,passed')
+      .eq('quiz_id', challengeId)
+      .is('submitted_at', null)
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const activeAttempt =
+      existingAttempt ??
+      (
+        await supabase
+          .from('attempts')
+          .insert({ quiz_id: challengeId })
+          .select('id,submitted_at,passed')
+          .single()
+      ).data;
+
+    if (!activeAttempt) return;
+
+    setAttemptId(activeAttempt.id);
+    setLocked(Boolean(activeAttempt.submitted_at && activeAttempt.passed));
+
+    const { data: existingAnswers } = await supabase
+      .from('answers')
+      .select('question_id,option_id,text_answer,options(is_correct)')
+      .eq('attempt_id', activeAttempt.id);
+
+    const nextSelections: Record<string, string> = {};
+    const nextFeedback: Record<string, { correct: boolean; text: string }> = {};
+
+    for (const answer of existingAnswers ?? []) {
+      if (answer.option_id) nextSelections[answer.question_id] = answer.option_id;
+      const question = normalizedQuiz.questions.find((item) => item.id === answer.question_id);
+      if (question && answer.option_id) {
+        nextFeedback[question.id] = {
+          correct: Boolean(answer.options?.is_correct),
+          text: question.explanation ?? ''
+        };
+      }
     }
 
-    const resultRoute = selectedChoiceId === 'A' ? 'correct' : 'wrong';
-    const querySuffix = companyId ? `?company=${companyId}` : '';
+    setSelections(nextSelections);
+    setFeedback(nextFeedback);
+  };
 
-    return `/challenge/${challengeId}/${resultRoute}${querySuffix}`;
-  }, [challengeId, companyId, selectedChoiceId]);
+  useEffect(() => {
+    loadQuiz().finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [challengeId]);
+
+  const onSelectOption = async (question: Question, optionId: string) => {
+    if (!attemptId || locked) return;
+
+    const option = question.options.find((item) => item.id === optionId);
+    if (!option) return;
+
+    const { data: existingAnswer } = await supabase
+      .from('answers')
+      .select('text_answer')
+      .eq('attempt_id', attemptId)
+      .eq('question_id', question.id)
+      .maybeSingle();
+
+    const previousMeta: AnswerMeta = existingAnswer?.text_answer
+      ? JSON.parse(existingAnswer.text_answer)
+      : { hadWrongBefore: false };
+
+    const hadWrongBefore = previousMeta.hadWrongBefore || !option.is_correct;
+    const pointsAwarded = option.is_correct && !hadWrongBefore ? 1 : 0;
+
+    await supabase.from('answers').upsert(
+      {
+        attempt_id: attemptId,
+        question_id: question.id,
+        option_id: option.id,
+        points_awarded: pointsAwarded,
+        text_answer: JSON.stringify({ hadWrongBefore })
+      },
+      { onConflict: 'attempt_id,question_id' }
+    );
+
+    setSelections((prev) => ({ ...prev, [question.id]: option.id }));
+    setFeedback((prev) => ({
+      ...prev,
+      [question.id]: { correct: option.is_correct, text: question.explanation ?? '' }
+    }));
+
+    if (option.is_correct && quiz) {
+      const allCorrect = quiz.questions.every((item) => {
+        if (item.id === question.id) return true;
+        const selectedOption = selections[item.id];
+        const selected = item.options.find((opt) => opt.id === selectedOption);
+        return Boolean(selected?.is_correct);
+      });
+
+      if (allCorrect) {
+        const { data: allAnswers } = await supabase
+          .from('answers')
+          .select('points_awarded')
+          .eq('attempt_id', attemptId);
+
+        const totalPoints = quiz.questions.reduce((sum, q) => sum + (q.points || 1), 0);
+        const awarded = (allAnswers ?? []).reduce(
+          (sum: number, answer: { points_awarded: number | null }) => sum + (answer.points_awarded ?? 0),
+          0
+        );
+
+        const score = Math.round((awarded / Math.max(totalPoints, 1)) * 100);
+        const passed = score >= (quiz.pass_score ?? 60);
+
+        await supabase
+          .from('attempts')
+          .update({ submitted_at: new Date().toISOString(), score, passed })
+          .eq('id', attemptId);
+
+        setLocked(passed);
+      }
+    }
+  };
+
+  if (loading || !quiz || !currentQuestion) {
+    return <div className="mx-auto w-full max-w-[361px] rounded-2xl bg-white p-4">Loading challenge...</div>;
+  }
+
+  const selectedOptionId = selections[currentQuestion.id] ?? null;
+  const questionFeedback = feedback[currentQuestion.id];
 
   return (
     <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 pb-4 text-text">
       <header className="flex items-center justify-between">
-        <Link
-          href={returnToTrackHref}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[#0f172b]"
-          aria-label="Back to tracks"
-        >
+        <Link href={returnToTrackHref} className="inline-flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[#0f172b]" aria-label="Back">
           <ChevronLeft className="h-4 w-4" />
         </Link>
-
-        <div className="inline-flex h-7 items-center gap-2 rounded-xl border border-[#1d293d] bg-[#0f172b] px-4 py-[6px] text-xs font-black leading-none text-white shadow-[0_20px_25px_-5px_rgba(15,23,43,0.7)]">
-          <span className="h-2 w-2 rounded-full bg-[#ffd230]" />
-          {QUESTION.timerLabel}
-        </div>
+        <p className="text-xs font-black uppercase tracking-[0.08em] text-primary">
+          Step {activeIndex + 1}/{quiz.questions.length}
+        </p>
       </header>
 
       <section>
-        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">
-          {QUESTION.category}
-        </p>
-        <h1 className="mt-2 text-base font-bold leading-6 text-[#0f172b]">
-          {QUESTION.title}
-        </h1>
+        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">{quiz.modules?.title ?? 'Challenge'}</p>
+        <h1 className="mt-2 text-base font-bold leading-6 text-[#0f172b]">{quiz.title}</h1>
       </section>
 
-      <ChallengeQuestionCard question={QUESTION} />
+      <section className="w-full rounded-2xl bg-white p-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
+        <p className="text-sm font-normal leading-5 text-[#45556c]">{currentQuestion.prompt}</p>
+      </section>
 
       <section className="space-y-3">
-        {QUESTION.choices.map((choice) => (
-          <ChallengeAnswerOptionCard
-            key={choice.id}
-            choice={choice}
-            active={selectedChoiceId === choice.id}
-            onSelect={() => setSelectedChoiceId(choice.id)}
-          />
-        ))}
+        {currentQuestion.options
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((option) => {
+            const active = selectedOptionId === option.id;
+            const disabled = locked;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => onSelectOption(currentQuestion, option.id)}
+                className={`w-full rounded-2xl border p-3 text-left ${active ? 'border-[#bfd5ff] bg-[#eff6ff]' : 'border-[#e2e8f0] bg-white'}`}
+              >
+                <p className="text-sm font-bold text-[#0f172b]">Option {String.fromCharCode(64 + option.sort_order)}</p>
+                <p className="text-xs text-[#62748e]">{option.label}</p>
+              </button>
+            );
+          })}
       </section>
 
-      <details className="w-full max-w-[361px] rounded-2xl bg-white p-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]" open>
-        <summary className="cursor-pointer list-none text-center text-[10px] font-black uppercase tracking-[0.1em] text-[#f59e0b]">
-          ✧ Expert Explanation
-        </summary>
-
-        <div className="mt-3 grid grid-cols-3 gap-[8px]">
-          {QUESTION.perspective.map((person) => (
-            <div
-              key={person.speaker}
-              className="h-[104px] rounded-2xl border border-[#e2e8f0] p-3 text-center"
-            >
-              <div className="mx-auto h-8 w-8 rounded-full bg-[#d9e2ef]" aria-hidden />
-              <p className="mt-2 text-[11px] font-black leading-4 text-[#344256]">{person.speaker}</p>
-              <p className="text-[8px] font-bold uppercase tracking-[0.06em] text-[#96a3b3]">
-                {person.role}
-              </p>
-            </div>
-          ))}
+      {questionFeedback ? (
+        <div className={`rounded-2xl p-3 text-sm ${questionFeedback.correct ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'}`}>
+          <p className="font-black uppercase tracking-[0.08em]">
+            {questionFeedback.correct ? 'Correct' : 'Incorrect'}
+          </p>
+          <p>{questionFeedback.text}</p>
         </div>
-
-        <p className="mt-3 text-[10px] font-black uppercase tracking-[0.08em] text-[#f59e0b]">
-          {QUESTION.perspective[0].title}
-        </p>
-        <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#97a1af]">
-          {QUESTION.perspective[0].role}
-        </p>
-
-        <p className="mt-2 rounded-2xl bg-[#f4f7fb] p-3 text-[12px] font-semibold leading-5 text-[#475569]">
-          {QUESTION.perspective[0].summary}
-        </p>
-      </details>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-[10px]">
         <button
           type="button"
-          disabled
+          onClick={() => setActiveIndex((value) => Math.max(0, value - 1))}
+          disabled={activeIndex === 0}
           className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#94a3b8]"
         >
           <ChevronLeft className="h-4 w-4" /> Previous
         </button>
-
-        {nextHref ? (
-          <Link
-            href={nextHref}
-            className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white shadow-[0_10px_15px_-3px_rgba(225,113,0,0.6)]"
-          >
-            Next <ChevronRight className="h-4 w-4" />
-          </Link>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white opacity-50"
-          >
-            Next <ChevronRight className="h-4 w-4" />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setActiveIndex((value) => Math.min(quiz.questions.length - 1, value + 1))}
+          disabled={activeIndex === quiz.questions.length - 1}
+          className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white"
+        >
+          Next <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     </section>
   );

@@ -1,45 +1,38 @@
 import { createUntypedClient } from '@/utils/supabase/untyped';
 import { requireUser } from '@/utils/auth/require-user';
 import HomeScreen, { HomeTrack, SkillPathCategory, SkillPathChallenge } from './HomeScreen';
-import { Seniority } from '@/components/seniority/constants';
-import { MOCK_COMPANIES } from '@/app/(authenticated)/companies/mock-data';
+
+type Seniority = 'junior' | 'mid' | 'senior';
 
 type TrackRow = {
   id: string;
   title: string;
   description: string | null;
   type: 'company' | 'skill';
-  seniority: Seniority | null;
 };
 
-type ModuleRow = {
-  track_id: string;
-  seniority: Seniority | null;
-};
-
-type SkillPathCategoryRow = {
+type QuizRow = {
   id: string;
-  key: string;
   title: string;
-  sort_order: number;
+  difficulty: Seniority | null;
+  module_id: string;
+  modules: {
+    id: string;
+    title: string;
+    track_id: string;
+  } | null;
 };
 
-type SkillPathChallengeRow = {
-  id: string;
-  category_id: string;
-  title: string;
-  practicing_count: number;
-  duration_min: number;
-  duration_max: number;
-};
+const SENIORITIES: Seniority[] = ['junior', 'mid', 'senior'];
+const CATEGORY_ORDER = ['Discovery', 'Strategy', 'Execution', 'Metrics', 'Frameworks'];
 
 export default async function HomePage() {
   const user = await requireUser();
-
   const db = createUntypedClient();
+
   const { data: tracksData } = await db
-    .from('tracks' as any)
-    .select('id,title,description,type,seniority')
+    .from('tracks')
+    .select('id,title,description,type')
     .eq('is_published', true)
     .in('type', ['company', 'skill'])
     .order('title', { ascending: true });
@@ -47,82 +40,74 @@ export default async function HomePage() {
   const tracks = (tracksData ?? []) as TrackRow[];
   const trackIds = tracks.map((track) => track.id);
 
-  const { data: modulesData, error: modulesError } = trackIds.length
+  const { data: quizzesData } = trackIds.length
     ? await db
-        .from('modules')
-        .select('track_id,seniority')
-        .in('track_id', trackIds)
-    : { data: [] as ModuleRow[], error: null };
+        .from('quizzes')
+        .select('id,title,difficulty,module_id,modules(id,title,track_id)')
+        .in('modules.track_id', trackIds)
+    : { data: [] as QuizRow[] };
 
-  const { data: legacyModulesData } = modulesError
-    ? await db.from('modules').select('track_id').in('track_id', trackIds)
-    : { data: [] as Array<Pick<ModuleRow, 'track_id'>> };
+  const quizzes = (quizzesData ?? []) as QuizRow[];
 
-  const modules = ((modulesError ? legacyModulesData : modulesData) ?? []) as ModuleRow[];
-  const challengeCountsByTrackId = modules.reduce(
-    (acc: Record<string, Record<Seniority, number>>, module: ModuleRow) => {
-      const seniority = module.seniority ?? 'junior';
-      acc[module.track_id] ??= { junior: 0, mid: 0, senior: 0 };
-      acc[module.track_id][seniority] += 1;
+  const companyTracks = tracks.filter((track) => track.type === 'company');
+  const skillTracks = tracks.filter((track) => track.type === 'skill');
+
+  const challengesByTrackAndLevel = quizzes.reduce(
+    (acc: Record<string, Record<Seniority, number>>, quiz) => {
+      const level = (quiz.difficulty ?? 'junior') as Seniority;
+      const trackId = quiz.modules?.track_id;
+      if (!trackId || !SENIORITIES.includes(level)) return acc;
+      acc[trackId] ??= { junior: 0, mid: 0, senior: 0 };
+      acc[trackId][level] += 1;
       return acc;
     },
     {}
   );
 
-  const toHomeTrack = (track: TrackRow): HomeTrack => ({
-    id: track.id,
-    title: track.title,
-    description: track.description,
-    moduleCount: Object.values(challengeCountsByTrackId[track.id] ?? {}).reduce(
-      (total, count) => total + count,
-      0
-    ),
-    challengeCountsBySeniority: challengeCountsByTrackId[track.id] ?? {
-      [track.seniority ?? 'junior']: 1
-    },
-    practicingCount: '1.2K',
-    progress: 45
+  const companyCards: HomeTrack[] = companyTracks.map((track) => {
+    const levelCounts = challengesByTrackAndLevel[track.id] ?? {
+      junior: 0,
+      mid: 0,
+      senior: 0
+    };
+
+    return {
+      id: track.id,
+      title: track.title,
+      description: track.description,
+      moduleCount: Object.values(levelCounts).reduce((total, count) => total + count, 0),
+      challengeCountsBySeniority: levelCounts,
+      practicingCount: '1.2K',
+      progress: 0
+    };
   });
 
-  const dbCompanyTracks = tracks
-    .filter((track) => track.type === 'company')
-    .map(toHomeTrack);
+  const skillCategories: SkillPathCategory[] = skillTracks
+    .sort(
+      (a, b) =>
+        CATEGORY_ORDER.indexOf(a.title) - CATEGORY_ORDER.indexOf(b.title) ||
+        a.title.localeCompare(b.title)
+    )
+    .map((track) => ({
+      id: track.id,
+      key: track.title.toLowerCase(),
+      title: track.title
+    }));
 
-  const companyTracks = dbCompanyTracks.length
-    ? dbCompanyTracks
-    : MOCK_COMPANIES.map((company) => ({
-        id: company.id,
-        title: company.title,
-        description: company.description ?? company.focus,
-        moduleCount: company.challengesCount,
-        challengeCountsBySeniority: { [company.seniority]: company.challengesCount },
-        practicingCount: company.practicingCount,
-        progress: company.progress
-      }));
-
-  const { data: skillPathCategoriesData } = await db
-    .from('skill_path_categories' as any)
-    .select('id,key,title,sort_order')
-    .order('sort_order', { ascending: true });
-
-  const skillPathCategories = (skillPathCategoriesData ??
-    []) as SkillPathCategoryRow[];
-
-  const { data: skillPathChallengesData } = skillPathCategories.length
-    ? await db
-        .from('skill_path_challenges' as any)
-        .select(
-          'id,category_id,title,practicing_count,duration_min,duration_max'
-        )
-        .in(
-          'category_id',
-          skillPathCategories.map((category) => category.id)
-        )
-        .order('created_at', { ascending: true })
-    : { data: [] as SkillPathChallengeRow[] };
-
-  const skillPathChallenges = (skillPathChallengesData ??
-    []) as SkillPathChallengeRow[];
+  const skillChallenges: SkillPathChallenge[] = quizzes
+    .filter((quiz) => {
+      const trackId = quiz.modules?.track_id;
+      return !!trackId && skillTracks.some((track) => track.id === trackId);
+    })
+    .map((quiz) => ({
+      id: quiz.id,
+      categoryId: quiz.modules?.track_id ?? '',
+      title: quiz.title,
+      level: (quiz.difficulty ?? 'junior') as Seniority,
+      practicingCount: 0,
+      durationMin: 5,
+      durationMax: 10
+    }));
 
   const displayName =
     user.user_metadata?.full_name ||
@@ -132,30 +117,11 @@ export default async function HomePage() {
 
   return (
     <HomeScreen
-      companyTracks={companyTracks}
-      skillPathCategories={skillPathCategories.map<SkillPathCategory>(
-        (category) => ({
-          id: category.id,
-          key: category.key,
-          title: category.title
-        })
-      )}
-      skillPathChallenges={skillPathChallenges.map<SkillPathChallenge>(
-        (challenge) => ({
-          id: challenge.id,
-          categoryId: challenge.category_id,
-          title: challenge.title,
-          practicingCount: challenge.practicing_count,
-          durationMin: challenge.duration_min,
-          durationMax: challenge.duration_max
-        })
-      )}
+      companyTracks={companyCards}
+      skillPathCategories={skillCategories}
+      skillPathChallenges={skillChallenges}
       userName={displayName}
-      userStats={{
-        rank: '#12',
-        solved: '42',
-        solvingDays: '32'
-      }}
+      userStats={{ rank: '#12', solved: '42', solvingDays: '32' }}
     />
   );
 }

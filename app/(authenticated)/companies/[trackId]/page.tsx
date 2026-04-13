@@ -1,12 +1,9 @@
 import { createClient } from '@/utils/supabase/server';
 import { createUntypedClient } from '@/utils/supabase/untyped';
 import { notFound, redirect } from 'next/navigation';
-import CompanyDetailsScreen, {
-  ChallengeStatus,
-  CompanyChallenge
-} from './CompanyDetailsScreen';
-import { Seniority } from '@/components/seniority/constants';
-import { getMockChallenges, getMockCompanyById } from '../mock-data';
+import CompanyDetailsScreen, { CompanyChallenge } from './CompanyDetailsScreen';
+
+type Seniority = 'junior' | 'mid' | 'senior';
 
 type TrackRow = {
   id: string;
@@ -14,42 +11,36 @@ type TrackRow = {
   description: string | null;
 };
 
-type ModuleRow = {
-  id: string;
-  track_id: string;
-  title: string;
-  sort_order: number;
-  seniority: Seniority | null;
-};
-
 type QuizRow = {
   id: string;
+  title: string;
+  difficulty: Seniority | null;
   module_id: string;
+  modules: { title: string } | null;
+};
+
+type QuestionRow = {
+  id: string;
+  quiz_id: string;
 };
 
 type AttemptRow = {
+  id: string;
   quiz_id: string;
   submitted_at: string | null;
   passed: boolean | null;
+  started_at: string;
 };
 
-const hashString = (value: string) =>
-  value
-    .split('')
-    .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 100000, 7);
-
-const formatCompact = (value: number) => {
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(1)}K`;
-  }
-
-  return `${value}`;
+type AnswerRow = {
+  attempt_id: string;
+  question_id: string;
+  option_id: string | null;
+  options: { is_correct: boolean } | null;
 };
 
-const deterministicStatus = (seed: string): ChallengeStatus => {
-  const pattern: ChallengeStatus[] = ['in-progress', 'not-solved', 'solved', 'not-solved'];
-  return pattern[hashString(seed) % pattern.length];
-};
+const formatCompact = (value: number) =>
+  value >= 1000 ? `${(value / 1000).toFixed(1)}K` : `${value}`;
 
 export default async function CompanyDetailsPage({
   params
@@ -65,183 +56,114 @@ export default async function CompanyDetailsPage({
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/login');
-  }
+  if (!user) redirect('/login');
 
-  let company: TrackRow | null = null;
+  const { data: companyData } = await db
+    .from('tracks')
+    .select('id,title,description')
+    .eq('id', trackId)
+    .eq('type', 'company')
+    .eq('is_published', true)
+    .maybeSingle();
 
-  try {
-    const { data: trackData, error } = await db
-      .from('tracks' as any)
-      .select('id,title,description')
-      .eq('id', trackId)
-      .eq('type', 'company')
-      .eq('is_published', true)
-      .maybeSingle();
+  const company = companyData as TrackRow | null;
+  if (!company) notFound();
 
-    if (!error && trackData) {
-      company = trackData as TrackRow;
-    }
-  } catch {
-    company = null;
-  }
+  const { data: quizzesData } = await db
+    .from('quizzes')
+    .select('id,title,difficulty,module_id,modules(title)')
+    .eq('modules.track_id', company.id)
+    .order('title', { ascending: true });
 
-  if (!company) {
-    const mockCompany = getMockCompanyById(trackId);
-
-    if (!mockCompany) {
-      notFound();
-    }
-
-    const challenges = getMockChallenges(mockCompany.id);
-
-    return (
-      <CompanyDetailsScreen
-        company={{
-          id: mockCompany.id,
-          title: mockCompany.title,
-          description: mockCompany.description ?? mockCompany.focus
-        }}
-        challenges={challenges}
-        progressPercent={mockCompany.progress}
-        practicingCount={mockCompany.practicingCount}
-      />
-    );
-  }
-
-  let modules: ModuleRow[] = [];
-  try {
-    const { data: modulesData, error } = await db
-      .from('modules' as any)
-      .select('id,track_id,title,sort_order,seniority')
-      .eq('track_id', company.id)
-      .order('sort_order', { ascending: true });
-
-    if (!error && Array.isArray(modulesData)) {
-      modules = modulesData as ModuleRow[];
-    }
-  } catch {
-    modules = [];
-  }
-
-  if (!modules.length) {
-    const mockChallenges = getMockChallenges(company.id);
-
-    return (
-      <CompanyDetailsScreen
-        company={company}
-        challenges={mockChallenges}
-        progressPercent={61}
-        practicingCount={formatCompact(1300 + (hashString(company.id + company.title) % 1800))}
-      />
-    );
-  }
-
-  const moduleIds = modules.map((module) => module.id);
-
-  let quizzes: QuizRow[] = [];
-  if (moduleIds.length) {
-    try {
-      const { data: quizzesData, error } = await db
-        .from('quizzes' as any)
-        .select('id,module_id')
-        .in('module_id', moduleIds);
-      if (!error && Array.isArray(quizzesData)) {
-        quizzes = quizzesData as QuizRow[];
-      }
-    } catch {
-      quizzes = [];
-    }
-  }
-
+  const quizzes = (quizzesData ?? []) as QuizRow[];
   const quizIds = quizzes.map((quiz) => quiz.id);
 
-  let attempts: AttemptRow[] = [];
-  if (quizIds.length) {
-    try {
-      const { data: attemptsData, error } = await db
-        .from('attempts' as any)
-        .select('quiz_id,submitted_at,passed')
-        .eq('user_id', user.id)
-        .in('quiz_id', quizIds);
+  const { data: questionsData } = quizIds.length
+    ? await db.from('questions').select('id,quiz_id').in('quiz_id', quizIds)
+    : { data: [] as QuestionRow[] };
+  const questions = (questionsData ?? []) as QuestionRow[];
 
-      if (!error && Array.isArray(attemptsData)) {
-        attempts = attemptsData as AttemptRow[];
-      }
-    } catch {
-      attempts = [];
+  const { data: attemptsData } = quizIds.length
+    ? await db
+        .from('attempts')
+        .select('id,quiz_id,submitted_at,passed,started_at')
+        .eq('user_id', user.id)
+        .in('quiz_id', quizIds)
+        .order('started_at', { ascending: false })
+    : { data: [] as AttemptRow[] };
+  const attempts = (attemptsData ?? []) as AttemptRow[];
+
+  const latestAttemptByQuizId: Record<string, AttemptRow> = {};
+  for (const attempt of attempts) {
+    if (!latestAttemptByQuizId[attempt.quiz_id]) {
+      latestAttemptByQuizId[attempt.quiz_id] = attempt;
     }
   }
 
-  const attemptsByQuizId = attempts.reduce(
-    (acc: Record<string, AttemptRow[]>, attempt) => {
-      if (!acc[attempt.quiz_id]) {
-        acc[attempt.quiz_id] = [];
-      }
+  const latestAttemptIds = Object.values(latestAttemptByQuizId).map((attempt) => attempt.id);
 
-      acc[attempt.quiz_id].push(attempt);
+  const { data: answersData } = latestAttemptIds.length
+    ? await db
+        .from('answers')
+        .select('attempt_id,question_id,option_id,options(is_correct)')
+        .in('attempt_id', latestAttemptIds)
+    : { data: [] as AnswerRow[] };
+  const answers = (answersData ?? []) as AnswerRow[];
+
+  const correctAnswersByAttempt = answers.reduce(
+    (acc: Record<string, Set<string>>, answer) => {
+      if (!answer.options?.is_correct) return acc;
+      acc[answer.attempt_id] ??= new Set<string>();
+      acc[answer.attempt_id].add(answer.question_id);
       return acc;
     },
     {}
   );
 
-  const quizzesByModuleId = quizzes.reduce(
-    (acc: Record<string, QuizRow[]>, quiz) => {
-      if (!acc[quiz.module_id]) {
-        acc[quiz.module_id] = [];
-      }
-
-      acc[quiz.module_id].push(quiz);
+  const totalQuestionsByQuiz = questions.reduce(
+    (acc: Record<string, number>, question) => {
+      acc[question.quiz_id] = (acc[question.quiz_id] ?? 0) + 1;
       return acc;
     },
     {}
   );
 
-  const hasAnyAttempts = attempts.length > 0;
+  const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
+    const latestAttempt = latestAttemptByQuizId[quiz.id];
+    const correctSteps = latestAttempt
+      ? (correctAnswersByAttempt[latestAttempt.id]?.size ?? 0)
+      : 0;
+    const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;
 
-  const challenges: CompanyChallenge[] = modules.map((module) => {
-    const moduleQuizzes = quizzesByModuleId[module.id] ?? [];
-    const moduleAttempts = moduleQuizzes.flatMap((quiz) => attemptsByQuizId[quiz.id] ?? []);
-
-    const status = moduleAttempts.length
-      ? moduleAttempts.some((attempt) => attempt.passed)
+    const status = latestAttempt
+      ? latestAttempt.passed
         ? 'solved'
-        : moduleAttempts.some((attempt) => !attempt.submitted_at)
-          ? 'in-progress'
-          : 'not-solved'
-      : deterministicStatus(module.id + module.title);
-
-    const seed = hashString(module.id + module.title + company.id);
-    const practicingCount = formatCompact(150 + (seed % 2200));
-    const duration = `${8 + (seed % 18)} mins`;
+        : latestAttempt.submitted_at
+          ? 'not-solved'
+          : 'in-progress'
+      : 'not-solved';
 
     return {
-      id: module.id,
-      title: module.title,
+      id: quiz.id,
+      title: quiz.title,
       status,
-      practicingCount,
-      duration,
-      seniority: module.seniority ?? 'junior'
+      practicingCount: '0',
+      duration: `${Math.max(totalSteps * 2, 5)} mins`,
+      seniority: (quiz.difficulty ?? 'junior') as Seniority,
+      completedSteps: correctSteps,
+      totalSteps
     };
   });
 
   const solvedCount = challenges.filter((item) => item.status === 'solved').length;
-  const inProgressCount = challenges.filter((item) => item.status === 'in-progress').length;
-  const practicingCount = formatCompact(1100 + (hashString(company.id + company.title) % 3900));
-
-  const progressPercent = challenges.length
-    ? hasAnyAttempts
-      ? Math.round(((solvedCount + inProgressCount * 0.5) / challenges.length) * 100)
-      : 65
-    : 0;
+  const progressPercent = challenges.length ? Math.round((solvedCount / challenges.length) * 100) : 0;
 
   return (
     <CompanyDetailsScreen
       company={company}
       challenges={challenges}
       progressPercent={progressPercent}
-      practicingCount={practicingCount}
+      practicingCount={formatCompact(1200 + challenges.length * 12)}
     />
   );
 }
