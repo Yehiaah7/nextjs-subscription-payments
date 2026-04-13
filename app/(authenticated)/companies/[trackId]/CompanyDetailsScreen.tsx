@@ -14,6 +14,8 @@ export type ChallengeStatus = 'in-progress' | 'not-solved' | 'solved';
 export type CompanyChallenge = {
   id: string;
   title: string;
+  category: string;
+  categorySortOrder: number;
   status: ChallengeStatus;
   practicingCount: string;
   duration: string;
@@ -75,7 +77,12 @@ export default function CompanyDetailsScreen({
     () =>
       challenges
         .filter((challenge) => challenge.seniority === selectedSeniority)
-        .filter((challenge) => (filter === 'all' ? true : challenge.status === filter)),
+        .filter((challenge) => (filter === 'all' ? true : challenge.status === filter))
+        .sort((a, b) =>
+          a.categorySortOrder === b.categorySortOrder
+            ? a.title.localeCompare(b.title)
+            : a.categorySortOrder - b.categorySortOrder
+        ),
     [challenges, filter, selectedSeniority]
   );
 
@@ -144,12 +151,15 @@ export default function CompanyDetailsScreen({
           filteredChallenges.map((challenge) => (
             <Link
               key={challenge.id}
-              href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}`}
+              href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
               className="app-card block"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <h3 className="t-card-title">{challenge.title}</h3>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">{challenge.category}</p>
+                    <h3 className="t-card-title">{challenge.title}</h3>
+                  </div>
                   <span
                     className={`rounded-pill px-3 py-1 t-label ${
                       STATUS_STYLES[challenge.status]
@@ -178,7 +188,7 @@ export default function CompanyDetailsScreen({
               </div>
               <div className="mt-3">
                 <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
-                  {challenge.answeredSteps}/{challenge.totalSteps} steps answered
+                  {challenge.completedSteps}/{challenge.totalSteps} steps solved
                 </div>
                 <div className="h-2 rounded-pill bg-surface-soft">
                   <div
@@ -186,7 +196,7 @@ export default function CompanyDetailsScreen({
                     style={{
                       width: `${
                         challenge.totalSteps
-                          ? (challenge.answeredSteps / challenge.totalSteps) * 100
+                          ? (challenge.completedSteps / challenge.totalSteps) * 100
                           : 0
                       }%`
                     }}

@@ -15,6 +15,8 @@ type QuizRow = {
   id: string;
   title: string;
   difficulty: Seniority | null;
+  category: string | null;
+  modules: { title: string; sort_order: number | null } | null;
 };
 
 type QuestionRow = {
@@ -38,14 +40,9 @@ type AnswerRow = {
   options: { is_correct: boolean } | null;
 };
 
-const formatCompact = (value: number) =>
-  value >= 1000 ? `${(value / 1000).toFixed(1)}K` : `${value}`;
+const formatCompact = (value: number) => (value >= 1000 ? `${(value / 1000).toFixed(1)}K` : `${value}`);
 
-export default async function CompanyDetailsPage({
-  params
-}: {
-  params: { trackId: string };
-}) {
+export default async function CompanyDetailsPage({ params }: { params: { trackId: string } }) {
   const { trackId } = params;
 
   const supabase = createClient();
@@ -70,8 +67,9 @@ export default async function CompanyDetailsPage({
 
   const { data: quizzesData } = await db
     .from('quizzes')
-    .select('id,title,difficulty')
+    .select('id,title,difficulty,category,modules(title,sort_order)')
     .eq('modules.track_id', company.id)
+    .order('sort_order', { foreignTable: 'modules', ascending: true })
     .order('title', { ascending: true });
 
   const quizzes = (quizzesData ?? []) as QuizRow[];
@@ -92,26 +90,38 @@ export default async function CompanyDetailsPage({
     : { data: [] as AttemptRow[] };
   const attempts = (attemptsData ?? []) as AttemptRow[];
 
-  const latestAttemptByQuizId: Record<string, AttemptRow> = {};
-  for (const attempt of attempts) {
-    if (!latestAttemptByQuizId[attempt.quiz_id]) {
-      latestAttemptByQuizId[attempt.quiz_id] = attempt;
-    }
+  const attemptsByQuiz = attempts.reduce(
+    (acc: Record<string, AttemptRow[]>, attempt) => {
+      acc[attempt.quiz_id] ??= [];
+      acc[attempt.quiz_id].push(attempt);
+      return acc;
+    },
+    {}
+  );
+
+  const activeAttemptByQuizId: Record<string, AttemptRow> = {};
+  for (const quizId of quizIds) {
+    const quizAttempts = attemptsByQuiz[quizId] ?? [];
+    const inProgress = quizAttempts.find((attempt) => !attempt.submitted_at);
+    activeAttemptByQuizId[quizId] = inProgress ?? quizAttempts[0];
   }
 
-  const latestAttemptIds = Object.values(latestAttemptByQuizId).map((attempt) => attempt.id);
+  const activeAttemptIds = Object.values(activeAttemptByQuizId)
+    .map((attempt) => attempt?.id)
+    .filter(Boolean);
 
-  const { data: answersData } = latestAttemptIds.length
+  const { data: answersData } = activeAttemptIds.length
     ? await db
         .from('answers')
         .select('attempt_id,question_id,option_id,options(is_correct)')
-        .in('attempt_id', latestAttemptIds)
+        .in('attempt_id', activeAttemptIds)
     : { data: [] as AnswerRow[] };
   const answers = (answersData ?? []) as AnswerRow[];
 
   const answeredCountByAttempt = answers.reduce(
-    (acc: Record<string, number>, answer) => {
-      acc[answer.attempt_id] = (acc[answer.attempt_id] ?? 0) + 1;
+    (acc: Record<string, Set<string>>, answer) => {
+      acc[answer.attempt_id] ??= new Set<string>();
+      acc[answer.attempt_id].add(answer.question_id);
       return acc;
     },
     {}
@@ -136,17 +146,15 @@ export default async function CompanyDetailsPage({
   );
 
   const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
-    const latestAttempt = latestAttemptByQuizId[quiz.id];
-    const answeredSteps = latestAttempt ? (answeredCountByAttempt[latestAttempt.id] ?? 0) : 0;
-    const correctSteps = latestAttempt
-      ? (correctAnswersByAttempt[latestAttempt.id]?.size ?? 0)
-      : 0;
+    const currentAttempt = activeAttemptByQuizId[quiz.id];
+    const answeredSteps = currentAttempt ? (answeredCountByAttempt[currentAttempt.id]?.size ?? 0) : 0;
+    const correctSteps = currentAttempt ? (correctAnswersByAttempt[currentAttempt.id]?.size ?? 0) : 0;
     const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;
-    const isSubmitted = Boolean(latestAttempt?.submitted_at);
-    const score = latestAttempt?.score ?? 0;
+    const isSubmitted = Boolean(currentAttempt?.submitted_at);
+    const score = currentAttempt?.score ?? 0;
 
-    const status = latestAttempt
-      ? latestAttempt.passed
+    const status = currentAttempt
+      ? currentAttempt.passed
         ? 'solved'
         : isSubmitted
           ? 'not-solved'
@@ -156,6 +164,8 @@ export default async function CompanyDetailsPage({
     return {
       id: quiz.id,
       title: quiz.title,
+      category: quiz.modules?.title ?? quiz.category ?? 'Challenge',
+      categorySortOrder: quiz.modules?.sort_order ?? 99,
       status,
       practicingCount: '0',
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
