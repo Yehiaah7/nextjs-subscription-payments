@@ -19,7 +19,8 @@
     "supabase:generate-migration": "npx supabase db diff | npx supabase migration new",
     "supabase:generate-seed": "npx supabase db dump --data-only -f supabase/seed.sql",
     "supabase:push": "npx supabase db push",
-    "supabase:pull": "npx supabase db pull"
+    "supabase:pull": "npx supabase db pull",
+    "seed:productgym": "tsx scripts/seed-productgym.ts"
   },
   "dependencies": {
     "@radix-ui/react-toast": "^1.1.5",
@@ -37,7 +38,8 @@
     "stripe": "^14.25.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss": "^3.4.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
@@ -53,6 +55,7 @@
     "prettier": "^3.3.1",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "supabase": "^1.172.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "tsx": "^4.20.3"
   }
 }

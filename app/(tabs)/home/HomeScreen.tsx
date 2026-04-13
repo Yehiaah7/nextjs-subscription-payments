@@ -33,6 +33,7 @@ export type SkillPathChallenge = {
   id: string;
   categoryId: string;
   title: string;
+  level: Seniority;
   practicingCount: number;
   durationMin: number;
   durationMax: number;
@@ -90,7 +91,9 @@ export default function HomeScreen({
     ) ?? skillPathCategories[0];
   const selectedCategoryChallenges = selectedCategory
     ? skillPathChallenges.filter(
-        (challenge) => challenge.categoryId === selectedCategory.id
+        (challenge) =>
+          challenge.categoryId === selectedCategory.id &&
+          challenge.level === selectedSeniority
       )
     : [];
 
@@ -318,12 +321,13 @@ function SkillPathChallengeCard({
           </span>
         </div>
       </div>
-      <button
+      <Link
+        href={`/challenge/${challenge.id}`}
         className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
         aria-label={challenge.title}
       >
         <ChevronRight className="h-4 w-4" />
-      </button>
+      </Link>
     </article>
   );
 }

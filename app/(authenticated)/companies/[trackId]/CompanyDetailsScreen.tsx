@@ -6,7 +6,7 @@ import {
   SENIORITY_STORAGE_KEY,
   Seniority
 } from '@/components/seniority/constants';
-import { ChevronLeft, ChevronRight, CircleDot, Clock3, UserRound } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CircleDot, Clock3, RotateCcw, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -18,6 +18,8 @@ export type CompanyChallenge = {
   practicingCount: string;
   duration: string;
   seniority: Seniority;
+  completedSteps: number;
+  totalSteps: number;
 };
 type FilterTab = 'all' | ChallengeStatus;
 
@@ -143,7 +145,7 @@ export default function CompanyDetailsScreen({
           filteredChallenges.map((challenge) => (
             <Link
               key={challenge.id}
-              href={`/challenge/${company.id}?company=${company.id}`}
+              href={`/challenge/${challenge.id}?company=${company.id}`}
               className="app-card block"
             >
               <div className="flex items-center justify-between gap-3">
@@ -156,6 +158,9 @@ export default function CompanyDetailsScreen({
                   >
                     {STATUS_LABELS[challenge.status]}
                   </span>
+                  {challenge.status === 'not-solved' ? (
+                    <RotateCcw className="h-4 w-4 text-amber-500" aria-label="Retry" />
+                  ) : null}
                 </div>
                 <span className="grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted">
                   <ChevronRight className="h-4 w-4" />
@@ -170,6 +175,19 @@ export default function CompanyDetailsScreen({
                   <Clock3 className="h-3.5 w-3.5" />
                   {challenge.duration}
                 </span>
+              </div>
+              <div className="mt-3">
+                <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
+                  {challenge.completedSteps}/{challenge.totalSteps} steps correct
+                </div>
+                <div className="h-2 rounded-pill bg-surface-soft">
+                  <div
+                    className="h-full rounded-pill bg-primary"
+                    style={{
+                      width: `${challenge.totalSteps ? (challenge.completedSteps / challenge.totalSteps) * 100 : 0}%`
+                    }}
+                  />
+                </div>
               </div>
             </Link>
           ))
