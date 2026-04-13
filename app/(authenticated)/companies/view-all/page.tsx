@@ -1,7 +1,6 @@
 import { createUntypedClient } from '@/utils/supabase/untyped';
 import { requireUser } from '@/utils/auth/require-user';
 import CompaniesScreen, { CompanyTrack } from '../CompaniesScreen';
-import { MOCK_COMPANIES } from '../mock-data';
 
 type TrackRow = {
   id: string;
@@ -55,7 +54,7 @@ export default async function ViewAllCompaniesPage() {
     .eq('is_published', true)
     .order('title', { ascending: true });
 
-  const tracks = (tracksData ?? []) as TrackRow[];
+  const tracks = Array.from(new Map(((tracksData ?? []) as TrackRow[]).map((track) => [track.id, track])).values());
   const trackIds = tracks.map((track) => track.id);
 
   const { data: modulesData } = trackIds.length
@@ -71,11 +70,9 @@ export default async function ViewAllCompaniesPage() {
     {}
   );
 
-  const companyTracks = tracks.length
-    ? tracks.map((track, index) =>
-        toCompanyTrack(track, modulesByTrackId[track.id] ?? 0, index)
-      )
-    : MOCK_COMPANIES;
+  const companyTracks = tracks.map((track, index) =>
+    toCompanyTrack(track, modulesByTrackId[track.id] ?? 0, index)
+  );
 
   return <CompaniesScreen companyTracks={companyTracks} />;
 }

@@ -35,7 +35,7 @@ export default async function HomePage() {
     .eq('type', 'company')
     .order('title', { ascending: true });
 
-  const tracks = (tracksData ?? []) as TrackRow[];
+  const tracks = Array.from(new Map(((tracksData ?? []) as TrackRow[]).map((track) => [track.id, track])).values());
   const trackIds = tracks.map((track) => track.id);
 
   const { data: quizzesData } = trackIds.length

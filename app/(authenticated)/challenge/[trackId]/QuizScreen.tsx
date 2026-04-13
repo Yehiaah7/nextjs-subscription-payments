@@ -9,7 +9,7 @@ import { createClient } from '@/utils/supabase/client';
 type Question = {
   id: string;
   prompt: string;
-  feedback: string | null;
+  explanation: string | null;
   sort_order: number;
   points: number;
   options: { id: string; label: string; sort_order: number; is_correct: boolean }[];
@@ -44,6 +44,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const supabase = useMemo(() => createClient() as any, []);
   const searchParams = useSearchParams();
   const companyId = searchParams.get('company');
+  const retryMode = searchParams.get('retry') === '1';
   const returnToTrackHref = companyId ? `/companies/${companyId}` : '/home';
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -58,10 +59,15 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
   useEffect(() => {
     const loadQuiz = async () => {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { data: quizData } = await supabase
         .from('quizzes')
         .select(
-          'id,title,module_id,pass_score,modules(title),questions(id,prompt,feedback,sort_order,points,options(id,label,sort_order,is_correct))'
+          'id,title,module_id,pass_score,modules(title),questions(id,prompt,explanation,sort_order,points,options(id,label,sort_order,is_correct))'
         )
         .eq('id', challengeId)
         .single();
@@ -70,27 +76,26 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
       const normalizedQuiz = {
         ...quizData,
-        questions: (quizData.questions ?? []).sort(
-          (a: Question, b: Question) => a.sort_order - b.sort_order
-        )
+        questions: (quizData.questions ?? []).sort((a: Question, b: Question) => a.sort_order - b.sort_order)
       } as Quiz;
       setQuiz(normalizedQuiz);
 
-      const { data: latestAttempt } = await supabase
+      const { data: allAttempts } = await supabase
         .from('attempts')
         .select('id,submitted_at,passed,score,started_at')
         .eq('quiz_id', challengeId)
-        .order('started_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .eq('user_id', user.id)
+        .order('started_at', { ascending: false });
 
-      let effectiveAttempt = latestAttempt;
-      const passedReview = Boolean(latestAttempt?.submitted_at && latestAttempt?.passed);
+      const latestAttempt = (allAttempts ?? [])[0] ?? null;
+      const latestInProgress = (allAttempts ?? []).find((attempt: any) => !attempt.submitted_at) ?? null;
 
-      if (!effectiveAttempt || (effectiveAttempt.submitted_at && !effectiveAttempt.passed)) {
+      let effectiveAttempt = latestInProgress ?? latestAttempt;
+
+      if (!effectiveAttempt || (retryMode && latestAttempt?.submitted_at && latestAttempt?.passed === false)) {
         const { data: newAttempt } = await supabase
           .from('attempts')
-          .insert({ quiz_id: challengeId })
+          .insert({ quiz_id: challengeId, user_id: user.id })
           .select('id,submitted_at,passed,score,started_at')
           .single();
         effectiveAttempt = newAttempt;
@@ -98,6 +103,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
       if (!effectiveAttempt) return;
       setAttemptId(effectiveAttempt.id);
+
+      const passedReview = Boolean(effectiveAttempt.submitted_at && effectiveAttempt.passed);
       setReviewMode(passedReview);
       setScore(effectiveAttempt.score ?? null);
 
@@ -114,20 +121,18 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           answeredCorrect: Boolean(answer.options?.is_correct),
           hadWrongBefore: Boolean(parsedMeta.hadWrongBefore),
           pointsAwarded: answer.points_awarded ?? 0,
-          feedbackText: normalizedQuiz.questions.find((question) => question.id === answer.question_id)?.feedback ?? ''
+          feedbackText: normalizedQuiz.questions.find((q) => q.id === answer.question_id)?.explanation ?? ''
         };
       }
 
       setAttemptStates(nextStates);
 
-      const firstPending = normalizedQuiz.questions.findIndex(
-        (question) => !nextStates[question.id]?.answeredCorrect
-      );
+      const firstPending = normalizedQuiz.questions.findIndex((question) => !nextStates[question.id]?.answeredCorrect);
       setActiveIndex(firstPending >= 0 ? firstPending : 0);
     };
 
     loadQuiz().finally(() => setLoading(false));
-  }, [challengeId, supabase]);
+  }, [challengeId, retryMode, supabase]);
 
   const onSelectOption = async (question: Question, optionId: string) => {
     if (!attemptId || reviewMode) return;
@@ -157,22 +162,22 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         answeredCorrect: option.is_correct,
         hadWrongBefore,
         pointsAwarded,
-        feedbackText: question.feedback ?? ''
+        feedbackText: question.explanation ?? ''
       }
     };
     setAttemptStates(nextStates);
 
-    const allQuestionsCorrect = quiz?.questions.every(
-      (quizQuestion) =>
-        (quizQuestion.id === question.id ? option.is_correct : nextStates[quizQuestion.id]?.answeredCorrect) === true
-    );
+    const allQuestionsCorrect =
+      quiz?.questions.every(
+        (quizQuestion) =>
+          (quizQuestion.id === question.id
+            ? option.is_correct
+            : nextStates[quizQuestion.id]?.answeredCorrect) === true
+      ) ?? false;
 
     if (quiz && allQuestionsCorrect) {
       const totalPossible = quiz.questions.reduce((sum, item) => sum + item.points, 0);
-      const awarded = quiz.questions.reduce(
-        (sum, item) => sum + (nextStates[item.id]?.pointsAwarded ?? 0),
-        0
-      );
+      const awarded = quiz.questions.reduce((sum, item) => sum + (nextStates[item.id]?.pointsAwarded ?? 0), 0);
       const finalScore = Math.round((awarded / Math.max(totalPossible, 1)) * 100);
       const passed = finalScore >= (quiz.pass_score ?? 60);
 
@@ -186,22 +191,20 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       return;
     }
 
-    const current = quiz?.questions.findIndex((item) => item.id === question.id) ?? activeIndex;
-    const nextIndex = Math.min((quiz?.questions.length ?? 1) - 1, current + 1);
-    setActiveIndex(nextIndex);
+    if (option.is_correct) {
+      const current = quiz?.questions.findIndex((item) => item.id === question.id) ?? activeIndex;
+      const nextIndex = Math.min((quiz?.questions.length ?? 1) - 1, current + 1);
+      setActiveIndex(nextIndex);
+    }
   };
 
   if (loading || !quiz || !currentQuestion) {
-    return (
-      <div className="mx-auto w-full max-w-[361px] rounded-2xl bg-white p-4">
-        Loading challenge...
-      </div>
-    );
+    return <div className="mx-auto w-full max-w-[361px] rounded-2xl bg-white p-4">Loading challenge...</div>;
   }
 
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
-  const answeredCount = Object.keys(attemptStates).length;
-  const canMoveNext = reviewMode || Boolean(currentState.selectedOptionId);
+  const completedCount = quiz.questions.filter((question) => attemptStates[question.id]?.answeredCorrect).length;
+  const canMoveNext = reviewMode || Boolean(currentState.answeredCorrect);
 
   return (
     <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 pb-4 text-text">
@@ -221,19 +224,15 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       <div className="h-2 rounded-pill bg-surface-soft">
         <div
           className="h-full rounded-pill bg-primary"
-          style={{ width: `${(answeredCount / Math.max(quiz.questions.length, 1)) * 100}%` }}
+          style={{ width: `${(completedCount / Math.max(quiz.questions.length, 1)) * 100}%` }}
         />
       </div>
 
       <section>
-        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">
-          {quiz.modules?.title ?? 'Challenge'}
-        </p>
+        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">{quiz.modules?.title ?? 'Challenge'}</p>
         <h1 className="mt-2 text-base font-bold leading-6 text-[#0f172b]">{quiz.title}</h1>
         {score !== null ? (
-          <p className="mt-1 text-[11px] font-black uppercase tracking-[0.08em] text-muted">
-            Score: {score}%
-          </p>
+          <p className="mt-1 text-[11px] font-black uppercase tracking-[0.08em] text-muted">Score: {score}%</p>
         ) : null}
       </section>
 
@@ -266,9 +265,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                 onClick={() => onSelectOption(currentQuestion, option.id)}
                 className={`w-full rounded-2xl border p-3 text-left ${className}`}
               >
-                <p className="text-sm font-bold text-[#0f172b]">
-                  Option {String.fromCharCode(64 + option.sort_order)}
-                </p>
+                <p className="text-sm font-bold text-[#0f172b]">Option {String.fromCharCode(64 + option.sort_order)}</p>
                 <p className="text-xs text-[#62748e]">{option.label}</p>
               </button>
             );
@@ -276,15 +273,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       </section>
 
       {currentState.selectedOptionId || reviewMode ? (
-        <div
-          className={`rounded-2xl p-3 text-sm ${
-            currentState.answeredCorrect ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'
-          }`}
-        >
-          <p className="font-black uppercase tracking-[0.08em]">
-            {currentState.answeredCorrect ? 'Correct' : 'Incorrect'}
-          </p>
-          <p>{currentQuestion.feedback ?? currentState.feedbackText}</p>
+        <div className={`rounded-2xl p-3 text-sm ${currentState.answeredCorrect ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'}`}>
+          <p className="font-black uppercase tracking-[0.08em]">{currentState.answeredCorrect ? 'Correct' : 'Incorrect'}</p>
+          <p>{currentQuestion.explanation ?? currentState.feedbackText}</p>
         </div>
       ) : null}
 
