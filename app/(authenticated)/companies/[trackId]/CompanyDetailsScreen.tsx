@@ -20,6 +20,9 @@ export type CompanyChallenge = {
   seniority: Seniority;
   completedSteps: number;
   totalSteps: number;
+  score: number;
+  retake: boolean;
+  reviewAvailable: boolean;
 };
 type FilterTab = 'all' | ChallengeStatus;
 
@@ -71,9 +74,7 @@ export default function CompanyDetailsScreen({
     () =>
       challenges
         .filter((challenge) => challenge.seniority === selectedSeniority)
-        .filter((challenge) =>
-          filter === 'all' ? true : challenge.status === filter
-        ),
+        .filter((challenge) => (filter === 'all' ? true : challenge.status === filter)),
     [challenges, filter, selectedSeniority]
   );
 
@@ -115,10 +116,7 @@ export default function CompanyDetailsScreen({
 
       <div className="mb-4 flex items-center gap-2">
         <span className="t-card-title">Practice</span>
-        <SeniorityDropdown
-          selected={selectedSeniority}
-          onSelect={setSelectedSeniority}
-        />
+        <SeniorityDropdown selected={selectedSeniority} onSelect={setSelectedSeniority} />
       </div>
 
       <div className="app-segment mb-4 grid grid-cols-4 text-center">
@@ -145,7 +143,7 @@ export default function CompanyDetailsScreen({
           filteredChallenges.map((challenge) => (
             <Link
               key={challenge.id}
-              href={`/challenge/${challenge.id}?company=${company.id}`}
+              href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}`}
               className="app-card block"
             >
               <div className="flex items-center justify-between gap-3">
@@ -158,8 +156,8 @@ export default function CompanyDetailsScreen({
                   >
                     {STATUS_LABELS[challenge.status]}
                   </span>
-                  {challenge.status === 'not-solved' ? (
-                    <RotateCcw className="h-4 w-4 text-amber-500" aria-label="Retry" />
+                  {challenge.retake ? (
+                    <RotateCcw className="h-4 w-4 text-amber-500" aria-label="Retake" />
                   ) : null}
                 </div>
                 <span className="grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted">
@@ -175,6 +173,7 @@ export default function CompanyDetailsScreen({
                   <Clock3 className="h-3.5 w-3.5" />
                   {challenge.duration}
                 </span>
+                <span className="inline-flex items-center gap-1">Score: {challenge.score}%</span>
               </div>
               <div className="mt-3">
                 <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
@@ -184,7 +183,11 @@ export default function CompanyDetailsScreen({
                   <div
                     className="h-full rounded-pill bg-primary"
                     style={{
-                      width: `${challenge.totalSteps ? (challenge.completedSteps / challenge.totalSteps) * 100 : 0}%`
+                      width: `${
+                        challenge.totalSteps
+                          ? (challenge.completedSteps / challenge.totalSteps) * 100
+                          : 0
+                      }%`
                     }}
                   />
                 </div>
