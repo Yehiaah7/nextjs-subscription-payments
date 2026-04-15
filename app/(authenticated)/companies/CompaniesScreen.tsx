@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, CircleDot, UserRound } from 'lucide-react';
+import { Building2, ChevronLeft, ChevronRight, CircleDot, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { cardInteractive, focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
@@ -12,17 +12,6 @@ export type CompanyTrack = {
   practicingCount: string;
   progress: number;
 };
-
-function GoogleGlyph() {
-  return (
-    <span className="text-[20px] font-black leading-none" aria-hidden>
-      <span className="text-[#4285f4]">G</span>
-      <span className="text-[#ea4335]">•</span>
-      <span className="text-[#fbbc05]">•</span>
-      <span className="text-[#34a853]">•</span>
-    </span>
-  );
-}
 
 export default function CompaniesScreen({
   companyTracks
@@ -53,12 +42,12 @@ export default function CompaniesScreen({
             className={cn('app-card block cursor-pointer', cardInteractive, focusRingInteractive)}
           >
             <div className="mb-3 flex items-start gap-3">
-              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-card bg-container">
-                <GoogleGlyph />
+              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-card bg-container text-muted">
+                <Building2 className="h-7 w-7" aria-hidden />
               </div>
               <div>
                 <h2 className="t-card-title text-[22px]">{track.title}</h2>
-                <p className="t-body-muted">Focus: {track.focus}</p>
+                {track.focus ? <p className="t-body-muted">Focus: {track.focus}</p> : null}
                 <div className="t-label mt-1 flex items-center gap-3 text-muted">
                   <span className="flex items-center gap-1">
                     <CircleDot className="h-4 w-4" />
