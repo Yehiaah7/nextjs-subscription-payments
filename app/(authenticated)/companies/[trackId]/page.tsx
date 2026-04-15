@@ -1,5 +1,4 @@
 import { createClient } from '@/utils/supabase/server';
-import { createUntypedClient } from '@/utils/supabase/untyped';
 import { notFound, redirect } from 'next/navigation';
 import CompanyDetailsScreen, { CompanyChallenge } from './CompanyDetailsScreen';
 
@@ -15,8 +14,8 @@ type QuizRow = {
   id: string;
   title: string;
   difficulty: Seniority | null;
-  category: string | null;
-  modules: { title: string; sort_order: number | null } | null;
+  module_id: string | null;
+  modules: { title: string; track_id: string } | null;
 };
 
 type QuestionRow = {
@@ -46,7 +45,6 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
   const { trackId } = params;
 
   const supabase = createClient();
-  const db = createUntypedClient();
 
   const {
     data: { user }
@@ -54,7 +52,7 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
 
   if (!user) redirect('/login');
 
-  const { data: companyData } = await db
+  const { data: companyData } = await supabase
     .from('tracks')
     .select('id,title,description')
     .eq('id', trackId)
@@ -65,23 +63,28 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
   const company = companyData as TrackRow | null;
   if (!company) notFound();
 
-  const { data: quizzesData } = await db
+  const { data: quizzesData, error: quizzesError } = await supabase
     .from('quizzes')
-    .select('id,title,difficulty,category,modules(title,sort_order)')
+    .select('id,title,difficulty,module_id,modules!inner(title,track_id)')
     .eq('modules.track_id', company.id)
-    .order('sort_order', { foreignTable: 'modules', ascending: true })
     .order('title', { ascending: true });
 
   const quizzes = (quizzesData ?? []) as QuizRow[];
+  if (!quizzesData?.length) {
+    console.error('[CompanyDetailsPage] quizzes query returned no rows', {
+      companyId: company.id,
+      quizzesError
+    });
+  }
   const quizIds = quizzes.map((quiz) => quiz.id);
 
   const { data: questionsData } = quizIds.length
-    ? await db.from('questions').select('id,quiz_id').in('quiz_id', quizIds)
+    ? await supabase.from('questions').select('id,quiz_id').in('quiz_id', quizIds)
     : { data: [] as QuestionRow[] };
   const questions = (questionsData ?? []) as QuestionRow[];
 
   const { data: attemptsData } = quizIds.length
-    ? await db
+    ? await supabase
         .from('attempts')
         .select('id,quiz_id,submitted_at,passed,score,started_at')
         .eq('user_id', user.id)
@@ -111,12 +114,19 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
     .filter(Boolean);
 
   const { data: answersData } = activeAttemptIds.length
-    ? await db
+    ? await supabase
         .from('answers')
         .select('attempt_id,question_id,option_id,options(is_correct)')
         .in('attempt_id', activeAttemptIds)
     : { data: [] as AnswerRow[] };
   const answers = (answersData ?? []) as AnswerRow[];
+
+  console.log('[CompanyDetailsPage] loaded dataset counts', {
+    companyId: company.id,
+    quizzesCount: quizzesData?.length ?? 0,
+    questionsCount: questionsData?.length ?? 0,
+    attemptsCount: attemptsData?.length ?? 0
+  });
 
   const answeredCountByAttempt = answers.reduce(
     (acc: Record<string, Set<string>>, answer) => {
@@ -164,8 +174,8 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
     return {
       id: quiz.id,
       title: quiz.title,
-      category: quiz.modules?.title ?? quiz.category ?? 'Challenge',
-      categorySortOrder: quiz.modules?.sort_order ?? 99,
+      category: quiz.modules?.title ?? 'Challenge',
+      categorySortOrder: 99,
       status,
       practicingCount: '0',
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
