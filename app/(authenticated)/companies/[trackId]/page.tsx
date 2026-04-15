@@ -40,6 +40,15 @@ type AnswerRow = {
 };
 
 const formatCompact = (value: number) => (value >= 1000 ? `${(value / 1000).toFixed(1)}K` : `${value}`);
+const hashString = (value: string) =>
+  value
+    .split('')
+    .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 100000, 11);
+
+const deterministicRange = (seedSource: string, min: number, max: number) => {
+  const seed = hashString(seedSource);
+  return min + (seed % (max - min + 1));
+};
 
 export default async function CompanyDetailsPage({ params }: { params: { trackId: string } }) {
   const { trackId } = params;
@@ -177,7 +186,7 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
       category: quiz.modules?.title ?? 'Challenge',
       categorySortOrder: 99,
       status,
-      practicingCount: '0',
+      practicingCount: `${deterministicRange(quiz.id, 10, 100)}`,
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
       seniority: (quiz.difficulty ?? 'junior') as Seniority,
       answeredSteps,
