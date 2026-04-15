@@ -222,6 +222,19 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     return (
       <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 rounded-2xl bg-white p-4 text-text shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
         <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">Challenge Complete</p>
+        <div className="relative flex items-center justify-center py-1">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+            <span className="absolute left-[14%] top-[28%] h-1.5 w-1.5 animate-pulse rounded-full bg-[#155dfc]/60" />
+            <span className="absolute left-[24%] top-[62%] h-1 w-1 animate-pulse rounded-full bg-[#60a5fa]/70 [animation-delay:120ms]" />
+            <span className="absolute right-[18%] top-[30%] h-1.5 w-1.5 animate-pulse rounded-full bg-[#3b82f6]/60 [animation-delay:220ms]" />
+            <span className="absolute right-[28%] top-[66%] h-1 w-1 animate-pulse rounded-full bg-[#93c5fd]/80 [animation-delay:340ms]" />
+          </div>
+          <div className="relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white shadow-[0_8px_24px_-14px_rgba(21,93,252,0.7)]">
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-[#155dfc] text-white shadow-[0_4px_16px_-8px_rgba(21,93,252,0.9)]">
+              <CheckCircle2 className="h-7 w-7" />
+            </div>
+          </div>
+        </div>
         <h1 className="text-base font-bold leading-6 text-[#0f172b]">Your score: {result.scorePercent}%</h1>
         <p className="text-sm text-[#45556c]">
           Points earned: {result.awarded}/{result.total}

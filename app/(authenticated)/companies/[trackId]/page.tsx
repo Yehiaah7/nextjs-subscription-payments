@@ -36,7 +36,7 @@ type AnswerRow = {
   attempt_id: string;
   question_id: string;
   option_id: string | null;
-  options: { is_correct: boolean } | null;
+  points_awarded: number | null;
 };
 
 const formatCompact = (value: number) => (value >= 1000 ? `${(value / 1000).toFixed(1)}K` : `${value}`);
@@ -112,24 +112,40 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
     {}
   );
 
-  const latestAttemptIds = Object.values(latestAttemptByQuizId)
-    .map((attempt) => attempt?.id)
-    .filter(Boolean);
+  const latestActiveAttemptByQuizId = attempts.reduce(
+    (acc: Record<string, AttemptRow>, attempt) => {
+      if (!attempt.submitted_at && !acc[attempt.quiz_id]) {
+        acc[attempt.quiz_id] = attempt;
+      }
+      return acc;
+    },
+    {}
+  );
 
-  const { data: answersData } = latestAttemptIds.length
+  const attemptIdsToLoadAnswers = Array.from(
+    new Set([
+      ...Object.values(latestAttemptByQuizId).map((attempt) => attempt?.id),
+      ...Object.values(latestActiveAttemptByQuizId).map((attempt) => attempt?.id)
+    ])
+  ).filter(Boolean);
+
+  const { data: answersData } = attemptIdsToLoadAnswers.length
     ? await supabase
         .from('answers')
-        .select('attempt_id,question_id,option_id,options(is_correct)')
-        .in('attempt_id', latestAttemptIds)
+        .select('attempt_id,question_id,option_id,points_awarded')
+        .in('attempt_id', attemptIdsToLoadAnswers)
     : { data: [] as AnswerRow[] };
   const answers = (answersData ?? []) as AnswerRow[];
 
-  console.log('[CompanyDetailsPage] loaded dataset counts', {
-    companyId: company.id,
-    quizzesCount: quizzesData?.length ?? 0,
-    questionsCount: questionsData?.length ?? 0,
-    attemptsCount: attemptsData?.length ?? 0
-  });
+  const solvedQuestionsByAttempt = answers.reduce(
+    (acc: Record<string, Set<string>>, answer) => {
+      if ((answer.points_awarded ?? 0) <= 0) return acc;
+      acc[answer.attempt_id] ??= new Set<string>();
+      acc[answer.attempt_id].add(answer.question_id);
+      return acc;
+    },
+    {}
+  );
 
   const answeredCountByAttempt = answers.reduce(
     (acc: Record<string, Set<string>>, answer) => {
@@ -140,15 +156,12 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
     {}
   );
 
-  const correctAnswersByAttempt = answers.reduce(
-    (acc: Record<string, Set<string>>, answer) => {
-      if (!answer.options?.is_correct) return acc;
-      acc[answer.attempt_id] ??= new Set<string>();
-      acc[answer.attempt_id].add(answer.question_id);
-      return acc;
-    },
-    {}
-  );
+  console.log('[CompanyDetailsPage] loaded dataset counts', {
+    companyId: company.id,
+    quizzesCount: quizzesData?.length ?? 0,
+    questionsCount: questionsData?.length ?? 0,
+    attemptsCount: attemptsData?.length ?? 0
+  });
 
   const totalQuestionsByQuiz = questions.reduce(
     (acc: Record<string, number>, question) => {
@@ -160,8 +173,10 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
 
   const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
     const currentAttempt = latestAttemptByQuizId[quiz.id];
-    const answeredSteps = currentAttempt ? (answeredCountByAttempt[currentAttempt.id]?.size ?? 0) : 0;
-    const correctSteps = currentAttempt ? (correctAnswersByAttempt[currentAttempt.id]?.size ?? 0) : 0;
+    const activeAttempt = latestActiveAttemptByQuizId[quiz.id];
+    const progressAttempt = activeAttempt ?? currentAttempt;
+    const answeredSteps = progressAttempt ? (answeredCountByAttempt[progressAttempt.id]?.size ?? 0) : 0;
+    const correctSteps = progressAttempt ? (solvedQuestionsByAttempt[progressAttempt.id]?.size ?? 0) : 0;
     const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;
     const isSubmitted = Boolean(currentAttempt?.submitted_at);
     const score = currentAttempt?.score ?? 0;
