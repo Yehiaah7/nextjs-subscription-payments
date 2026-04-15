@@ -114,3 +114,94 @@ body.mobile-app-page main#skip {
   .t-button { font-size: 12px; font-weight: var(--font-weight-label); letter-spacing: .08em; text-transform: uppercase; }
   .t-streak { font-size: 14px; font-weight: var(--font-weight-title); line-height: 1.4; }
 }
+
+@layer utilities {
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes option-correct-pop {
+    0% {
+      transform: scale(0.99);
+      box-shadow: 0 0 0 rgba(34, 197, 94, 0);
+    }
+    60% {
+      transform: scale(1.01);
+      box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.08);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 rgba(34, 197, 94, 0);
+    }
+  }
+
+  @keyframes option-wrong-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-2px);
+    }
+    50% {
+      transform: translateX(2px);
+    }
+    75% {
+      transform: translateX(-1px);
+    }
+  }
+
+  @keyframes completion-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-page-enter {
+    animation: page-enter 200ms ease-out both;
+  }
+
+  .animate-option-correct {
+    animation: option-correct-pop 150ms ease-out both;
+  }
+
+  .animate-option-wrong {
+    animation: option-wrong-shake 200ms ease-out 1;
+  }
+
+  .animate-completion-pop {
+    animation: completion-pop 180ms ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter,
+  .animate-option-correct,
+  .animate-option-wrong,
+  .animate-completion-pop {
+    animation: none !important;
+  }
+
+  .animate-page-enter,
+  .animate-option-correct,
+  .animate-option-wrong,
+  .animate-completion-pop,
+  .motion-safe\:hover\:-translate-y-\[1px\],
+  .active\:scale-\[0\.99\],
+  .active\:scale-\[0\.98\],
+  .active\:scale-\[0\.96\] {
+    transform: none !important;
+  }
+}
