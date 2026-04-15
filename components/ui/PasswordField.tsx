@@ -2,6 +2,8 @@
 
 import { Eye, EyeOff } from 'lucide-react';
 import { InputHTMLAttributes, ReactNode, useEffect, useRef, useState } from 'react';
+import { cn } from '@/utils/cn';
+import { iconBtnInteractive } from '@/components/ui/interactive';
 
 type PasswordFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   containerClassName?: string;
@@ -70,7 +72,7 @@ export default function PasswordField({
         onClick={toggleVisibility}
         aria-label={isVisible ? 'Hide password' : 'Show password'}
         aria-pressed={isVisible}
-        className="grid h-5 w-5 place-items-center"
+        className={cn('grid h-5 w-5 place-items-center rounded-full', iconBtnInteractive)}
       >
         {isVisible ? (
           <EyeOff className={iconClassName} aria-hidden="true" />

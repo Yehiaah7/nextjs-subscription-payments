@@ -2,6 +2,13 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { cn } from '@/utils/cn';
+import {
+  btnInteractive,
+  btnInteractiveNeutral,
+  focusRingInteractive,
+  tabInteractive
+} from '@/components/ui/interactive';
 import { SENIORITY_LABELS, SENIORITY_OPTIONS, Seniority } from './constants';
 
 export default function SeniorityDropdown({
@@ -18,7 +25,12 @@ export default function SeniorityDropdown({
       <button
         type="button"
         onClick={() => setShowSeniorityMenu((current) => !current)}
-        className="inline-flex items-center gap-1 rounded-pill bg-primary-soft px-2 py-0.5 text-primary"
+        className={cn(
+          'inline-flex items-center gap-1 rounded-pill bg-primary-soft px-2 py-0.5 text-primary',
+          btnInteractive,
+          btnInteractiveNeutral,
+          focusRingInteractive
+        )}
         aria-haspopup="menu"
         aria-expanded={showSeniorityMenu}
       >
@@ -35,11 +47,14 @@ export default function SeniorityDropdown({
                 onSelect(option);
                 setShowSeniorityMenu(false);
               }}
-              className={`block w-full rounded-md px-2 py-1 text-left text-[12px] font-semibold leading-[1.35] ${
+              className={cn(
+                'block w-full rounded-md px-2 py-1 text-left text-[12px] font-semibold leading-[1.35]',
+                tabInteractive,
+                focusRingInteractive,
                 selected === option
                   ? 'bg-primary-soft text-primary'
                   : 'text-text hover:bg-surface-soft'
-              }`}
+              )}
             >
               {SENIORITY_LABELS[option]}
             </button>
