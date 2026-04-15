@@ -233,7 +233,7 @@ export default function HomeScreen({
               />
               <span>PM skills</span>
             </h3>
-            <Link href="/companies/view-all" className="t-label text-primary">
+            <Link href="/companies/view-all" className={cn('t-label text-primary', tabInteractive, focusRingInteractive)}>
               View all
             </Link>
           </div>
@@ -259,7 +259,7 @@ export default function HomeScreen({
               <button
                 key={category.id}
                 onClick={() => setSelectedSkillCategoryKey(category.key)}
-                className={`shrink-0 rounded-pill px-3 py-1 text-[10px] font-black uppercase tracking-[0.08em] ${
+                className={`shrink-0 rounded-pill px-3 py-1 text-[10px] font-black uppercase tracking-[0.08em] whitespace-nowrap ${
                   selectedCategory?.id === category.id
                     ? 'bg-container text-primary shadow-button'
                     : 'bg-[#e2e8f0] text-[#64748b]'
@@ -467,7 +467,7 @@ function TabButton({
     <button
       onClick={onClick}
       className={cn(
-        `h-full rounded-pill px-2 t-label ${active ? 'bg-container text-primary shadow-button' : 'text-muted'}`,
+        `h-full rounded-pill px-2 t-label whitespace-nowrap ${active ? 'bg-container text-primary shadow-button' : 'text-muted'}`,
         tabInteractive,
         focusRingInteractive
       )}

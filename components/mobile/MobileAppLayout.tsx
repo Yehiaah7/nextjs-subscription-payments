@@ -1,4 +1,6 @@
 import { PropsWithChildren } from 'react';
+import { cn } from '@/utils/cn';
+import { pageEnter } from '@/lib/motion';
 import BottomNav from './BottomNav';
 
 type MobileAppLayoutProps = PropsWithChildren<{
@@ -11,7 +13,7 @@ export default function MobileAppLayout({
 }: MobileAppLayoutProps) {
   return (
     <section className="min-h-dvh bg-bg text-text">
-      <main className={`app-shell ${showBottomNav ? 'app-shell-nav' : 'app-shell-page'}`}>
+      <main className={cn('app-shell', pageEnter, showBottomNav ? 'app-shell-nav' : 'app-shell-page')}>
         {children}
       </main>
       {showBottomNav ? <BottomNav data-testid="bottom-nav" /> : null}

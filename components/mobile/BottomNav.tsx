@@ -4,6 +4,8 @@ import { Bell, Home, Trophy, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ComponentProps } from 'react';
+import { focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 
 const visibleRoutes = new Set(['/home', '/leaderboard', '/alerts', '/profile']);
 
@@ -37,9 +39,18 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
             const active = pathname === href;
 
             return (
-              <Link key={href} href={href} className={`flex h-full flex-col items-center justify-center gap-0.5 ${active ? 'text-primary' : 'text-muted'}`}>
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'flex h-full flex-col items-center justify-center gap-0.5 rounded-md',
+                  active ? 'text-primary' : 'text-muted',
+                  iconBtnInteractive,
+                  focusRingInteractive
+                )}
+              >
                 <Icon className="h-[18px] w-[18px]" />
-                <span className="t-label">{label}</span>
+                <span className="t-label whitespace-nowrap">{label}</span>
               </Link>
             );
           })}

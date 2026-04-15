@@ -48,7 +48,7 @@ export default function SeniorityDropdown({
                 setShowSeniorityMenu(false);
               }}
               className={cn(
-                'block w-full rounded-md px-2 py-1 text-left text-[12px] font-semibold leading-[1.35]',
+                'block w-full rounded-md px-2 py-1 text-left text-[12px] font-semibold leading-[1.35] whitespace-nowrap',
                 tabInteractive,
                 focusRingInteractive,
                 selected === option

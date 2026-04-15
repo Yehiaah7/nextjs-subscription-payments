@@ -5,6 +5,8 @@ import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import { btnInteractive, btnInteractiveColored, btnInteractiveNeutral, cardInteractive, focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
 
 type Question = {
@@ -55,6 +57,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const [finishing, setFinishing] = useState(false);
   const [result, setResult] = useState<{ scorePercent: number; awarded: number; total: number } | null>(null);
   const [attemptStates, setAttemptStates] = useState<Record<string, AttemptState>>({});
+  const [wrongAnimatingOptionId, setWrongAnimatingOptionId] = useState<string | null>(null);
 
   const currentQuestion = quiz?.questions[activeIndex] ?? null;
 
@@ -183,6 +186,12 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     };
     const nextStates = { ...attemptStates, [question.id]: nextStateForQuestion };
     setAttemptStates(nextStates);
+    if (!option.is_correct) {
+      setWrongAnimatingOptionId(option.id);
+      window.setTimeout(() => {
+        setWrongAnimatingOptionId((current) => (current === option.id ? null : current));
+      }, 220);
+    }
 
     await supabase.from('answers').upsert(
       {
@@ -223,26 +232,25 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 rounded-2xl bg-white p-4 text-text shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
         <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">Challenge Complete</p>
         <div className="relative flex items-center justify-center py-1">
-          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
-            <span className="absolute left-[14%] top-[28%] h-1.5 w-1.5 animate-pulse rounded-full bg-[#155dfc]/60" />
-            <span className="absolute left-[24%] top-[62%] h-1 w-1 animate-pulse rounded-full bg-[#60a5fa]/70 [animation-delay:120ms]" />
-            <span className="absolute right-[18%] top-[30%] h-1.5 w-1.5 animate-pulse rounded-full bg-[#3b82f6]/60 [animation-delay:220ms]" />
-            <span className="absolute right-[28%] top-[66%] h-1 w-1 animate-pulse rounded-full bg-[#93c5fd]/80 [animation-delay:340ms]" />
-          </div>
-          <div className="relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white shadow-[0_8px_24px_-14px_rgba(21,93,252,0.7)]">
+          <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white shadow-[0_8px_24px_-14px_rgba(21,93,252,0.7)]">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[#155dfc] text-white shadow-[0_4px_16px_-8px_rgba(21,93,252,0.9)]">
               <CheckCircle2 className="h-7 w-7" />
             </div>
           </div>
         </div>
-        <h1 className="text-base font-bold leading-6 text-[#0f172b]">Your score: {result.scorePercent}%</h1>
-        <p className="text-sm text-[#45556c]">
+        <h1 className="animate-completion-pop text-base font-bold leading-6 text-[#0f172b]">Your score: {result.scorePercent}%</h1>
+        <p className="animate-completion-pop text-sm text-[#45556c]">
           Points earned: {result.awarded}/{result.total}
         </p>
         <button
           type="button"
           onClick={() => router.push(returnToTrackHref)}
-          className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white"
+          className={cn(
+            'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white',
+            btnInteractive,
+            btnInteractiveColored,
+            focusRingInteractive
+          )}
         >
           Back to Company
         </button>
@@ -255,7 +263,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       <header className="flex items-center justify-between">
         <Link
           href={returnToTrackHref}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[#0f172b]"
+          className={cn(
+            'inline-flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[#0f172b]',
+            iconBtnInteractive,
+            focusRingInteractive
+          )}
           aria-label="Back"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -305,7 +317,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                 key={option.id}
                 type="button"
                 onClick={() => onSelectOption(currentQuestion, option.id)}
-                className={`w-full rounded-2xl border p-3 text-left ${className}`}
+                className={cn(
+                  'w-full rounded-2xl border p-3 text-left transition-colors duration-150',
+                  className,
+                  cardInteractive,
+                  selected && isCorrect && 'animate-option-correct',
+                  selected && !isCorrect && wrongAnimatingOptionId === option.id && 'animate-option-wrong',
+                  focusRingInteractive
+                )}
               >
                 <p className="text-sm font-bold text-[#0f172b]">Option {String.fromCharCode(64 + option.sort_order)}</p>
                 <p className="text-xs text-[#62748e]">{option.label}</p>
@@ -339,7 +358,12 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             type="button"
             onClick={() => setActiveIndex((value) => Math.max(0, value - 1))}
             disabled={activeIndex === 0}
-            className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#94a3b8]"
+            className={cn(
+              'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#94a3b8]',
+              btnInteractive,
+              btnInteractiveNeutral,
+              focusRingInteractive
+            )}
           >
             <ChevronLeft className="h-4 w-4" /> Previous
           </button>
@@ -354,7 +378,12 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               setActiveIndex((value) => Math.min(quiz.questions.length - 1, value + 1));
             }}
             disabled={!canMoveNext || finishing}
-            className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50"
+            className={cn(
+              'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
+              btnInteractive,
+              btnInteractiveColored,
+              focusRingInteractive
+            )}
           >
             {isLastStep ? 'Finish' : 'Next'} <ChevronRight className="h-4 w-4" />
           </button>
@@ -362,7 +391,12 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         <button
           type="button"
           onClick={() => router.push(returnToTrackHref)}
-          className="inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]"
+          className={cn(
+            'inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+            btnInteractive,
+            btnInteractiveNeutral,
+            focusRingInteractive
+          )}
         >
           Back to challenges
         </button>
