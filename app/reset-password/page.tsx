@@ -1,6 +1,14 @@
 import Link from 'next/link';
 import { ChevronLeft, Eye, Lock } from 'lucide-react';
 import { resetPassword } from '@/app/auth/actions';
+import {
+  btnInteractive,
+  btnInteractiveColored,
+  focusRingInteractive,
+  iconBtnInteractive,
+  inputInteractive
+} from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 
 export default function ResetPasswordPage({
   searchParams
@@ -12,7 +20,11 @@ export default function ResetPasswordPage({
       <div className="w-full max-w-sm">
         <Link
           href="/login"
-          className="mb-7 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm"
+          className={cn(
+            'mb-7 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm',
+            iconBtnInteractive,
+            focusRingInteractive
+          )}
         >
           <ChevronLeft className="h-4 w-4" />
         </Link>
@@ -29,7 +41,7 @@ export default function ResetPasswordPage({
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               New password
             </label>
-            <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4">
+            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
               <Lock className="h-4 w-4 text-slate-300" />
               <input
                 name="password"
@@ -37,7 +49,7 @@ export default function ResetPasswordPage({
                 required
                 minLength={6}
                 placeholder="Password"
-                className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
+                className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
               />
               <Eye className="h-4 w-4 text-slate-300" />
             </div>
@@ -47,7 +59,7 @@ export default function ResetPasswordPage({
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Confirm password
             </label>
-            <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4">
+            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
               <Lock className="h-4 w-4 text-slate-300" />
               <input
                 name="passwordConfirm"
@@ -55,7 +67,7 @@ export default function ResetPasswordPage({
                 required
                 minLength={6}
                 placeholder="Confirm password"
-                className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
+                className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
               />
               <Eye className="h-4 w-4 text-slate-300" />
             </div>
@@ -63,7 +75,12 @@ export default function ResetPasswordPage({
 
           <button
             type="submit"
-            className="mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white"
+            className={cn(
+              'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
+              btnInteractive,
+              btnInteractiveColored,
+              focusRingInteractive
+            )}
           >
             Update password
           </button>

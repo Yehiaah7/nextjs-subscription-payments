@@ -2,10 +2,17 @@
 
 import SeniorityDropdown from '@/components/seniority/SeniorityDropdown';
 import {
+  cardInteractive,
+  focusRingInteractive,
+  iconBtnInteractive,
+  tabInteractive
+} from '@/components/ui/interactive';
+import {
   SENIORITY_OPTIONS,
   SENIORITY_STORAGE_KEY,
   Seniority
 } from '@/components/seniority/constants';
+import { cn } from '@/utils/cn';
 import { ChevronLeft, ChevronRight, CircleDot, Clock3, RotateCcw, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -91,7 +98,11 @@ export default function CompanyDetailsScreen({
       <header className="mb-4 flex items-center gap-3">
         <Link
           href="/home"
-          className="grid h-9 w-9 place-items-center rounded-button bg-surface-muted text-muted"
+          className={cn(
+            'grid h-9 w-9 place-items-center rounded-button bg-surface-muted text-muted',
+            iconBtnInteractive,
+            focusRingInteractive
+          )}
           aria-label="Back to companies"
         >
           <ChevronLeft className="h-5 w-5" />
@@ -132,11 +143,15 @@ export default function CompanyDetailsScreen({
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`rounded-pill px-2 t-label ${
-              filter === tab.key
-                ? 'bg-container text-primary shadow-button'
-                : 'text-muted'
-            }`}
+            className={cn(
+              `rounded-pill px-2 t-label ${
+                filter === tab.key
+                  ? 'bg-container text-primary shadow-button'
+                  : 'text-muted'
+              }`,
+              tabInteractive,
+              focusRingInteractive
+            )}
             type="button"
           >
             {tab.label}
@@ -152,7 +167,7 @@ export default function CompanyDetailsScreen({
             <Link
               key={challenge.id}
               href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
-              className="app-card block"
+              className={cn('app-card block', cardInteractive, focusRingInteractive)}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -171,7 +186,12 @@ export default function CompanyDetailsScreen({
                     <RotateCcw className="h-4 w-4 text-amber-500" aria-label="Retake" />
                   ) : null}
                 </div>
-                <span className="grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted">
+                <span
+                  className={cn(
+                    'grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted',
+                    iconBtnInteractive
+                  )}
+                >
                   <ChevronRight className="h-4 w-4" />
                 </span>
               </div>

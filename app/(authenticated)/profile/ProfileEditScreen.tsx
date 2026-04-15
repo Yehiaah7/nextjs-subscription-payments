@@ -3,6 +3,15 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import MobileScreen from '@/components/mobile/MobileScreen';
+import {
+  btnInteractive,
+  btnInteractiveColored,
+  btnInteractiveNeutral,
+  focusRingInteractive,
+  iconBtnInteractive,
+  inputInteractive
+} from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 import { updateProfile } from './actions';
 
 type ProfileValues = {
@@ -29,7 +38,16 @@ export default function ProfileEditScreen({ email, profile, status, error }: { e
     <MobileScreen>
       <section className="mx-auto w-full max-w-[361px]">
         <header className="mb-4 flex items-center gap-3">
-          <Link href="/profile" className="grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff]">‹</Link>
+          <Link
+            href="/profile"
+            className={cn(
+              'grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff]',
+              iconBtnInteractive,
+              focusRingInteractive
+            )}
+          >
+            ‹
+          </Link>
           <h1 className="text-[24px] font-bold tracking-[-0.6px] text-[#0f172b]">Edit Profile</h1>
         </header>
 
@@ -48,8 +66,29 @@ export default function ProfileEditScreen({ email, profile, status, error }: { e
             {error && <p className="text-xs font-medium text-red-500">{error}</p>}
 
             <div className="flex justify-end gap-2 pt-1">
-              <button type="button" onClick={() => setFormValues(initialValues)} className="h-[43px] w-[90px] rounded-[12px] border border-[#dbeafe] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]">Discard</button>
-              <button type="submit" className="h-[43px] w-[90px] rounded-[12px] bg-[#2563eb] text-[10px] font-black uppercase tracking-[1px] text-white">Save</button>
+              <button
+                type="button"
+                onClick={() => setFormValues(initialValues)}
+                className={cn(
+                  'h-[43px] w-[90px] rounded-[12px] border border-[#dbeafe] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]',
+                  btnInteractive,
+                  btnInteractiveNeutral,
+                  focusRingInteractive
+                )}
+              >
+                Discard
+              </button>
+              <button
+                type="submit"
+                className={cn(
+                  'h-[43px] w-[90px] rounded-[12px] bg-[#2563eb] text-[10px] font-black uppercase tracking-[1px] text-white',
+                  btnInteractive,
+                  btnInteractiveColored,
+                  focusRingInteractive
+                )}
+              >
+                Save
+              </button>
             </div>
           </form>
         </section>
@@ -72,7 +111,11 @@ function Field({ label, className = '', value, name, onChange, readOnly, require
         maxLength={maxLength}
         pattern={pattern}
         title={title}
-        className="h-[43px] w-full rounded-[12px] border border-[#dbeafe] bg-white px-3 text-[14px] font-medium text-[var(--profile-title-color)] read-only:bg-[#f8fafc] read-only:text-[#94a3b8]"
+        className={cn(
+          'h-[43px] w-full rounded-[12px] border border-[#dbeafe] bg-white px-3 text-[14px] font-medium text-[var(--profile-title-color)] read-only:bg-[#f8fafc] read-only:text-[#94a3b8]',
+          inputInteractive,
+          focusRingInteractive
+        )}
       />
     </div>
   );

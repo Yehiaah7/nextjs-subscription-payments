@@ -5,6 +5,14 @@ import { login } from '@/app/auth/actions';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
+import {
+  btnInteractive,
+  btnInteractiveColored,
+  focusRingInteractive,
+  iconBtnInteractive,
+  inputInteractive
+} from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 
 export default async function LoginPage({
   searchParams
@@ -30,7 +38,13 @@ export default async function LoginPage({
   return (
     <div className="flex justify-center min-h-[calc(100vh-80px)] bg-slate-200 px-4 py-6">
       <div className="w-full max-w-sm">
-        <div className="mb-7 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm">
+        <div
+          className={cn(
+            'mb-7 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm',
+            iconBtnInteractive,
+            focusRingInteractive
+          )}
+        >
           <ChevronLeft className="h-4 w-4" />
         </div>
 
@@ -46,13 +60,16 @@ export default async function LoginPage({
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Email or username
             </label>
-            <div className="flex h-12 items-center gap-2 rounded-2xl bg-white px-4">
+            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
               <input
                 name="email"
                 type="text"
                 required
                 placeholder="Enter your email or username"
-                className="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
+                className={cn(
+                  'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                  focusRingInteractive
+                )}
               />
               <UserRound className="h-4 w-4 text-slate-300" />
             </div>
@@ -75,8 +92,14 @@ export default async function LoginPage({
               required
               autoComplete="current-password"
               placeholder="Password"
-              containerClassName="flex h-12 items-center gap-2 rounded-2xl bg-white px-4"
-              inputClassName="h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400"
+              containerClassName={cn(
+                'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
+                inputInteractive
+              )}
+              inputClassName={cn(
+                'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                focusRingInteractive
+              )}
               leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
               iconClassName="h-4 w-4 text-slate-300"
             />
@@ -84,7 +107,12 @@ export default async function LoginPage({
 
           <button
             type="submit"
-            className="mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white"
+            className={cn(
+              'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
+              btnInteractive,
+              btnInteractiveColored,
+              focusRingInteractive
+            )}
           >
             Sign in
           </button>

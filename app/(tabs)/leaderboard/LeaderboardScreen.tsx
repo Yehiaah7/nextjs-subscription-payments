@@ -1,6 +1,8 @@
 'use client';
 
 import MobileScreen from '@/components/mobile/MobileScreen';
+import { focusRingInteractive, tabInteractive } from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 import { useMemo, useState } from 'react';
 
 type BoardTab = 'weekly' | 'all-time';
@@ -110,11 +112,15 @@ function SegmentButton({ label, active, onClick }: { label: string; active: bool
     <button
       onClick={onClick}
       type="button"
-      className={`rounded-[999px] text-[10px] font-black uppercase tracking-[1px] ${
-        active
-          ? 'bg-[var(--lb-tab-active-bg)] text-[var(--lb-tab-active-color)] shadow-[var(--lb-tab-active-shadow)]'
-          : 'text-[var(--lb-tab-inactive-color)]'
-      }`}
+      className={cn(
+        `rounded-[999px] text-[10px] font-black uppercase tracking-[1px] ${
+          active
+            ? 'bg-[var(--lb-tab-active-bg)] text-[var(--lb-tab-active-color)] shadow-[var(--lb-tab-active-shadow)]'
+            : 'text-[var(--lb-tab-inactive-color)]'
+        }`,
+        tabInteractive,
+        focusRingInteractive
+      )}
     >
       {label}
     </button>

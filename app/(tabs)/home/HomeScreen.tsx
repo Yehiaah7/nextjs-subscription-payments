@@ -4,12 +4,22 @@ import Link from 'next/link';
 import { CheckCircle2, ChevronRight, Flame, Rocket, Trophy, UserRound } from 'lucide-react';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
+import {
+  btnInteractive,
+  btnInteractiveColored,
+  btnInteractiveNeutral,
+  cardInteractive,
+  focusRingInteractive,
+  iconBtnInteractive,
+  tabInteractive
+} from '@/components/ui/interactive';
 import SeniorityDropdown from '@/components/seniority/SeniorityDropdown';
 import {
   SENIORITY_OPTIONS,
   SENIORITY_STORAGE_KEY,
   Seniority
 } from '@/components/seniority/constants';
+import { cn } from '@/utils/cn';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
@@ -144,7 +154,14 @@ export default function HomeScreen({
               </p>
             </div>
           </div>
-          <button className="rounded-pill bg-amber-400 px-2.5 py-1 t-label text-amber-950">
+          <button
+            className={cn(
+              'rounded-pill bg-amber-400 px-2.5 py-1 t-label text-amber-950',
+              btnInteractive,
+              btnInteractiveColored,
+              focusRingInteractive
+            )}
+          >
             Upgrade
           </button>
         </div>
@@ -251,7 +268,7 @@ export default function HomeScreen({
                   selectedCategory?.id === category.id
                     ? 'bg-container text-primary shadow-button'
                     : 'bg-[#e2e8f0] text-[#64748b]'
-                }`}
+                } ${tabInteractive} ${focusRingInteractive}`}
               >
                 {category.title}
               </button>
@@ -262,7 +279,14 @@ export default function HomeScreen({
             <h3 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
               {selectedCategory?.title ?? 'Skill Path'} Challenges
             </h3>
-            <button className="text-[10px] font-black uppercase tracking-[0.1em] text-primary">
+            <button
+              className={cn(
+                'rounded-pill px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-primary',
+                btnInteractive,
+                btnInteractiveNeutral,
+                focusRingInteractive
+              )}
+            >
               VIEW ALL
             </button>
           </div>
@@ -296,7 +320,12 @@ function SkillPathChallengeCard({
   challenge: SkillPathChallenge;
 }) {
   return (
-    <article className="app-card flex items-center justify-between gap-3 border border-primary-soft p-3">
+    <article
+      className={cn(
+        'app-card flex items-center justify-between gap-3 border border-primary-soft p-3',
+        cardInteractive
+      )}
+    >
       <div className="min-w-0 flex-1">
         <h4 className="line-clamp-2 text-[16px] font-bold leading-[1.35] text-[#0f172a]">
           {challenge.title}
@@ -310,7 +339,11 @@ function SkillPathChallengeCard({
       </div>
       <Link
         href={`/challenge/${challenge.id}`}
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+        className={cn(
+          'grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary',
+          iconBtnInteractive,
+          focusRingInteractive
+        )}
         aria-label={challenge.title}
       >
         <ChevronRight className="h-4 w-4" />
@@ -347,8 +380,8 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
   const boundedProgress = Math.max(0, Math.min(100, track.progress ?? 45));
 
   return (
-    <Link href={href} className="block w-full">
-      <article className="app-card border border-primary-soft">
+    <Link href={href} className={cn('block w-full', focusRingInteractive)}>
+      <article className={cn('app-card border border-primary-soft', cardInteractive)}>
         <div className="mb-3 flex items-start gap-3">
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#f1f5f9]">
             <div className="grid h-9 w-9 place-items-center rounded-[10px] bg-white text-sm font-bold text-[#0f172a]">
@@ -438,7 +471,11 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`h-full rounded-pill px-2 t-label ${active ? 'bg-container text-primary shadow-button' : 'text-muted'}`}
+      className={cn(
+        `h-full rounded-pill px-2 t-label ${active ? 'bg-container text-primary shadow-button' : 'text-muted'}`,
+        tabInteractive,
+        focusRingInteractive
+      )}
     >
       {label}
     </button>
