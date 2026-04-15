@@ -102,11 +102,6 @@ export default function HomeScreen({
     : [];
 
   const filteredCompanyTracks = companyTracks
-    .map((track) => ({
-      ...track,
-      moduleCount:
-        track.challengeCountsBySeniority?.[selectedSeniority] ?? track.moduleCount
-    }))
     .filter((track) => track.moduleCount > 0)
     .reduce<HomeTrack[]>((acc, track) => {
       if (acc.some((existing) => existing.id === track.id)) {
@@ -395,12 +390,12 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
             <p className="mt-0.5 truncate text-[12px] font-medium text-[#64748b]">
               {track.description ?? 'Product Sense'}
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-[0.1em] text-[#64748b]">
-              <span className="inline-flex items-center gap-1">
+            <div className="mt-2 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.1em] text-[#64748b]">
+              <span className="inline-flex items-center gap-1 whitespace-nowrap">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 {track.moduleCount} Challenges
               </span>
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 whitespace-nowrap">
                 <UserRound className="h-3.5 w-3.5" />
                 {track.practicingCount ?? '1.2K'} Practicing
               </span>

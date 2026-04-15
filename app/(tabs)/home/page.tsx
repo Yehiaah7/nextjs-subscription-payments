@@ -23,7 +23,24 @@ type QuizRow = {
   } | null;
 };
 
-const SENIORITIES: Seniority[] = ['junior', 'mid', 'senior'];
+type AttemptRow = {
+  id: string;
+  quiz_id: string;
+  submitted_at: string | null;
+  passed: boolean | null;
+  started_at: string;
+};
+
+const hashString = (value: string) =>
+  value
+    .split('')
+    .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 100000, 17);
+
+const deterministicRange = (seedSource: string, min: number, max: number) => {
+  const seed = hashString(seedSource);
+  return min + (seed % (max - min + 1));
+};
+
 export default async function HomePage() {
   const user = await requireUser();
   const db = createUntypedClient();
@@ -47,35 +64,53 @@ export default async function HomePage() {
 
   const quizzes = (quizzesData ?? []) as QuizRow[];
 
-  const companyTracks = tracks;
-
-  const challengesByTrackAndLevel = quizzes.reduce(
-    (acc: Record<string, Record<Seniority, number>>, quiz) => {
-      const level = (quiz.difficulty ?? 'junior') as Seniority;
+  const quizIds = quizzes.map((quiz) => quiz.id);
+  const quizzesByTrack = quizzes.reduce(
+    (acc: Record<string, QuizRow[]>, quiz) => {
       const trackId = quiz.modules?.track_id;
-      if (!trackId || !SENIORITIES.includes(level)) return acc;
-      acc[trackId] ??= { junior: 0, mid: 0, senior: 0 };
-      acc[trackId][level] += 1;
+      if (!trackId) return acc;
+      acc[trackId] ??= [];
+      acc[trackId].push(quiz);
       return acc;
     },
     {}
   );
 
-  const companyCards: HomeTrack[] = companyTracks.map((track) => {
-    const levelCounts = challengesByTrackAndLevel[track.id] ?? {
-      junior: 0,
-      mid: 0,
-      senior: 0
-    };
+  const { data: attemptsData } = quizIds.length
+    ? await db
+        .from('attempts')
+        .select('id,quiz_id,submitted_at,passed,started_at')
+        .eq('user_id', user.id)
+        .in('quiz_id', quizIds)
+        .order('started_at', { ascending: false })
+    : { data: [] as AttemptRow[] };
+  const attempts = (attemptsData ?? []) as AttemptRow[];
+
+  const attemptsByQuiz = attempts.reduce(
+    (acc: Record<string, AttemptRow[]>, attempt) => {
+      acc[attempt.quiz_id] ??= [];
+      acc[attempt.quiz_id].push(attempt);
+      return acc;
+    },
+    {}
+  );
+
+  const companyCards: HomeTrack[] = tracks.map((track) => {
+    const quizzesForTrack = quizzesByTrack[track.id] ?? [];
+    const totalChallenges = quizzesForTrack.length;
+    const solvedChallenges = quizzesForTrack.filter((quiz) =>
+      (attemptsByQuiz[quiz.id] ?? []).some((attempt) => Boolean(attempt.submitted_at) && Boolean(attempt.passed))
+    ).length;
+    const progress = totalChallenges ? Math.round((solvedChallenges / totalChallenges) * 100) : 0;
 
     return {
       id: track.id,
       title: track.title,
       description: track.description,
-      moduleCount: Object.values(levelCounts).reduce((total, count) => total + count, 0),
-      challengeCountsBySeniority: levelCounts,
-      practicingCount: '1.2K',
-      progress: 0
+      moduleCount: totalChallenges,
+      challengeCountsBySeniority: undefined,
+      practicingCount: `${deterministicRange(track.id, 50, 150)}`,
+      progress
     };
   });
 

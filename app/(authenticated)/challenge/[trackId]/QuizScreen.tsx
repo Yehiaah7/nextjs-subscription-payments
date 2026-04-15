@@ -26,14 +26,16 @@ type Quiz = {
 };
 
 type AttemptState = {
-  selectedOptionId: string | null;
+  solvedOptionId: string | null;
+  lastSelectedOptionId: string | null;
   isSolved: boolean;
   wrongAttemptsCount: number;
   pointsAwarded: number;
 };
 
 const emptyAttemptState: AttemptState = {
-  selectedOptionId: null,
+  solvedOptionId: null,
+  lastSelectedOptionId: null,
   isSolved: false,
   wrongAttemptsCount: 0,
   pointsAwarded: 0
@@ -51,6 +53,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [finishing, setFinishing] = useState(false);
+  const [result, setResult] = useState<{ scorePercent: number; awarded: number; total: number } | null>(null);
   const [attemptStates, setAttemptStates] = useState<Record<string, AttemptState>>({});
 
   const currentQuestion = quiz?.questions[activeIndex] ?? null;
@@ -107,10 +110,19 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
       const nextStates: Record<string, AttemptState> = {};
       for (const answer of answersData ?? []) {
-        const parsedMeta = answer.text_answer ? JSON.parse(answer.text_answer) : { wrongAttemptsCount: 0 };
+        let parsedMeta: { wrongAttemptsCount?: number; lastSelectedOptionId?: string; solvedOptionId?: string } = {};
+        if (answer.text_answer) {
+          try {
+            parsedMeta = JSON.parse(answer.text_answer);
+          } catch {
+            parsedMeta = {};
+          }
+        }
+        const solvedOptionId = answer.options?.is_correct ? answer.option_id : parsedMeta.solvedOptionId ?? null;
         nextStates[answer.question_id] = {
-          selectedOptionId: answer.option_id,
-          isSolved: Boolean(answer.options?.is_correct),
+          solvedOptionId,
+          lastSelectedOptionId: parsedMeta.lastSelectedOptionId ?? solvedOptionId ?? answer.option_id,
+          isSolved: Boolean(solvedOptionId),
           wrongAttemptsCount: Number(parsedMeta?.wrongAttemptsCount ?? 0),
           pointsAwarded: answer.points_awarded ?? 0
         };
@@ -139,51 +151,52 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       .update({ submitted_at: new Date().toISOString(), score: finalScore, passed })
       .eq('id', attemptId);
 
-    router.push(returnToTrackHref);
+    setResult({ scorePercent: finalScore, awarded, total: totalPossible });
+    setFinishing(false);
   };
 
   const onSelectOption = async (question: Question, optionId: string) => {
     if (!attemptId) return;
 
     const previousState = attemptStates[question.id] ?? emptyAttemptState;
-    if (previousState.isSolved) return;
-
     const option = question.options.find((item) => item.id === optionId);
     if (!option) return;
 
-    if (!option.is_correct) {
-      setAttemptStates((prev) => ({
-        ...prev,
-        [question.id]: {
-          ...previousState,
-          selectedOptionId: option.id,
-          isSolved: false,
-          wrongAttemptsCount: previousState.wrongAttemptsCount + 1
-        }
-      }));
-      return;
-    }
-
-    const pointsAwarded = Math.max(question.points - previousState.wrongAttemptsCount, 0);
+    const hasBeenSolved = previousState.isSolved && Boolean(previousState.solvedOptionId);
+    const solvedOptionId = option.is_correct ? option.id : previousState.solvedOptionId;
+    const wrongAttemptsCount =
+      option.is_correct || hasBeenSolved ? previousState.wrongAttemptsCount : previousState.wrongAttemptsCount + 1;
+    const pointsAwarded = hasBeenSolved
+      ? previousState.pointsAwarded
+      : option.is_correct
+        ? Math.max(question.points - previousState.wrongAttemptsCount, 0)
+        : previousState.pointsAwarded;
     const nextStateForQuestion: AttemptState = {
-      selectedOptionId: option.id,
-      isSolved: true,
-      wrongAttemptsCount: previousState.wrongAttemptsCount,
+      solvedOptionId,
+      lastSelectedOptionId: option.id,
+      isSolved: Boolean(solvedOptionId),
+      wrongAttemptsCount,
       pointsAwarded
     };
     const nextStates = { ...attemptStates, [question.id]: nextStateForQuestion };
     setAttemptStates(nextStates);
 
-    await supabase.from('answers').upsert(
-      {
-        attempt_id: attemptId,
-        question_id: question.id,
-        option_id: option.id,
-        points_awarded: pointsAwarded,
-        text_answer: JSON.stringify({ wrongAttemptsCount: previousState.wrongAttemptsCount })
-      },
-      { onConflict: 'attempt_id,question_id' }
-    );
+    if (nextStateForQuestion.isSolved) {
+      await supabase.from('answers').upsert(
+        {
+          attempt_id: attemptId,
+          question_id: question.id,
+          option_id: nextStateForQuestion.solvedOptionId,
+          points_awarded: nextStateForQuestion.pointsAwarded,
+          text_answer: JSON.stringify({
+            wrongAttemptsCount: nextStateForQuestion.wrongAttemptsCount,
+            solvedOptionId: nextStateForQuestion.solvedOptionId,
+            lastSelectedOptionId: nextStateForQuestion.lastSelectedOptionId
+          })
+        },
+        { onConflict: 'attempt_id,question_id' }
+      );
+    }
   };
 
   if (loading || !quiz || !currentQuestion) {
@@ -194,8 +207,34 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const completedCount = quiz.questions.filter((question) => attemptStates[question.id]?.isSolved).length;
   const isLastStep = activeIndex === quiz.questions.length - 1;
   const canMoveNext = Boolean(currentState.isSolved);
-  const showCorrectFeedback = currentState.isSolved;
-  const showWrongFeedback = Boolean(currentState.selectedOptionId) && !currentState.isSolved;
+  const showCorrectFeedback =
+    currentState.isSolved && currentState.lastSelectedOptionId === currentState.solvedOptionId;
+  const showWrongFeedback =
+    currentState.isSolved
+      ? Boolean(currentState.lastSelectedOptionId) && currentState.lastSelectedOptionId !== currentState.solvedOptionId
+      : Boolean(currentState.lastSelectedOptionId);
+  const selectedWrongOption = currentQuestion.options.find(
+    (option) => option.id === currentState.lastSelectedOptionId && !option.is_correct
+  );
+
+  if (result) {
+    return (
+      <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 rounded-2xl bg-white p-4 text-text shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
+        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">Challenge Complete</p>
+        <h1 className="text-base font-bold leading-6 text-[#0f172b]">Your score: {result.scorePercent}%</h1>
+        <p className="text-sm text-[#45556c]">
+          Points earned: {result.awarded}/{result.total}
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push(returnToTrackHref)}
+          className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white"
+        >
+          Back to Company
+        </button>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 pb-4 text-text">
@@ -239,13 +278,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         {currentQuestion.options
           .sort((a, b) => a.sort_order - b.sort_order)
           .map((option) => {
-            const selected = currentState.selectedOptionId === option.id;
+            const selected = currentState.lastSelectedOptionId === option.id;
             const isCorrect = option.is_correct;
-            const className = currentState.isSolved
-              ? selected && isCorrect
-                ? 'border-green-400 bg-green-50'
-                : 'border-[#e2e8f0] bg-white'
-              : selected
+            const className = selected
                 ? isCorrect
                   ? 'border-green-400 bg-green-50'
                   : 'border-red-200 bg-red-50'
@@ -255,7 +290,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               <button
                 key={option.id}
                 type="button"
-                disabled={currentState.isSolved}
                 onClick={() => onSelectOption(currentQuestion, option.id)}
                 className={`w-full rounded-2xl border p-3 text-left ${className}`}
               >
@@ -275,8 +309,13 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
       {showWrongFeedback ? (
         <div className="rounded-2xl bg-red-50 p-3 text-sm text-red-800">
-          <p className="font-black uppercase tracking-[0.08em]">Try again</p>
-          <p>That option is not correct yet. Choose another answer.</p>
+          <p className="font-black uppercase tracking-[0.08em]">Wrong</p>
+          <p>
+            {selectedWrongOption
+              ? `"${selectedWrongOption.label}" is not correct for this step.`
+              : 'That option is not correct for this step.'}{' '}
+            {currentState.isSolved ? 'This step stays solved—pick the correct option to view the correct feedback again.' : 'Try another option.'}
+          </p>
         </div>
       ) : null}
 

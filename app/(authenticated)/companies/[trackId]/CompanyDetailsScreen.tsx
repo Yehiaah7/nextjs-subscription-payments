@@ -138,13 +138,13 @@ export default function CompanyDetailsScreen({
         <SeniorityDropdown selected={selectedSeniority} onSelect={setSelectedSeniority} />
       </div>
 
-      <div className="app-segment mb-4 grid grid-cols-4 text-center">
+      <div className="app-segment mb-4 grid grid-cols-4 gap-1 text-center">
         {FILTERS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
             className={cn(
-              `rounded-pill px-2 t-label ${
+              `whitespace-nowrap rounded-pill px-1.5 text-[9px] font-black uppercase tracking-[0.06em] ${
                 filter === tab.key
                   ? 'bg-container text-primary shadow-button'
                   : 'text-muted'
@@ -176,7 +176,7 @@ export default function CompanyDetailsScreen({
                     <h3 className="t-card-title">{challenge.title}</h3>
                   </div>
                   <span
-                    className={`rounded-pill px-3 py-1 t-label ${
+                    className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
                       STATUS_STYLES[challenge.status]
                     }`}
                   >
