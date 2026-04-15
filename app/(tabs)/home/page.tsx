@@ -1,4 +1,4 @@
-import { createUntypedClient } from '@/utils/supabase/untyped';
+import { createClient } from '@/utils/supabase/server';
 import { requireUser } from '@/utils/auth/require-user';
 import HomeScreen, { HomeTrack, SkillPathCategory, SkillPathChallenge } from './HomeScreen';
 
@@ -31,6 +31,17 @@ type AttemptRow = {
   started_at: string;
 };
 
+type AnswerRow = {
+  attempt_id: string;
+  question_id: string;
+  points_awarded: number | null;
+};
+
+type QuestionRow = {
+  id: string;
+  quiz_id: string;
+};
+
 const hashString = (value: string) =>
   value
     .split('')
@@ -43,7 +54,7 @@ const deterministicRange = (seedSource: string, min: number, max: number) => {
 
 export default async function HomePage() {
   const user = await requireUser();
-  const db = createUntypedClient();
+  const db = createClient();
 
   const { data: tracksData } = await db
     .from('tracks')
@@ -95,13 +106,55 @@ export default async function HomePage() {
     {}
   );
 
+  const latestActiveAttemptByQuiz: Record<string, AttemptRow | undefined> = Object.fromEntries(
+    Object.entries(attemptsByQuiz).map(([quizId, quizAttempts]) => [quizId, quizAttempts.find((attempt) => !attempt.submitted_at)])
+  );
+
+  const latestActiveAttemptIds = Object.values(latestActiveAttemptByQuiz)
+    .map((attempt) => attempt?.id)
+    .filter(Boolean) as string[];
+
+  const { data: answersData } = latestActiveAttemptIds.length
+    ? await db
+        .from('answers')
+        .select('attempt_id,question_id,points_awarded')
+        .in('attempt_id', latestActiveAttemptIds)
+    : { data: [] as AnswerRow[] };
+  const answers = (answersData ?? []) as AnswerRow[];
+
+  const { data: questionsData } = quizIds.length
+    ? await db.from('questions').select('id,quiz_id').in('quiz_id', quizIds)
+    : { data: [] as QuestionRow[] };
+  const questions = (questionsData ?? []) as QuestionRow[];
+
+  const totalQuestionsByQuiz = questions.reduce(
+    (acc: Record<string, number>, question) => {
+      acc[question.quiz_id] = (acc[question.quiz_id] ?? 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  const solvedQuestionsByAttempt = answers.reduce(
+    (acc: Record<string, Set<string>>, answer) => {
+      if ((answer.points_awarded ?? 0) <= 0) return acc;
+      acc[answer.attempt_id] ??= new Set<string>();
+      acc[answer.attempt_id].add(answer.question_id);
+      return acc;
+    },
+    {}
+  );
+
   const companyCards: HomeTrack[] = tracks.map((track) => {
     const quizzesForTrack = quizzesByTrack[track.id] ?? [];
     const totalChallenges = quizzesForTrack.length;
-    const solvedChallenges = quizzesForTrack.filter((quiz) =>
-      (attemptsByQuiz[quiz.id] ?? []).some((attempt) => Boolean(attempt.submitted_at) && Boolean(attempt.passed))
-    ).length;
-    const progress = totalChallenges ? Math.round((solvedChallenges / totalChallenges) * 100) : 0;
+    const totalSteps = quizzesForTrack.reduce((sum, quiz) => sum + (totalQuestionsByQuiz[quiz.id] ?? 0), 0);
+    const completedSteps = quizzesForTrack.reduce((sum, quiz) => {
+      const activeAttempt = latestActiveAttemptByQuiz[quiz.id];
+      if (!activeAttempt) return sum;
+      return sum + (solvedQuestionsByAttempt[activeAttempt.id]?.size ?? 0);
+    }, 0);
+    const progress = totalSteps ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
     return {
       id: track.id,
