@@ -1,16 +1,44 @@
-export const pageEnter = 'animate-page-enter';
+'use client';
 
-export const cardMotion =
-  'transition-transform transition-shadow duration-150 ease-out active:scale-[0.99] motion-safe:hover:-translate-y-[1px] motion-safe:hover:shadow-md';
+import { useReducedMotion, type Variants } from 'framer-motion';
 
-export const buttonMotion =
-  'transition-transform transition-colors duration-150 ease-out active:scale-[0.98] disabled:active:scale-100 disabled:transition-none';
+export const springTransition = {
+  type: 'spring',
+  stiffness: 420,
+  damping: 32,
+  mass: 0.6
+} as const;
 
-export const inputMotion =
-  'transition-colors duration-150 hover:border-blue-200 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20';
+export const easeOutTransition = {
+  duration: 0.2,
+  ease: 'easeOut'
+} as const;
 
-export const tapMotion =
-  'transition-transform duration-150 ease-out active:scale-[0.98] disabled:active:scale-100';
+export const useReducedMotionPref = () => Boolean(useReducedMotion());
 
-export const chipMotion =
-  'whitespace-nowrap transition-colors transition-transform duration-150 ease-out active:scale-[0.99]';
+export const pageVariants: Variants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: easeOutTransition },
+  exit: { opacity: 0, y: 6, transition: { duration: 0.18, ease: 'easeOut' } }
+};
+
+export const cardVariants: Variants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: easeOutTransition }
+};
+
+export const listVariants: Variants = {
+  initial: { opacity: 1 },
+  animate: { opacity: 1, transition: { staggerChildren: 0.03 } }
+};
+
+export const fadeSlideUp: Variants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: easeOutTransition }
+};
+
+export const tapScale = {
+  card: { scale: 0.985 },
+  cta: { scale: 0.98 },
+  none: { scale: 1 }
+} as const;

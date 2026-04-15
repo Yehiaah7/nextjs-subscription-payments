@@ -12,8 +12,24 @@ import {
   SENIORITY_STORAGE_KEY,
   Seniority
 } from '@/components/seniority/constants';
+import MotionPage from '@/components/motion/MotionPage';
+import {
+  fadeSlideUp,
+  listVariants,
+  springTransition,
+  tapScale,
+  useReducedMotionPref
+} from '@/lib/motion';
 import { cn } from '@/utils/cn';
-import { ChevronLeft, ChevronRight, CircleDot, Clock3, RotateCcw, UserRound } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  CircleDot,
+  Clock3,
+  RotateCcw,
+  UserRound
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -67,7 +83,9 @@ export default function CompanyDetailsScreen({
   practicingCount: string;
 }) {
   const [filter, setFilter] = useState<FilterTab>('all');
-  const [selectedSeniority, setSelectedSeniority] = useState<Seniority>('junior');
+  const [selectedSeniority, setSelectedSeniority] =
+    useState<Seniority>('junior');
+  const reducedMotion = useReducedMotionPref();
 
   useEffect(() => {
     const stored = window.localStorage.getItem(SENIORITY_STORAGE_KEY);
@@ -84,7 +102,9 @@ export default function CompanyDetailsScreen({
     () =>
       challenges
         .filter((challenge) => challenge.seniority === selectedSeniority)
-        .filter((challenge) => (filter === 'all' ? true : challenge.status === filter))
+        .filter((challenge) =>
+          filter === 'all' ? true : challenge.status === filter
+        )
         .sort((a, b) =>
           a.categorySortOrder === b.categorySortOrder
             ? a.title.localeCompare(b.title)
@@ -94,139 +114,177 @@ export default function CompanyDetailsScreen({
   );
 
   return (
-    <section>
-      <header className="mb-4 flex items-center gap-3">
-        <Link
-          href="/home"
-          className={cn(
-            'grid h-9 w-9 place-items-center rounded-button bg-surface-muted text-muted',
-            iconBtnInteractive,
-            focusRingInteractive
-          )}
-          aria-label="Back to companies"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="t-title">{company.title}</h1>
-      </header>
-
-      <article className="app-card mb-5">
-        <h2 className="t-card-title text-[22px]">{company.title}</h2>
-        <p className="t-body-muted">
-          Focus: {company.description ?? 'Metrics · Product Sense'}
-        </p>
-        <div className="t-label mt-1 flex items-center gap-3 text-muted">
-          <span className="flex items-center gap-1">
-            <CircleDot className="h-4 w-4" />
-            {challenges.length} Challenges
-          </span>
-          <span className="flex items-center gap-1">
-            <UserRound className="h-4 w-4" />
-            {practicingCount} Practicing
-          </span>
-        </div>
-        <div className="mt-3 h-2.5 rounded-pill bg-surface-soft">
-          <div
-            className="h-full rounded-pill bg-primary"
-            style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }}
-          />
-        </div>
-      </article>
-
-      <div className="mb-4 flex items-center gap-2">
-        <span className="t-card-title">Practice</span>
-        <SeniorityDropdown selected={selectedSeniority} onSelect={setSelectedSeniority} />
-      </div>
-
-      <div className="app-segment mb-4 grid grid-cols-4 gap-1 text-center">
-        {FILTERS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
+    <MotionPage>
+      <section>
+        <header className="mb-4 flex items-center gap-3">
+          <Link
+            href="/home"
             className={cn(
-              `whitespace-nowrap rounded-pill px-1.5 text-[9px] font-black uppercase tracking-[0.06em] ${
-                filter === tab.key
-                  ? 'bg-container text-primary shadow-button'
-                  : 'text-muted'
-              }`,
-              tabInteractive,
+              'grid h-9 w-9 place-items-center rounded-button bg-surface-muted text-muted',
+              iconBtnInteractive,
               focusRingInteractive
             )}
-            type="button"
+            aria-label="Back to companies"
           >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="t-title">{company.title}</h1>
+        </header>
 
-      <div className="space-y-3 pb-8">
-        {filteredChallenges.length === 0 ? (
-          <p className="app-card t-body-muted">No challenges for this level yet.</p>
-        ) : (
-          filteredChallenges.map((challenge) => (
-            <Link
-              key={challenge.id}
-              href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
-              className={cn('app-card block', cardInteractive, focusRingInteractive)}
+        <article className="app-card mb-5">
+          <h2 className="t-card-title text-[22px]">{company.title}</h2>
+          <p className="t-body-muted">
+            Focus: {company.description ?? 'Metrics · Product Sense'}
+          </p>
+          <div className="t-label mt-1 flex items-center gap-3 text-muted">
+            <span className="flex items-center gap-1">
+              <CircleDot className="h-4 w-4" />
+              {challenges.length} Challenges
+            </span>
+            <span className="flex items-center gap-1">
+              <UserRound className="h-4 w-4" />
+              {practicingCount} Practicing
+            </span>
+          </div>
+          <div className="mt-3 h-2.5 rounded-pill bg-surface-soft">
+            <div
+              className="h-full rounded-pill bg-primary"
+              style={{
+                width: `${Math.max(0, Math.min(100, progressPercent))}%`
+              }}
+            />
+          </div>
+        </article>
+
+        <div className="mb-4 flex items-center gap-2">
+          <span className="t-card-title">Practice</span>
+          <SeniorityDropdown
+            selected={selectedSeniority}
+            onSelect={setSelectedSeniority}
+          />
+        </div>
+
+        <div className="app-segment mb-4 grid grid-cols-4 gap-1 text-center">
+          {FILTERS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={cn(
+                'relative whitespace-nowrap rounded-pill px-1.5 text-[9px] font-black uppercase tracking-[0.06em]',
+                filter === tab.key ? 'text-primary' : 'text-muted',
+                tabInteractive,
+                focusRingInteractive
+              )}
+              type="button"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">{challenge.category}</p>
-                    <h3 className="t-card-title">{challenge.title}</h3>
-                  </div>
-                  <span
-                    className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
-                      STATUS_STYLES[challenge.status]
-                    }`}
-                  >
-                    {STATUS_LABELS[challenge.status]}
-                  </span>
-                  {challenge.retake ? (
-                    <RotateCcw className="h-4 w-4 text-amber-500" aria-label="Retake" />
-                  ) : null}
-                </div>
-                <span
+              {filter === tab.key ? (
+                <motion.span
+                  layoutId="tab-indicator"
+                  transition={springTransition}
+                  className="absolute inset-0 rounded-pill bg-container shadow-button"
+                />
+              ) : null}
+              <span className="relative">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <motion.div
+          className="space-y-3 pb-8"
+          variants={listVariants}
+          initial="initial"
+          animate="animate"
+        >
+          {filteredChallenges.length === 0 ? (
+            <p className="app-card t-body-muted">
+              No challenges for this level yet.
+            </p>
+          ) : (
+            filteredChallenges.map((challenge) => (
+              <motion.div
+                key={challenge.id}
+                variants={fadeSlideUp}
+                whileTap={reducedMotion ? undefined : tapScale.card}
+                whileHover={reducedMotion ? undefined : { y: -1 }}
+              >
+                <Link
+                  href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
                   className={cn(
-                    'grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted',
-                    iconBtnInteractive
+                    'app-card block',
+                    cardInteractive,
+                    focusRingInteractive
                   )}
                 >
-                  <ChevronRight className="h-4 w-4" />
-                </span>
-              </div>
-              <div className="t-label mt-2 flex items-center gap-3 text-muted">
-                <span className="inline-flex items-center gap-1">
-                  <UserRound className="h-3.5 w-3.5" />
-                  {challenge.practicingCount} practicing
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Clock3 className="h-3.5 w-3.5" />
-                  {challenge.duration}
-                </span>
-                <span className="inline-flex items-center gap-1">Score: {challenge.score}%</span>
-              </div>
-              <div className="mt-3">
-                <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
-                  {challenge.completedSteps}/{challenge.totalSteps} steps solved
-                </div>
-                <div className="h-2 rounded-pill bg-surface-soft">
-                  <div
-                    className="h-full rounded-pill bg-primary"
-                    style={{
-                      width: `${
-                        challenge.totalSteps
-                          ? (challenge.completedSteps / challenge.totalSteps) * 100
-                          : 0
-                      }%`
-                    }}
-                  />
-                </div>
-              </div>
-            </Link>
-          ))
-        )}
-      </div>
-    </section>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">
+                          {challenge.category}
+                        </p>
+                        <h3 className="t-card-title">{challenge.title}</h3>
+                      </div>
+                      <span
+                        className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
+                          STATUS_STYLES[challenge.status]
+                        }`}
+                      >
+                        {STATUS_LABELS[challenge.status]}
+                      </span>
+                      {challenge.retake ? (
+                        <RotateCcw
+                          className="h-4 w-4 text-amber-500"
+                          aria-label="Retake"
+                        />
+                      ) : null}
+                    </div>
+                    <span
+                      className={cn(
+                        'grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted',
+                        iconBtnInteractive
+                      )}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </span>
+                  </div>
+                  <div className="t-label mt-2 flex items-center gap-3 text-muted">
+                    <span className="inline-flex items-center gap-1">
+                      <UserRound className="h-3.5 w-3.5" />
+                      {challenge.practicingCount} practicing
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Clock3 className="h-3.5 w-3.5" />
+                      {challenge.duration}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      Score: {challenge.score}%
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
+                      {challenge.completedSteps}/{challenge.totalSteps} steps
+                      solved
+                    </div>
+                    <div className="h-2 rounded-pill bg-surface-soft">
+                      <div
+                        className="h-full rounded-pill bg-primary"
+                        style={{
+                          width: `${
+                            challenge.totalSteps
+                              ? (challenge.completedSteps /
+                                  challenge.totalSteps) *
+                                100
+                              : 0
+                          }%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))
+          )}
+        </motion.div>
+      </section>
+    </MotionPage>
   );
 }
