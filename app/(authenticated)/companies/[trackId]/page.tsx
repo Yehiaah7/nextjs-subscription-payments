@@ -102,31 +102,25 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
     : { data: [] as AttemptRow[] };
   const attempts = (attemptsData ?? []) as AttemptRow[];
 
-  const attemptsByQuiz = attempts.reduce(
-    (acc: Record<string, AttemptRow[]>, attempt) => {
-      acc[attempt.quiz_id] ??= [];
-      acc[attempt.quiz_id].push(attempt);
+  const latestAttemptByQuizId = attempts.reduce(
+    (acc: Record<string, AttemptRow>, attempt) => {
+      if (!acc[attempt.quiz_id]) {
+        acc[attempt.quiz_id] = attempt;
+      }
       return acc;
     },
     {}
   );
 
-  const activeAttemptByQuizId: Record<string, AttemptRow> = {};
-  for (const quizId of quizIds) {
-    const quizAttempts = attemptsByQuiz[quizId] ?? [];
-    const inProgress = quizAttempts.find((attempt) => !attempt.submitted_at);
-    activeAttemptByQuizId[quizId] = inProgress ?? quizAttempts[0];
-  }
-
-  const activeAttemptIds = Object.values(activeAttemptByQuizId)
+  const latestAttemptIds = Object.values(latestAttemptByQuizId)
     .map((attempt) => attempt?.id)
     .filter(Boolean);
 
-  const { data: answersData } = activeAttemptIds.length
+  const { data: answersData } = latestAttemptIds.length
     ? await supabase
         .from('answers')
         .select('attempt_id,question_id,option_id,options(is_correct)')
-        .in('attempt_id', activeAttemptIds)
+        .in('attempt_id', latestAttemptIds)
     : { data: [] as AnswerRow[] };
   const answers = (answersData ?? []) as AnswerRow[];
 
@@ -165,7 +159,7 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
   );
 
   const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
-    const currentAttempt = activeAttemptByQuizId[quiz.id];
+    const currentAttempt = latestAttemptByQuizId[quiz.id];
     const answeredSteps = currentAttempt ? (answeredCountByAttempt[currentAttempt.id]?.size ?? 0) : 0;
     const correctSteps = currentAttempt ? (correctAnswersByAttempt[currentAttempt.id]?.size ?? 0) : 0;
     const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;

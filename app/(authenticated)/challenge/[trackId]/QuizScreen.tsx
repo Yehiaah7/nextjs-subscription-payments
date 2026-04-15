@@ -20,7 +20,7 @@ type Quiz = {
   id: string;
   title: string;
   module_id: string;
-  modules: { title: string } | null;
+  modules: { title: string; track_id: string } | null;
   pass_score: number | null;
   questions: Question[];
 };
@@ -45,7 +45,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const supabase = useMemo(() => createClient() as any, []);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const companyId = searchParams.get('company');
+  const [companyId, setCompanyId] = useState<string | null>(searchParams.get('company'));
   const returnToTrackHref = companyId ? `/companies/${companyId}` : '/home';
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -68,7 +68,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       const { data: quizData } = await supabase
         .from('quizzes')
         .select(
-          'id,title,module_id,pass_score,modules(title),questions(id,prompt,explanation,sort_order,points,options(id,label,sort_order,is_correct))'
+          'id,title,module_id,pass_score,modules(title,track_id),questions(id,prompt,explanation,sort_order,points,options(id,label,sort_order,is_correct))'
         )
         .eq('id', challengeId)
         .single();
@@ -80,17 +80,20 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         questions: (quizData.questions ?? []).sort((a: Question, b: Question) => a.sort_order - b.sort_order)
       } as Quiz;
       setQuiz(normalizedQuiz);
+      if (!companyId && normalizedQuiz.modules?.track_id) {
+        setCompanyId(normalizedQuiz.modules.track_id);
+      }
 
-      const { data: allAttempts } = await supabase
+      const { data: latestAttempt } = await supabase
         .from('attempts')
         .select('id,submitted_at,passed,score,started_at')
         .eq('quiz_id', challengeId)
         .eq('user_id', user.id)
-        .order('started_at', { ascending: false });
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      const latestInProgress = (allAttempts ?? []).find((attempt: any) => !attempt.submitted_at) ?? null;
-
-      let effectiveAttempt = latestInProgress;
+      let effectiveAttempt = latestAttempt && !latestAttempt.submitted_at ? latestAttempt : null;
       if (!effectiveAttempt) {
         const { data: newAttempt } = await supabase
           .from('attempts')
@@ -169,7 +172,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     const pointsAwarded = hasBeenSolved
       ? previousState.pointsAwarded
       : option.is_correct
-        ? Math.max(question.points - previousState.wrongAttemptsCount, 0)
+        ? question.points
         : previousState.pointsAwarded;
     const nextStateForQuestion: AttemptState = {
       solvedOptionId,
@@ -181,22 +184,20 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     const nextStates = { ...attemptStates, [question.id]: nextStateForQuestion };
     setAttemptStates(nextStates);
 
-    if (nextStateForQuestion.isSolved) {
-      await supabase.from('answers').upsert(
-        {
-          attempt_id: attemptId,
-          question_id: question.id,
-          option_id: nextStateForQuestion.solvedOptionId,
-          points_awarded: nextStateForQuestion.pointsAwarded,
-          text_answer: JSON.stringify({
-            wrongAttemptsCount: nextStateForQuestion.wrongAttemptsCount,
-            solvedOptionId: nextStateForQuestion.solvedOptionId,
-            lastSelectedOptionId: nextStateForQuestion.lastSelectedOptionId
-          })
-        },
-        { onConflict: 'attempt_id,question_id' }
-      );
-    }
+    await supabase.from('answers').upsert(
+      {
+        attempt_id: attemptId,
+        question_id: question.id,
+        option_id: option.id,
+        points_awarded: nextStateForQuestion.pointsAwarded,
+        text_answer: JSON.stringify({
+          wrongAttemptsCount: nextStateForQuestion.wrongAttemptsCount,
+          solvedOptionId: nextStateForQuestion.solvedOptionId,
+          lastSelectedOptionId: nextStateForQuestion.lastSelectedOptionId
+        })
+      },
+      { onConflict: 'attempt_id,question_id' }
+    );
   };
 
   if (loading || !quiz || !currentQuestion) {
@@ -206,7 +207,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
   const completedCount = quiz.questions.filter((question) => attemptStates[question.id]?.isSolved).length;
   const isLastStep = activeIndex === quiz.questions.length - 1;
-  const canMoveNext = Boolean(currentState.isSolved);
+  const canMoveNext = Boolean(currentState.isSolved || currentState.lastSelectedOptionId);
   const showCorrectFeedback =
     currentState.isSolved && currentState.lastSelectedOptionId === currentState.solvedOptionId;
   const showWrongFeedback =
@@ -319,29 +320,38 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-[10px]">
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-[10px]">
+          <button
+            type="button"
+            onClick={() => setActiveIndex((value) => Math.max(0, value - 1))}
+            disabled={activeIndex === 0}
+            className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#94a3b8]"
+          >
+            <ChevronLeft className="h-4 w-4" /> Previous
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!canMoveNext || finishing) return;
+              if (isLastStep) {
+                finalizeAttempt(attemptStates);
+                return;
+              }
+              setActiveIndex((value) => Math.min(quiz.questions.length - 1, value + 1));
+            }}
+            disabled={!canMoveNext || finishing}
+            className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50"
+          >
+            {isLastStep ? 'Finish' : 'Next'} <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
         <button
           type="button"
-          onClick={() => setActiveIndex((value) => Math.max(0, value - 1))}
-          disabled={activeIndex === 0}
-          className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#94a3b8]"
+          onClick={() => router.push(returnToTrackHref)}
+          className="inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]"
         >
-          <ChevronLeft className="h-4 w-4" /> Previous
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (!canMoveNext || finishing) return;
-            if (isLastStep) {
-              finalizeAttempt(attemptStates);
-              return;
-            }
-            setActiveIndex((value) => Math.min(quiz.questions.length - 1, value + 1));
-          }}
-          disabled={!canMoveNext || finishing}
-          className="inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50"
-        >
-          {isLastStep ? 'Finish' : 'Next'} <ChevronRight className="h-4 w-4" />
+          Back to challenges
         </button>
       </div>
     </section>
