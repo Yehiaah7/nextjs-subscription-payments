@@ -1,8 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckCircle2, ChevronRight, Flame, Rocket, Trophy, UserRound } from 'lucide-react';
+import {
+  CheckCircle2,
+  ChevronRight,
+  Flame,
+  Rocket,
+  Trophy,
+  UserRound
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
+import MotionPage from '@/components/motion/MotionPage';
 import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
 import {
   btnInteractive,
@@ -19,6 +28,13 @@ import {
   SENIORITY_STORAGE_KEY,
   Seniority
 } from '@/components/seniority/constants';
+import {
+  fadeSlideUp,
+  listVariants,
+  springTransition,
+  tapScale,
+  useReducedMotionPref
+} from '@/lib/motion';
 import { cn } from '@/utils/cn';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
@@ -71,6 +87,7 @@ export default function HomeScreen({
   const [tab, setTab] = useState<MainTab>('companies');
   const [selectedSeniority, setSelectedSeniority] =
     useState<Seniority>('junior');
+  const reducedMotion = useReducedMotionPref();
   const defaultSkillCategoryKey =
     skillPathCategories.find((category) => category.key === 'discovery')?.key ??
     skillPathCategories[0]?.key ??
@@ -124,188 +141,205 @@ export default function HomeScreen({
   }, [selectedSeniority]);
 
   return (
-    <section className="text-text">
-      <header className="mb-4 flex items-start justify-between gap-3">
-        <h1 className="t-title">Product Gym Floor</h1>
-        <div className="text-right">
-          <p className="t-label text-primary">Streak</p>
-          <p className="t-streak mt-1 flex items-center justify-end gap-1">
-            <Flame className="h-4 w-4 fill-orange-500 text-orange-500" />
-            12 Days
-          </p>
-        </div>
-      </header>
-
-      <div className="app-card mb-4 border border-primary-soft">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="rounded-lg bg-primary-soft p-1.5">
-              <Rocket className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <div>
-              <p className="t-label text-primary">Free Trial Active</p>
-              <p className="text-[11px] font-semibold text-muted">
-                7 Days remaining in your Pro trial
-              </p>
-            </div>
-          </div>
-          <button
-            className={cn(
-              'rounded-pill bg-amber-400 px-2.5 py-1 t-label text-amber-950',
-              btnInteractive,
-              btnInteractiveColored,
-              focusRingInteractive
-            )}
-          >
-            Upgrade
-          </button>
-        </div>
-      </div>
-
-      <section
-        className="app-card mb-4 border"
-        style={{
-          backgroundColor: '#dbeafe',
-          borderColor: '#bedbff'
-        }}
-      >
-        <div className="mb-3 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#60a5fa] text-sm font-bold text-white">
-            {initials || 'PG'}
-          </div>
-          <div>
-            <h2 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
-              {userName}
-            </h2>
-            <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2563eb]">
-              PRODUCT GYM MEMBER
+    <MotionPage>
+      <section className="text-text">
+        <header className="mb-4 flex items-start justify-between gap-3">
+          <h1 className="t-title">Product Gym Floor</h1>
+          <div className="text-right">
+            <p className="t-label text-primary">Streak</p>
+            <p className="t-streak mt-1 flex items-center justify-end gap-1">
+              <Flame className="h-4 w-4 fill-orange-500 text-orange-500" />
+              12 Days
             </p>
           </div>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-3 gap-2">
-          <StatTile
-            icon={<Trophy className="h-3.5 w-3.5" />}
-            label="Rank"
-            value={userStats.rank}
-          />
-          <StatTile
-            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-            label="Solved"
-            value={userStats.solved}
-          />
-          <StatTile
-            icon={<Flame className="h-3.5 w-3.5" />}
-            label="Solving Days"
-            value={userStats.solvingDays}
-          />
-        </div>
-      </section>
-
-      <div className="app-segment mb-4">
-        <div className="grid h-full grid-cols-3 gap-1">
-          <TabButton
-            label="Companies"
-            active={tab === 'companies'}
-            onClick={() => setTab('companies')}
-          />
-          <TabButton
-            label="Skill Paths"
-            active={tab === 'skill-paths'}
-            onClick={() => setTab('skill-paths')}
-          />
-          <TabButton
-            label="Products"
-            active={tab === 'products'}
-            onClick={() => setTab('products')}
-          />
-        </div>
-      </div>
-
-      {tab === 'companies' && (
-        <section>
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="t-card-title flex items-center gap-1.5">
-              <span>Practice</span>
-              <SeniorityDropdown
-                selected={selectedSeniority}
-                onSelect={setSelectedSeniority}
-              />
-              <span>PM skills</span>
-            </h3>
-            <Link href="/companies/view-all" className={cn('t-label text-primary', tabInteractive, focusRingInteractive)}>
-              View all
-            </Link>
-          </div>
-          <div className="space-y-4">
-            {filteredCompanyTracks.length === 0 ? (
-              <EmptyState message="No challenges for this level yet." />
-            ) : (
-              filteredCompanyTracks.map((track) => (
-                <CompanyTrackCard
-                  key={track.id}
-                  track={track}
-                  href={getCompanyHref(track.id)}
-                />
-              ))
-            )}
-          </div>
-        </section>
-      )}
-      {tab === 'skill-paths' && (
-        <section>
-          <div className="mb-4 flex h-[31px] w-full max-w-[361px] items-center gap-2 overflow-x-auto pb-1">
-            {skillPathCategories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedSkillCategoryKey(category.key)}
-                className={`shrink-0 rounded-pill px-3 py-1 text-[10px] font-black uppercase tracking-[0.08em] whitespace-nowrap ${
-                  selectedCategory?.id === category.id
-                    ? 'bg-container text-primary shadow-button'
-                    : 'bg-[#e2e8f0] text-[#64748b]'
-                } ${tabInteractive} ${focusRingInteractive}`}
-              >
-                {category.title}
-              </button>
-            ))}
-          </div>
-
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
-              {selectedCategory?.title ?? 'Skill Path'} Challenges
-            </h3>
-            <button
+        <div className="app-card mb-4 border border-primary-soft">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="rounded-lg bg-primary-soft p-1.5">
+                <Rocket className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div>
+                <p className="t-label text-primary">Free Trial Active</p>
+                <p className="text-[11px] font-semibold text-muted">
+                  7 Days remaining in your Pro trial
+                </p>
+              </div>
+            </div>
+            <motion.button
+              whileTap={reducedMotion ? undefined : tapScale.cta}
               className={cn(
-                'rounded-pill px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-primary',
+                'rounded-pill bg-amber-400 px-2.5 py-1 t-label text-amber-950 hover:bg-amber-500',
                 btnInteractive,
-                btnInteractiveNeutral,
+                btnInteractiveColored,
                 focusRingInteractive
               )}
             >
-              VIEW ALL
-            </button>
+              Upgrade
+            </motion.button>
+          </div>
+        </div>
+
+        <section
+          className="app-card mb-4 border"
+          style={{
+            backgroundColor: '#dbeafe',
+            borderColor: '#bedbff'
+          }}
+        >
+          <div className="mb-3 flex items-center gap-3">
+            <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#60a5fa] text-sm font-bold text-white">
+              {initials || 'PG'}
+            </div>
+            <div>
+              <h2 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
+                {userName}
+              </h2>
+              <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2563eb]">
+                PRODUCT GYM MEMBER
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-3 pb-24">
-            {selectedCategoryChallenges.length === 0 ? (
-              <EmptyState message="No skill path challenges yet." />
-            ) : (
-              selectedCategoryChallenges.map((challenge) => (
-                <SkillPathChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                />
-              ))
-            )}
+          <div className="grid grid-cols-3 gap-2">
+            <StatTile
+              icon={<Trophy className="h-3.5 w-3.5" />}
+              label="Rank"
+              value={userStats.rank}
+            />
+            <StatTile
+              icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+              label="Solved"
+              value={userStats.solved}
+            />
+            <StatTile
+              icon={<Flame className="h-3.5 w-3.5" />}
+              label="Solving Days"
+              value={userStats.solvingDays}
+            />
           </div>
         </section>
-      )}
-      {tab === 'products' && (
-        <div className="space-y-4">
-          <EmptyState message="No products yet." />
+
+        <div className="app-segment mb-4">
+          <div className="grid h-full grid-cols-3 gap-1">
+            <TabButton
+              label="Companies"
+              active={tab === 'companies'}
+              onClick={() => setTab('companies')}
+            />
+            <TabButton
+              label="Skill Paths"
+              active={tab === 'skill-paths'}
+              onClick={() => setTab('skill-paths')}
+            />
+            <TabButton
+              label="Products"
+              active={tab === 'products'}
+              onClick={() => setTab('products')}
+            />
+          </div>
         </div>
-      )}
-    </section>
+
+        {tab === 'companies' && (
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="t-card-title flex items-center gap-1.5">
+                <span>Practice</span>
+                <SeniorityDropdown
+                  selected={selectedSeniority}
+                  onSelect={setSelectedSeniority}
+                />
+                <span>PM skills</span>
+              </h3>
+              <Link
+                href="/companies/view-all"
+                className={cn(
+                  't-label text-primary',
+                  tabInteractive,
+                  focusRingInteractive
+                )}
+              >
+                View all
+              </Link>
+            </div>
+            <motion.div
+              className="space-y-4"
+              variants={listVariants}
+              initial="initial"
+              animate="animate"
+            >
+              {filteredCompanyTracks.length === 0 ? (
+                <EmptyState message="No challenges for this level yet." />
+              ) : (
+                filteredCompanyTracks.map((track) => (
+                  <motion.div key={track.id} variants={fadeSlideUp}>
+                    <CompanyTrackCard
+                      track={track}
+                      href={getCompanyHref(track.id)}
+                    />
+                  </motion.div>
+                ))
+              )}
+            </motion.div>
+          </section>
+        )}
+        {tab === 'skill-paths' && (
+          <section>
+            <div className="mb-4 flex h-[31px] w-full max-w-[361px] items-center gap-2 overflow-x-auto pb-1">
+              {skillPathCategories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedSkillCategoryKey(category.key)}
+                  className={`shrink-0 rounded-pill px-3 py-1 text-[10px] font-black uppercase tracking-[0.08em] whitespace-nowrap ${
+                    selectedCategory?.id === category.id
+                      ? 'bg-container text-primary shadow-button'
+                      : 'bg-[#e2e8f0] text-[#64748b]'
+                  } ${tabInteractive} ${focusRingInteractive}`}
+                >
+                  {category.title}
+                </button>
+              ))}
+            </div>
+
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
+                {selectedCategory?.title ?? 'Skill Path'} Challenges
+              </h3>
+              <motion.button
+                whileTap={reducedMotion ? undefined : tapScale.cta}
+                className={cn(
+                  'rounded-pill px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-primary',
+                  btnInteractive,
+                  btnInteractiveNeutral,
+                  focusRingInteractive
+                )}
+              >
+                VIEW ALL
+              </motion.button>
+            </div>
+
+            <div className="space-y-3 pb-24">
+              {selectedCategoryChallenges.length === 0 ? (
+                <EmptyState message="No skill path challenges yet." />
+              ) : (
+                selectedCategoryChallenges.map((challenge) => (
+                  <SkillPathChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                  />
+                ))
+              )}
+            </div>
+          </section>
+        )}
+        {tab === 'products' && (
+          <div className="space-y-4">
+            <EmptyState message="No products yet." />
+          </div>
+        )}
+      </section>
+    </MotionPage>
   );
 }
 
@@ -372,59 +406,67 @@ function StatTile({
 }
 
 function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
+  const reducedMotion = useReducedMotionPref();
   const boundedProgress = Math.max(0, Math.min(100, track.progress ?? 45));
 
   return (
-    <Link href={href} className={cn('block w-full', focusRingInteractive)}>
-      <article className={cn('app-card border border-primary-soft', cardInteractive)}>
-        <div className="mb-3 flex items-start gap-3">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#f1f5f9]">
-            <div className="grid h-9 w-9 place-items-center rounded-[10px] bg-white text-sm font-bold text-[#0f172a]">
-              {track.title[0] ?? 'C'}
+    <motion.div
+      whileTap={reducedMotion ? undefined : tapScale.card}
+      whileHover={reducedMotion ? undefined : { y: -1 }}
+    >
+      <Link href={href} className={cn('block w-full', focusRingInteractive)}>
+        <article
+          className={cn('app-card border border-primary-soft', cardInteractive)}
+        >
+          <div className="mb-3 flex items-start gap-3">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#f1f5f9]">
+              <div className="grid h-9 w-9 place-items-center rounded-[10px] bg-white text-sm font-bold text-[#0f172a]">
+                {track.title[0] ?? 'C'}
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <h4 className="truncate text-[16px] font-bold text-[#0f172a]">
+                {track.title}
+              </h4>
+              <p className="mt-0.5 truncate text-[12px] font-medium text-[#64748b]">
+                {track.description ?? 'Product Sense'}
+              </p>
+              <div className="mt-2 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.1em] text-[#64748b]">
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  {track.moduleCount} Challenges
+                </span>
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <UserRound className="h-3.5 w-3.5" />
+                  {track.practicingCount ?? '1.2K'} Practicing
+                </span>
+              </div>
             </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <h4 className="truncate text-[16px] font-bold text-[#0f172a]">
-              {track.title}
-            </h4>
-            <p className="mt-0.5 truncate text-[12px] font-medium text-[#64748b]">
-              {track.description ?? 'Product Sense'}
-            </p>
-            <div className="mt-2 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.1em] text-[#64748b]">
-              <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {track.moduleCount} Challenges
-              </span>
-              <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                <UserRound className="h-3.5 w-3.5" />
-                {track.practicingCount ?? '1.2K'} Practicing
-              </span>
-            </div>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 flex-1 rounded-pill bg-[#e2e8f0]">
-            <div
-              className="h-full rounded-pill bg-primary"
-              style={{ width: `${boundedProgress}%` }}
-            />
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 flex-1 rounded-pill bg-[#e2e8f0]">
+              <div
+                className="h-full rounded-pill bg-primary"
+                style={{ width: `${boundedProgress}%` }}
+              />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-primary">
+              {boundedProgress}%
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-primary">
+              Resume
+            </span>
+            <span
+              className="grid h-7 w-7 place-items-center rounded-full bg-primary-soft text-primary"
+              aria-label={`Resume ${track.title}`}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </span>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.1em] text-primary">
-            {boundedProgress}%
-          </span>
-          <span className="text-[10px] font-black uppercase tracking-[0.1em] text-primary">
-            Resume
-          </span>
-          <span
-            className="grid h-7 w-7 place-items-center rounded-full bg-primary-soft text-primary"
-            aria-label={`Resume ${track.title}`}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </span>
-        </div>
-      </article>
-    </Link>
+        </article>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -433,24 +475,6 @@ function EmptyState({ message }: { message: string }) {
     <div className="app-card t-body-muted border border-primary-soft">
       {message}
     </div>
-  );
-}
-
-function SimpleCard({
-  title,
-  subtitle,
-  meta
-}: {
-  title: string;
-  subtitle: string;
-  meta?: string;
-}) {
-  return (
-    <article className="app-card border border-primary-soft">
-      <h3 className="t-card-title">{title}</h3>
-      <p className="t-body-muted">{subtitle}</p>
-      {meta ? <p className="t-label mt-2 text-muted">{meta}</p> : null}
-    </article>
   );
 }
 
@@ -467,12 +491,20 @@ function TabButton({
     <button
       onClick={onClick}
       className={cn(
-        `h-full rounded-pill px-2 t-label whitespace-nowrap ${active ? 'bg-container text-primary shadow-button' : 'text-muted'}`,
+        'relative h-full rounded-pill px-2 t-label whitespace-nowrap',
+        active ? 'text-primary' : 'text-muted',
         tabInteractive,
         focusRingInteractive
       )}
     >
-      {label}
+      {active ? (
+        <motion.span
+          layoutId="home-tab-indicator"
+          transition={springTransition}
+          className="absolute inset-0 rounded-pill bg-container shadow-button"
+        />
+      ) : null}
+      <span className="relative">{label}</span>
     </button>
   );
 }
