@@ -106,6 +106,8 @@ export default function CompanyDetailsScreen({
     [challenges, filter, selectedSeniority]
   );
 
+  const visibleChallengeCount = filteredChallenges.length;
+
   return (
     <MotionPage>
       <section>
@@ -132,7 +134,7 @@ export default function CompanyDetailsScreen({
           <div className="t-label mt-1 flex items-center gap-3 text-muted">
             <span className="flex items-center gap-1">
               <CircleDot className="h-4 w-4" />
-              {challenges.length} Challenges
+              {visibleChallengeCount} Challenges
             </span>
             <span className="flex items-center gap-1">
               <UserRound className="h-4 w-4" />
