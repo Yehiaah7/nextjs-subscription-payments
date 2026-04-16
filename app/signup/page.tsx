@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ChevronLeft, Lock, Mail, Phone, UserRound } from 'lucide-react';
 import { signup } from '@/app/auth/actions';
+import { MotionButton, MotionInput } from '@/components/motion';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
@@ -60,7 +61,7 @@ export default async function SignupPage({
               <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 First name
               </label>
-              <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3', inputInteractive)}>
+              <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3', inputInteractive)}>
                 <input
                   name="first_name"
                   type="text"
@@ -68,13 +69,13 @@ export default async function SignupPage({
                   className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
                 />
                 <UserRound className="h-4 w-4 text-slate-300" />
-              </div>
+              </MotionInput>
             </div>
             <div>
               <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Last name
               </label>
-              <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3', inputInteractive)}>
+              <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3', inputInteractive)}>
                 <input
                   name="last_name"
                   type="text"
@@ -82,7 +83,7 @@ export default async function SignupPage({
                   className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
                 />
                 <UserRound className="h-4 w-4 text-slate-300" />
-              </div>
+              </MotionInput>
             </div>
           </div>
 
@@ -90,7 +91,7 @@ export default async function SignupPage({
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Gym username
             </label>
-            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
+            <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
               <input
                 name="username"
                 type="text"
@@ -102,14 +103,14 @@ export default async function SignupPage({
                 className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
               />
               <span className="text-sm font-semibold text-slate-300">@</span>
-            </div>
+            </MotionInput>
           </div>
 
           <div>
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Email address
             </label>
-            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
+            <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
               <input
                 name="email"
                 type="email"
@@ -118,14 +119,14 @@ export default async function SignupPage({
                 className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
               />
               <Mail className="h-4 w-4 text-slate-300" />
-            </div>
+            </MotionInput>
           </div>
 
           <div>
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Phone number
             </label>
-            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3', inputInteractive)}>
+            <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3', inputInteractive)}>
               <div className="flex h-8 items-center gap-1 rounded-xl bg-slate-100 px-2 text-slate-700">
                 <span className="text-xl leading-none">+</span>
                 <span className="text-sm font-semibold">20</span>
@@ -137,7 +138,7 @@ export default async function SignupPage({
                 className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
               />
               <Phone className="h-4 w-4 text-slate-300" />
-            </div>
+            </MotionInput>
           </div>
 
           <div>
@@ -160,7 +161,7 @@ export default async function SignupPage({
             />
           </div>
 
-          <button
+          <MotionButton
             type="submit"
             className={cn(
               'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
@@ -170,7 +171,7 @@ export default async function SignupPage({
             )}
           >
             Create account
-          </button>
+          </MotionButton>
         </form>
 
         {searchParams.error && (

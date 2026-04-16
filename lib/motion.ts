@@ -42,3 +42,14 @@ export const tapScale = {
   cta: { scale: 0.98 },
   none: { scale: 1 }
 } as const;
+
+export const tapMotion = 'transition-transform duration-150 active:scale-[0.98]';
+export const cardMotion =
+  'transition-all duration-200 will-change-transform hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]';
+export const buttonMotion =
+  'transition-all duration-150 will-change-transform hover:scale-[1.01] active:scale-[0.98]';
+export const chipMotion =
+  'transition-all duration-150 hover:-translate-y-[1px] active:translate-y-0';
+export const inputMotion =
+  'transition-all duration-150 focus-within:shadow-[0_0_0_2px_rgba(37,99,235,0.12)]';
+export const pageEnter = 'motion-safe:animate-fadeSlideUp';

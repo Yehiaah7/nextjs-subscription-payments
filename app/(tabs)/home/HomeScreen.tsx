@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+  MotionButton,
+  MotionCard
+} from '@/components/motion';
 import MotionPage from '@/components/motion/MotionPage';
 import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
 import {
@@ -31,9 +35,7 @@ import {
 import {
   fadeSlideUp,
   listVariants,
-  springTransition,
-  tapScale,
-  useReducedMotionPref
+  springTransition
 } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 
@@ -87,7 +89,6 @@ export default function HomeScreen({
   const [tab, setTab] = useState<MainTab>('companies');
   const [selectedSeniority, setSelectedSeniority] =
     useState<Seniority>('junior');
-  const reducedMotion = useReducedMotionPref();
   const defaultSkillCategoryKey =
     skillPathCategories.find((category) => category.key === 'discovery')?.key ??
     skillPathCategories[0]?.key ??
@@ -167,8 +168,7 @@ export default function HomeScreen({
                 </p>
               </div>
             </div>
-            <motion.button
-              whileTap={reducedMotion ? undefined : tapScale.cta}
+            <MotionButton
               className={cn(
                 'rounded-pill bg-amber-400 px-2.5 py-1 t-label text-amber-950 hover:bg-amber-500',
                 btnInteractive,
@@ -177,7 +177,7 @@ export default function HomeScreen({
               )}
             >
               Upgrade
-            </motion.button>
+            </MotionButton>
           </div>
         </div>
 
@@ -252,16 +252,6 @@ export default function HomeScreen({
                 />
                 <span>PM skills</span>
               </h3>
-              <Link
-                href="/companies/view-all"
-                className={cn(
-                  't-label text-primary',
-                  tabInteractive,
-                  focusRingInteractive
-                )}
-              >
-                View all
-              </Link>
             </div>
             <motion.div
               className="space-y-4"
@@ -306,8 +296,7 @@ export default function HomeScreen({
               <h3 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
                 {selectedCategory?.title ?? 'Skill Path'} Challenges
               </h3>
-              <motion.button
-                whileTap={reducedMotion ? undefined : tapScale.cta}
+              <MotionButton
                 className={cn(
                   'rounded-pill px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-primary',
                   btnInteractive,
@@ -316,7 +305,7 @@ export default function HomeScreen({
                 )}
               >
                 VIEW ALL
-              </motion.button>
+              </MotionButton>
             </div>
 
             <div className="space-y-3 pb-24">
@@ -349,9 +338,9 @@ function SkillPathChallengeCard({
   challenge: SkillPathChallenge;
 }) {
   return (
-    <article
+    <MotionCard
       className={cn(
-        'app-card flex items-center justify-between gap-3 border border-primary-soft p-3',
+        'app-card flex cursor-pointer items-center justify-between gap-3 border border-primary-soft p-3',
         cardInteractive
       )}
     >
@@ -366,18 +355,18 @@ function SkillPathChallengeCard({
           </span>
         </div>
       </div>
-      <Link
-        href={`/challenge/${challenge.id}`}
+      <MotionCard
         className={cn(
           'grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary',
           iconBtnInteractive,
           focusRingInteractive
         )}
-        aria-label={challenge.title}
       >
-        <ChevronRight className="h-4 w-4" />
-      </Link>
-    </article>
+        <Link href={`/challenge/${challenge.id}`} aria-label={challenge.title}>
+          <ChevronRight className="h-4 w-4" />
+        </Link>
+      </MotionCard>
+    </MotionCard>
   );
 }
 
@@ -406,17 +395,16 @@ function StatTile({
 }
 
 function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
-  const reducedMotion = useReducedMotionPref();
   const boundedProgress = Math.max(0, Math.min(100, track.progress ?? 45));
 
   return (
-    <motion.div
-      whileTap={reducedMotion ? undefined : tapScale.card}
-      whileHover={reducedMotion ? undefined : { y: -1 }}
-    >
+    <MotionCard>
       <Link href={href} className={cn('block w-full', focusRingInteractive)}>
         <article
-          className={cn('app-card border border-primary-soft', cardInteractive)}
+          className={cn(
+            'app-card cursor-pointer border border-primary-soft',
+            cardInteractive
+          )}
         >
           <div className="mb-3 flex items-start gap-3">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#f1f5f9]">
@@ -466,7 +454,7 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
           </div>
         </article>
       </Link>
-    </motion.div>
+    </MotionCard>
   );
 }
 
