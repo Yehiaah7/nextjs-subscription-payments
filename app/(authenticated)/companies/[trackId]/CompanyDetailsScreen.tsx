@@ -28,6 +28,7 @@ import {
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import CompanyThumbnail from '../CompanyThumbnail';
 
 export type ChallengeStatus = 'in-progress' | 'not-solved' | 'solved';
 export type CompanyChallenge = {
@@ -131,6 +132,7 @@ export default function CompanyDetailsScreen({
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
+          <CompanyThumbnail companyName={companySummary.title} />
           <h1 className="t-title">{companySummary.title}</h1>
         </header>
 
