@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BadgeCheck, CheckCircle2 } from 'lucide-react';
+import LoadingButton from '@/components/ui/LoadingButton';
 import { getStripe } from '@/utils/stripe/client';
 import { checkoutWithDefaultPrice } from '@/utils/stripe/server';
 import { getErrorRedirect } from '@/utils/helpers';
@@ -85,9 +86,9 @@ export default function ProGymPassCard({
         <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />Unlimited daily challenges</li>
         <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />Decision quality analytics</li>
       </ul>
-      <button type="button" onClick={handleUpgrade} disabled={isUpgrading} className={primaryButtonClassName}>
-        {isUpgrading ? 'Loading...' : 'Upgrade to Pro'}
-      </button>
+      <LoadingButton type="button" onClick={handleUpgrade} loading={isUpgrading} className={primaryButtonClassName}>
+        Upgrade to Pro
+      </LoadingButton>
       {showViewPlans ? (
         <Link href={managePlansHref} className={secondaryButtonClassName}>
           {managePlansLabel}

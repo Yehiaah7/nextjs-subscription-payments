@@ -5,6 +5,7 @@ import { ReactNode, useMemo, useState } from 'react';
 import { logout } from '@/app/auth/actions';
 import { MotionButton, MotionInput } from '@/components/motion';
 import MobileScreen from '@/components/mobile/MobileScreen';
+import FormLoadingButton from '@/components/ui/FormLoadingButton';
 import PasswordField from '@/components/ui/PasswordField';
 import { changePassword, updateAccountPreferences } from './actions';
 
@@ -223,8 +224,7 @@ export default function SettingsScreen({
               >
                 Discard
               </MotionButton>
-              <MotionButton
-                type="submit"
+              <FormLoadingButton
                 disabled={
                   !Object.keys(formValues).some(
                     (key) =>
@@ -235,7 +235,7 @@ export default function SettingsScreen({
                 className="h-[43px] w-[90px] rounded-[12px] bg-[#2563eb] text-[10px] font-black uppercase tracking-[1px] text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Save
-              </MotionButton>
+              </FormLoadingButton>
             </div>
           </form>
         </section>
@@ -270,12 +270,11 @@ export default function SettingsScreen({
               minLength={8}
             />
             <div className="flex justify-end pt-1">
-              <MotionButton
-                type="submit"
+              <FormLoadingButton
                 className="h-[43px] rounded-[12px] bg-[#2563eb] px-10 text-[10px] font-black uppercase tracking-[1px] text-white"
               >
                 CHANGE PASSWORD
-              </MotionButton>
+              </FormLoadingButton>
             </div>
           </form>
         </section>
@@ -311,9 +310,9 @@ export default function SettingsScreen({
           onCancel={() => setOpenModal(null)}
         >
           <form action={logout}>
-            <button className="h-[43px] w-full rounded-[12px] bg-[#ef4444] text-[10px] font-black uppercase tracking-[1px] text-white">
+            <FormLoadingButton className="h-[43px] w-full rounded-[12px] bg-[#ef4444] text-[10px] font-black uppercase tracking-[1px] text-white">
               Confirm Sign Out
-            </button>
+            </FormLoadingButton>
           </form>
         </ConfirmModal>
 
@@ -324,9 +323,9 @@ export default function SettingsScreen({
           onCancel={() => setOpenModal(null)}
         >
           <form action={logout}>
-            <button className="h-[43px] w-full rounded-[12px] bg-[#e7000b] text-[10px] font-black uppercase tracking-[1px] text-white">
+            <FormLoadingButton className="h-[43px] w-full rounded-[12px] bg-[#e7000b] text-[10px] font-black uppercase tracking-[1px] text-white">
               Confirm Deactivation
-            </button>
+            </FormLoadingButton>
           </form>
         </ConfirmModal>
       </section>

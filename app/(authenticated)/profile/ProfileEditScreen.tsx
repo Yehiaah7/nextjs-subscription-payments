@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import MobileScreen from '@/components/mobile/MobileScreen';
+import FormLoadingButton from '@/components/ui/FormLoadingButton';
 import {
   btnInteractive,
   btnInteractiveColored,
@@ -78,8 +79,7 @@ export default function ProfileEditScreen({ email, profile, status, error }: { e
               >
                 Discard
               </button>
-              <button
-                type="submit"
+              <FormLoadingButton
                 className={cn(
                   'h-[43px] w-[90px] rounded-[12px] bg-[#2563eb] text-[10px] font-black uppercase tracking-[1px] text-white',
                   btnInteractive,
@@ -88,7 +88,7 @@ export default function ProfileEditScreen({ email, profile, status, error }: { e
                 )}
               >
                 Save
-              </button>
+              </FormLoadingButton>
             </div>
           </form>
         </section>

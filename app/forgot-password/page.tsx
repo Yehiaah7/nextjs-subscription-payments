@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { ChevronLeft, Mail } from 'lucide-react';
 import { forgotPassword } from '@/app/auth/actions';
-import { MotionButton, MotionInput } from '@/components/motion';
+import { MotionInput } from '@/components/motion';
+import FormLoadingButton from '@/components/ui/FormLoadingButton';
 import {
   btnInteractive,
   btnInteractiveColored,
@@ -54,8 +55,7 @@ export default function ForgotPasswordPage({
             </MotionInput>
           </div>
 
-          <MotionButton
-            type="submit"
+          <FormLoadingButton
             className={cn(
               'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
               btnInteractive,
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage({
             )}
           >
             Send reset link
-          </MotionButton>
+          </FormLoadingButton>
         </form>
 
         {searchParams.error && (

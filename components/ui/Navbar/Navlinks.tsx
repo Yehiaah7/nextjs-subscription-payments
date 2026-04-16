@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { SignOut } from '@/utils/auth-helpers/server';
 import { handleRequest } from '@/utils/auth-helpers/client';
 import Logo from '@/components/icons/Logo';
 import { usePathname, useRouter } from 'next/navigation';
 import { getRedirectMethod } from '@/utils/auth-helpers/settings';
+import LoadingButton from '@/components/ui/LoadingButton';
 import s from './Navbar.module.css';
 
 interface NavlinksProps {
@@ -14,6 +16,8 @@ interface NavlinksProps {
 
 export default function Navlinks({ user }: NavlinksProps) {
   const router = getRedirectMethod() === 'client' ? useRouter() : null;
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className="relative flex flex-row justify-between py-4 align-center md:py-6">
@@ -34,11 +38,20 @@ export default function Navlinks({ user }: NavlinksProps) {
       </div>
       <div className="flex justify-end space-x-8">
         {user ? (
-          <form onSubmit={(e) => handleRequest(e, SignOut, router)}>
-            <input type="hidden" name="pathName" value={usePathname()} />
-            <button type="submit" className={s.link}>
+          <form
+            onSubmit={async (e) => {
+              setIsSigningOut(true);
+              try {
+                await handleRequest(e, SignOut, router);
+              } finally {
+                setIsSigningOut(false);
+              }
+            }}
+          >
+            <input type="hidden" name="pathName" value={pathname} />
+            <LoadingButton type="submit" loading={isSigningOut} className={s.link}>
               Sign out
-            </button>
+            </LoadingButton>
           </form>
         ) : (
           <Link href="/login" className={s.link}>
