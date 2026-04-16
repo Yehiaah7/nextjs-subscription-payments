@@ -14,6 +14,23 @@ type QuizRow = {
   modules: { track_id: string } | null;
 };
 
+type QuestionRow = {
+  id: string;
+  quiz_id: string;
+};
+
+type AttemptRow = {
+  id: string;
+  quiz_id: string;
+  submitted_at: string | null;
+  started_at: string;
+};
+
+type AnswerRow = {
+  attempt_id: string;
+  question_id: string;
+};
+
 const hashString = (value: string) =>
   value
     .split('')
@@ -25,17 +42,21 @@ const deterministicRange = (seedSource: string, min: number, max: number) =>
 const normalizeFocus = (description: string | null) =>
   (description ?? '').replace(/^(focus:\s*)+/i, '').trim();
 
-const toCompanyTrack = (track: TrackRow, challengeCount: number): CompanyTrack => ({
+const toCompanyTrack = (
+  track: TrackRow,
+  challengeCount: number,
+  progress: number
+): CompanyTrack => ({
   id: track.id,
   title: track.title,
   focus: normalizeFocus(track.description),
   challengesCount: challengeCount,
   practicingCount: `${deterministicRange(track.id, 50, 150)}`,
-  progress: 0
+  progress
 });
 
 export default async function ViewAllCompaniesPage() {
-  await requireUser();
+  const user = await requireUser();
   const db = createClient();
 
   const { data: tracksData, error: tracksError } = await db
@@ -49,7 +70,11 @@ export default async function ViewAllCompaniesPage() {
     throw new Error(`Failed to load companies: ${tracksError.message}`);
   }
 
-  const tracks = Array.from(new Map(((tracksData ?? []) as TrackRow[]).map((track) => [track.id, track])).values());
+  const tracks = Array.from(
+    new Map(
+      ((tracksData ?? []) as TrackRow[]).map((track) => [track.id, track])
+    ).values()
+  );
   const trackIds = tracks.map((track) => track.id);
 
   const { data: allQuizzesData, error: quizzesError } = trackIds.length
@@ -63,17 +88,123 @@ export default async function ViewAllCompaniesPage() {
     throw new Error(`Failed to load quizzes: ${quizzesError.message}`);
   }
 
-  const quizzesByTrackId = ((allQuizzesData ?? []) as QuizRow[]).reduce(
-    (acc: Record<string, number>, quiz) => {
-      const trackId = quiz.modules?.track_id;
-      if (!trackId) return acc;
-      acc[trackId] = (acc[trackId] ?? 0) + 1;
+  const quizzes = (allQuizzesData ?? []) as QuizRow[];
+  const quizIds = quizzes.map((quiz) => quiz.id);
+
+  const { data: questionsData, error: questionsError } = quizIds.length
+    ? await db.from('questions').select('id,quiz_id').in('quiz_id', quizIds)
+    : { data: [] as QuestionRow[], error: null };
+
+  if (questionsError) {
+    throw new Error(`Failed to load questions: ${questionsError.message}`);
+  }
+
+  const { data: attemptsData, error: attemptsError } = quizIds.length
+    ? await db
+        .from('attempts')
+        .select('id,quiz_id,submitted_at,started_at')
+        .eq('user_id', user.id)
+        .in('quiz_id', quizIds)
+        .order('started_at', { ascending: false })
+    : { data: [] as AttemptRow[], error: null };
+
+  if (attemptsError) {
+    throw new Error(`Failed to load attempts: ${attemptsError.message}`);
+  }
+
+  const attempts = (attemptsData ?? []) as AttemptRow[];
+
+  const latestAttemptByQuizId = attempts.reduce(
+    (acc: Record<string, AttemptRow>, attempt) => {
+      if (!acc[attempt.quiz_id]) {
+        acc[attempt.quiz_id] = attempt;
+      }
       return acc;
     },
     {}
   );
 
-  const companyTracks = tracks.map((track) => toCompanyTrack(track, quizzesByTrackId[track.id] ?? 0));
+  const latestActiveAttemptByQuizId = attempts.reduce(
+    (acc: Record<string, AttemptRow>, attempt) => {
+      if (!attempt.submitted_at && !acc[attempt.quiz_id]) {
+        acc[attempt.quiz_id] = attempt;
+      }
+      return acc;
+    },
+    {}
+  );
+
+  const attemptIds = Array.from(
+    new Set(
+      Object.keys(latestAttemptByQuizId).map(
+        (quizId) =>
+          latestActiveAttemptByQuizId[quizId]?.id ??
+          latestAttemptByQuizId[quizId]?.id
+      )
+    )
+  ).filter(Boolean);
+
+  const { data: answersData, error: answersError } = attemptIds.length
+    ? await db
+        .from('answers')
+        .select('attempt_id,question_id')
+        .in('attempt_id', attemptIds)
+    : { data: [] as AnswerRow[], error: null };
+
+  if (answersError) {
+    throw new Error(`Failed to load answers: ${answersError.message}`);
+  }
+
+  const answeredCountByAttempt = ((answersData ?? []) as AnswerRow[]).reduce(
+    (acc: Record<string, Set<string>>, answer) => {
+      acc[answer.attempt_id] ??= new Set<string>();
+      acc[answer.attempt_id].add(answer.question_id);
+      return acc;
+    },
+    {}
+  );
+
+  const quizzesByTrackId = quizzes.reduce(
+    (acc: Record<string, QuizRow[]>, quiz) => {
+      const trackId = quiz.modules?.track_id;
+      if (!trackId) return acc;
+      acc[trackId] ??= [];
+      acc[trackId].push(quiz);
+      return acc;
+    },
+    {}
+  );
+
+  const questionCountByQuizId = ((questionsData ?? []) as QuestionRow[]).reduce(
+    (acc: Record<string, number>, question) => {
+      acc[question.quiz_id] = (acc[question.quiz_id] ?? 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  const companyTracks = tracks.map((track) => {
+    const companyQuizzes = quizzesByTrackId[track.id] ?? [];
+
+    const totalSteps = companyQuizzes.reduce(
+      (sum, quiz) => sum + (questionCountByQuizId[quiz.id] ?? 0),
+      0
+    );
+
+    const answeredSteps = companyQuizzes.reduce((sum, quiz) => {
+      const attemptId =
+        latestActiveAttemptByQuizId[quiz.id]?.id ??
+        latestAttemptByQuizId[quiz.id]?.id;
+      if (!attemptId) return sum;
+      return sum + (answeredCountByAttempt[attemptId]?.size ?? 0);
+    }, 0);
+
+    const progress = totalSteps
+      ? Math.round((answeredSteps / totalSteps) * 100)
+      : 0;
+
+    return toCompanyTrack(track, companyQuizzes.length, progress);
+  });
 
   return <CompaniesScreen companyTracks={companyTracks} />;
 }

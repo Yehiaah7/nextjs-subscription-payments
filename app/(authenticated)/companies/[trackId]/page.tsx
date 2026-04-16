@@ -39,7 +39,8 @@ type AnswerRow = {
   points_awarded: number | null;
 };
 
-const formatCompact = (value: number) => (value >= 1000 ? `${(value / 1000).toFixed(1)}K` : `${value}`);
+const formatCompact = (value: number) =>
+  value >= 1000 ? `${(value / 1000).toFixed(1)}K` : `${value}`;
 const hashString = (value: string) =>
   value
     .split('')
@@ -50,7 +51,11 @@ const deterministicRange = (seedSource: string, min: number, max: number) => {
   return min + (seed % (max - min + 1));
 };
 
-export default async function CompanyDetailsPage({ params }: { params: { trackId: string } }) {
+export default async function CompanyDetailsPage({
+  params
+}: {
+  params: { trackId: string };
+}) {
   const { trackId } = params;
 
   const supabase = createClient();
@@ -88,7 +93,10 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
   const quizIds = quizzes.map((quiz) => quiz.id);
 
   const { data: questionsData } = quizIds.length
-    ? await supabase.from('questions').select('id,quiz_id').in('quiz_id', quizIds)
+    ? await supabase
+        .from('questions')
+        .select('id,quiz_id')
+        .in('quiz_id', quizIds)
     : { data: [] as QuestionRow[] };
   const questions = (questionsData ?? []) as QuestionRow[];
 
@@ -125,7 +133,9 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
   const attemptIdsToLoadAnswers = Array.from(
     new Set([
       ...Object.values(latestAttemptByQuizId).map((attempt) => attempt?.id),
-      ...Object.values(latestActiveAttemptByQuizId).map((attempt) => attempt?.id)
+      ...Object.values(latestActiveAttemptByQuizId).map(
+        (attempt) => attempt?.id
+      )
     ])
   ).filter(Boolean);
 
@@ -136,16 +146,6 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
         .in('attempt_id', attemptIdsToLoadAnswers)
     : { data: [] as AnswerRow[] };
   const answers = (answersData ?? []) as AnswerRow[];
-
-  const solvedQuestionsByAttempt = answers.reduce(
-    (acc: Record<string, Set<string>>, answer) => {
-      if ((answer.points_awarded ?? 0) <= 0) return acc;
-      acc[answer.attempt_id] ??= new Set<string>();
-      acc[answer.attempt_id].add(answer.question_id);
-      return acc;
-    },
-    {}
-  );
 
   const answeredCountByAttempt = answers.reduce(
     (acc: Record<string, Set<string>>, answer) => {
@@ -175,8 +175,9 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
     const currentAttempt = latestAttemptByQuizId[quiz.id];
     const activeAttempt = latestActiveAttemptByQuizId[quiz.id];
     const progressAttempt = activeAttempt ?? currentAttempt;
-    const answeredSteps = progressAttempt ? (answeredCountByAttempt[progressAttempt.id]?.size ?? 0) : 0;
-    const correctSteps = progressAttempt ? (solvedQuestionsByAttempt[progressAttempt.id]?.size ?? 0) : 0;
+    const answeredSteps = progressAttempt
+      ? (answeredCountByAttempt[progressAttempt.id]?.size ?? 0)
+      : 0;
     const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;
     const isSubmitted = Boolean(currentAttempt?.submitted_at);
     const score = currentAttempt?.score ?? 0;
@@ -186,7 +187,9 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
         ? 'solved'
         : isSubmitted
           ? 'not-solved'
-          : 'in-progress'
+          : answeredSteps > 0
+            ? 'in-progress'
+            : 'not-solved'
       : 'not-solved';
 
     return {
@@ -199,7 +202,7 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
       seniority: (quiz.difficulty ?? 'junior') as Seniority,
       answeredSteps,
-      completedSteps: correctSteps,
+      completedSteps: answeredSteps,
       totalSteps,
       score,
       retake: isSubmitted && score < 60,
@@ -207,8 +210,17 @@ export default async function CompanyDetailsPage({ params }: { params: { trackId
     };
   });
 
-  const solvedCount = challenges.filter((item) => item.status === 'solved').length;
-  const progressPercent = challenges.length ? Math.round((solvedCount / challenges.length) * 100) : 0;
+  const totalSteps = challenges.reduce(
+    (sum, challenge) => sum + challenge.totalSteps,
+    0
+  );
+  const completedSteps = challenges.reduce(
+    (sum, challenge) => sum + challenge.completedSteps,
+    0
+  );
+  const progressPercent = totalSteps
+    ? Math.round((completedSteps / totalSteps) * 100)
+    : 0;
 
   return (
     <CompanyDetailsScreen
