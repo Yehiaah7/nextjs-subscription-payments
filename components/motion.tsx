@@ -9,16 +9,18 @@ const transition = { duration: 0.18, ease: 'easeOut' } as const;
 export function MotionCard({
   children,
   className,
-  disabled
+  disabled,
+  ...props
 }: {
   children: ReactNode;
   className?: string;
   disabled?: boolean;
-}) {
+} & ComponentPropsWithoutRef<typeof motion.div>) {
   const reducedMotion = Boolean(useReducedMotion());
 
   return (
     <motion.div
+      {...props}
       whileHover={
         reducedMotion || disabled
           ? undefined

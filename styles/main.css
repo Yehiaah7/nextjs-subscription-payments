@@ -42,6 +42,21 @@ body {
 
 a {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  text-underline-offset: 0.16em;
+  text-decoration-thickness: 0.08em;
+  transition:
+    color 180ms ease,
+    text-decoration-color 180ms ease,
+    opacity 180ms ease;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+}
+
+a:focus-visible {
+  text-decoration: underline;
 }
 
 p a {
@@ -110,8 +125,8 @@ body.mobile-app-page main#skip {
   .t-title { font-size: var(--font-size-title); font-weight: var(--font-weight-title); line-height: var(--line-height-title); letter-spacing: var(--letter-spacing-title); }
   .t-card-title { font-size: var(--font-size-card-title); font-weight: var(--font-weight-title); line-height: var(--line-height-card-title); letter-spacing: var(--letter-spacing-card-title); }
   .t-body-muted { font-size: var(--font-size-body); font-weight: var(--font-weight-body); line-height: var(--line-height-body); letter-spacing: var(--letter-spacing-body); color: var(--color-text-subtle); }
-  .t-label { font-size: var(--font-size-label); font-weight: var(--font-weight-label); line-height: var(--line-height-label); letter-spacing: var(--letter-spacing-label); text-transform: uppercase; }
-  .t-button { font-size: 12px; font-weight: var(--font-weight-label); letter-spacing: .08em; text-transform: uppercase; }
+  .t-label { font-size: var(--font-size-label); font-weight: var(--font-weight-label); line-height: var(--line-height-label); letter-spacing: var(--letter-spacing-label); text-transform: none; }
+  .t-button { font-size: 12px; font-weight: var(--font-weight-label); letter-spacing: .08em; text-transform: none; }
   .t-streak { font-size: 14px; font-weight: var(--font-weight-title); line-height: 1.4; }
 }
 
@@ -183,6 +198,10 @@ body.mobile-app-page main#skip {
 
   .animate-completion-pop {
     animation: completion-pop 180ms ease-out both;
+  }
+
+  .uppercase {
+    text-transform: none !important;
   }
 }
 
