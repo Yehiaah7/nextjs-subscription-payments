@@ -1,6 +1,14 @@
-import type { CompanyTrack } from './CompaniesScreen';
+import { getCompanyLogoSrc } from './company-logo';
 
-export type CompanySummary = CompanyTrack;
+export type CompanySummary = {
+  id: string;
+  name: string;
+  logo: string | null;
+  focus: string;
+  challengesCount: number;
+  practicingCount: string;
+  progress: number;
+};
 
 type AttemptLike = {
   id: string;
@@ -33,7 +41,8 @@ export const buildCompanySummary = ({
   progress: number;
 }): CompanySummary => ({
   id,
-  title,
+  name: title,
+  logo: getCompanyLogoSrc({ companyId: id, companyName: title }),
   focus: normalizeFocus(description),
   challengesCount: challengeCount,
   practicingCount: `${deterministicRange(id, 50, 150)}`,
