@@ -9,14 +9,18 @@ import {
   focusRingInteractive,
   tabInteractive
 } from '@/components/ui/interactive';
-import { SENIORITY_LABELS, SENIORITY_OPTIONS, Seniority } from './constants';
+import {
+  SENIORITY_FILTER_LABELS,
+  SENIORITY_OPTIONS,
+  SeniorityFilter
+} from './constants';
 
 export default function SeniorityDropdown({
   selected,
   onSelect
 }: {
-  selected: Seniority;
-  onSelect: (seniority: Seniority) => void;
+  selected: SeniorityFilter;
+  onSelect: (seniority: SeniorityFilter) => void;
 }) {
   const [showSeniorityMenu, setShowSeniorityMenu] = useState(false);
 
@@ -34,7 +38,7 @@ export default function SeniorityDropdown({
         aria-haspopup="menu"
         aria-expanded={showSeniorityMenu}
       >
-        {SENIORITY_LABELS[selected]}
+        {SENIORITY_FILTER_LABELS[selected]}
         <ChevronDown className="h-3.5 w-3.5" />
       </button>
       {showSeniorityMenu && (
@@ -56,7 +60,7 @@ export default function SeniorityDropdown({
                   : 'text-text hover:bg-surface-soft'
               )}
             >
-              {SENIORITY_LABELS[option]}
+              {SENIORITY_FILTER_LABELS[option]}
             </button>
           ))}
         </div>

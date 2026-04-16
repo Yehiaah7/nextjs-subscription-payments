@@ -30,7 +30,8 @@ import SeniorityDropdown from '@/components/seniority/SeniorityDropdown';
 import {
   SENIORITY_OPTIONS,
   SENIORITY_STORAGE_KEY,
-  Seniority
+  Seniority,
+  SeniorityFilter
 } from '@/components/seniority/constants';
 import {
   fadeSlideUp,
@@ -88,7 +89,7 @@ export default function HomeScreen({
 }) {
   const [tab, setTab] = useState<MainTab>('companies');
   const [selectedSeniority, setSelectedSeniority] =
-    useState<Seniority>('junior');
+    useState<SeniorityFilter>('all');
   const defaultSkillCategoryKey =
     skillPathCategories.find((category) => category.key === 'discovery')?.key ??
     skillPathCategories[0]?.key ??
@@ -115,7 +116,7 @@ export default function HomeScreen({
     ? skillPathChallenges.filter(
         (challenge) =>
           challenge.categoryId === selectedCategory.id &&
-          challenge.level === selectedSeniority
+          (selectedSeniority === 'all' || challenge.level === selectedSeniority)
       )
     : [];
 
@@ -132,8 +133,8 @@ export default function HomeScreen({
 
   useEffect(() => {
     const stored = window.localStorage.getItem(SENIORITY_STORAGE_KEY);
-    if (stored && SENIORITY_OPTIONS.includes(stored as Seniority)) {
-      setSelectedSeniority(stored as Seniority);
+    if (stored && SENIORITY_OPTIONS.includes(stored as SeniorityFilter)) {
+      setSelectedSeniority(stored as SeniorityFilter);
     }
   }, []);
 

@@ -11,7 +11,8 @@ import {
 import {
   SENIORITY_OPTIONS,
   SENIORITY_STORAGE_KEY,
-  Seniority
+  Seniority,
+  SeniorityFilter
 } from '@/components/seniority/constants';
 import MotionPage from '@/components/motion/MotionPage';
 import { fadeSlideUp, listVariants, springTransition } from '@/lib/motion';
@@ -79,11 +80,11 @@ export default function CompanyDetailsScreen({
 }) {
   const [filter, setFilter] = useState<FilterTab>('all');
   const [selectedSeniority, setSelectedSeniority] =
-    useState<Seniority>('junior');
+    useState<SeniorityFilter>('all');
   useEffect(() => {
     const stored = window.localStorage.getItem(SENIORITY_STORAGE_KEY);
-    if (stored && SENIORITY_OPTIONS.includes(stored as Seniority)) {
-      setSelectedSeniority(stored as Seniority);
+    if (stored && SENIORITY_OPTIONS.includes(stored as SeniorityFilter)) {
+      setSelectedSeniority(stored as SeniorityFilter);
     }
   }, []);
 
@@ -94,7 +95,11 @@ export default function CompanyDetailsScreen({
   const filteredChallenges = useMemo(
     () =>
       challenges
-        .filter((challenge) => challenge.seniority === selectedSeniority)
+        .filter((challenge) =>
+          selectedSeniority === 'all'
+            ? true
+            : challenge.seniority === selectedSeniority
+        )
         .filter((challenge) =>
           filter === 'all' ? true : challenge.status === filter
         )
