@@ -14,11 +14,7 @@ import {
   Seniority
 } from '@/components/seniority/constants';
 import MotionPage from '@/components/motion/MotionPage';
-import {
-  fadeSlideUp,
-  listVariants,
-  springTransition
-} from '@/lib/motion';
+import { fadeSlideUp, listVariants, springTransition } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import {
   ChevronLeft,
@@ -198,84 +194,81 @@ export default function CompanyDetailsScreen({
             </p>
           ) : (
             filteredChallenges.map((challenge) => (
-              <motion.div
-                key={challenge.id}
-                variants={fadeSlideUp}
-              >
+              <motion.div key={challenge.id} variants={fadeSlideUp}>
                 <MotionCard>
-                <Link
-                  href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
-                  className={cn(
-                    'app-card block cursor-pointer',
-                    cardInteractive,
-                    focusRingInteractive
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">
-                          {challenge.category}
-                        </p>
-                        <h3 className="t-card-title">{challenge.title}</h3>
+                  <Link
+                    href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
+                    className={cn(
+                      'app-card block cursor-pointer',
+                      cardInteractive,
+                      focusRingInteractive
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">
+                            {challenge.category}
+                          </p>
+                          <h3 className="t-card-title">{challenge.title}</h3>
+                        </div>
+                        <span
+                          className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
+                            STATUS_STYLES[challenge.status]
+                          }`}
+                        >
+                          {STATUS_LABELS[challenge.status]}
+                        </span>
+                        {challenge.retake ? (
+                          <RotateCcw
+                            className="h-4 w-4 text-amber-500"
+                            aria-label="Retake"
+                          />
+                        ) : null}
                       </div>
                       <span
-                        className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
-                          STATUS_STYLES[challenge.status]
-                        }`}
+                        className={cn(
+                          'grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted',
+                          iconBtnInteractive
+                        )}
                       >
-                        {STATUS_LABELS[challenge.status]}
+                        <ChevronRight className="h-4 w-4" />
                       </span>
-                      {challenge.retake ? (
-                        <RotateCcw
-                          className="h-4 w-4 text-amber-500"
-                          aria-label="Retake"
+                    </div>
+                    <div className="t-label mt-2 flex items-center gap-3 text-muted">
+                      <span className="inline-flex items-center gap-1">
+                        <UserRound className="h-3.5 w-3.5" />
+                        {challenge.practicingCount} practicing
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {challenge.duration}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        Score: {challenge.score}%
+                      </span>
+                    </div>
+                    <div className="mt-3">
+                      <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
+                        {challenge.completedSteps}/{challenge.totalSteps} steps
+                        answered
+                      </div>
+                      <div className="h-2 rounded-pill bg-surface-soft">
+                        <div
+                          className="h-full rounded-pill bg-primary"
+                          style={{
+                            width: `${
+                              challenge.totalSteps
+                                ? (challenge.completedSteps /
+                                    challenge.totalSteps) *
+                                  100
+                                : 0
+                            }%`
+                          }}
                         />
-                      ) : null}
+                      </div>
                     </div>
-                    <span
-                      className={cn(
-                        'grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted',
-                        iconBtnInteractive
-                      )}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </span>
-                  </div>
-                  <div className="t-label mt-2 flex items-center gap-3 text-muted">
-                    <span className="inline-flex items-center gap-1">
-                      <UserRound className="h-3.5 w-3.5" />
-                      {challenge.practicingCount} practicing
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock3 className="h-3.5 w-3.5" />
-                      {challenge.duration}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      Score: {challenge.score}%
-                    </span>
-                  </div>
-                  <div className="mt-3">
-                    <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
-                      {challenge.completedSteps}/{challenge.totalSteps} steps
-                      solved
-                    </div>
-                    <div className="h-2 rounded-pill bg-surface-soft">
-                      <div
-                        className="h-full rounded-pill bg-primary"
-                        style={{
-                          width: `${
-                            challenge.totalSteps
-                              ? (challenge.completedSteps /
-                                  challenge.totalSteps) *
-                                100
-                              : 0
-                          }%`
-                        }}
-                      />
-                    </div>
-                  </div>
-                </Link>
+                  </Link>
                 </MotionCard>
               </motion.div>
             ))
