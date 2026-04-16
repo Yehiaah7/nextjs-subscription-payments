@@ -1,6 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { requireUser } from '@/utils/auth/require-user';
 import HomeScreen, { HomeTrack, SkillPathCategory, SkillPathChallenge } from './HomeScreen';
+import {
+  buildCompanySummary,
+  calculateCompanyProgress
+} from '@/app/(authenticated)/companies/company-summary';
 
 type Seniority = 'junior' | 'mid' | 'senior';
 
@@ -34,22 +38,11 @@ type AttemptRow = {
 type AnswerRow = {
   attempt_id: string;
   question_id: string;
-  points_awarded: number | null;
 };
 
 type QuestionRow = {
   id: string;
   quiz_id: string;
-};
-
-const hashString = (value: string) =>
-  value
-    .split('')
-    .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 100000, 17);
-
-const deterministicRange = (seedSource: string, min: number, max: number) => {
-  const seed = hashString(seedSource);
-  return min + (seed % (max - min + 1));
 };
 
 export default async function HomePage() {
@@ -106,19 +99,38 @@ export default async function HomePage() {
     {}
   );
 
-  const latestActiveAttemptByQuiz: Record<string, AttemptRow | undefined> = Object.fromEntries(
-    Object.entries(attemptsByQuiz).map(([quizId, quizAttempts]) => [quizId, quizAttempts.find((attempt) => !attempt.submitted_at)])
+  const latestActiveAttemptByQuiz = attempts.reduce(
+    (acc: Record<string, AttemptRow>, attempt) => {
+      if (!attempt.submitted_at && !acc[attempt.quiz_id]) {
+        acc[attempt.quiz_id] = attempt;
+      }
+      return acc;
+    },
+    {}
+  );
+  const latestAttemptByQuiz = attempts.reduce(
+    (acc: Record<string, AttemptRow>, attempt) => {
+      if (!acc[attempt.quiz_id]) {
+        acc[attempt.quiz_id] = attempt;
+      }
+      return acc;
+    },
+    {}
   );
 
-  const latestActiveAttemptIds = Object.values(latestActiveAttemptByQuiz)
-    .map((attempt) => attempt?.id)
+  const attemptIdsToLoadAnswers = Array.from(
+    new Set([
+      ...Object.values(latestActiveAttemptByQuiz).map((attempt) => attempt?.id),
+      ...Object.values(latestAttemptByQuiz).map((attempt) => attempt?.id)
+    ])
+  )
     .filter(Boolean) as string[];
 
-  const { data: answersData } = latestActiveAttemptIds.length
+  const { data: answersData } = attemptIdsToLoadAnswers.length
     ? await db
         .from('answers')
-        .select('attempt_id,question_id,points_awarded')
-        .in('attempt_id', latestActiveAttemptIds)
+        .select('attempt_id,question_id')
+        .in('attempt_id', attemptIdsToLoadAnswers)
     : { data: [] as AnswerRow[] };
   const answers = (answersData ?? []) as AnswerRow[];
 
@@ -137,7 +149,6 @@ export default async function HomePage() {
 
   const solvedQuestionsByAttempt = answers.reduce(
     (acc: Record<string, Set<string>>, answer) => {
-      if ((answer.points_awarded ?? 0) <= 0) return acc;
       acc[answer.attempt_id] ??= new Set<string>();
       acc[answer.attempt_id].add(answer.question_id);
       return acc;
@@ -147,23 +158,22 @@ export default async function HomePage() {
 
   const companyCards: HomeTrack[] = tracks.map((track) => {
     const quizzesForTrack = quizzesByTrack[track.id] ?? [];
-    const totalChallenges = quizzesForTrack.length;
-    const totalSteps = quizzesForTrack.reduce((sum, quiz) => sum + (totalQuestionsByQuiz[quiz.id] ?? 0), 0);
-    const completedSteps = quizzesForTrack.reduce((sum, quiz) => {
-      const activeAttempt = latestActiveAttemptByQuiz[quiz.id];
-      if (!activeAttempt) return sum;
-      return sum + (solvedQuestionsByAttempt[activeAttempt.id]?.size ?? 0);
-    }, 0);
-    const progress = totalSteps ? Math.round((completedSteps / totalSteps) * 100) : 0;
+    const quizIdsForTrack = quizzesForTrack.map((quiz) => quiz.id);
 
     return {
-      id: track.id,
-      title: track.title,
-      description: track.description,
-      moduleCount: totalChallenges,
-      challengeCountsBySeniority: undefined,
-      practicingCount: `${deterministicRange(track.id, 50, 150)}`,
-      progress
+      companySummary: buildCompanySummary({
+        id: track.id,
+        title: track.title,
+        description: track.description,
+        challengeCount: quizzesForTrack.length,
+        progress: calculateCompanyProgress({
+          quizIds: quizIdsForTrack,
+          questionCountByQuizId: totalQuestionsByQuiz,
+          latestAttemptByQuizId: latestAttemptByQuiz,
+          latestActiveAttemptByQuizId: latestActiveAttemptByQuiz,
+          answeredCountByAttempt: solvedQuestionsByAttempt
+        })
+      })
     };
   });
 

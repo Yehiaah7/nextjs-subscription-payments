@@ -29,7 +29,6 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { CompanySummary } from '../company-summary';
 import CompanySummaryCard from '../CompanySummaryCard';
-import CompanyThumbnail from '../CompanyThumbnail';
 
 export type ChallengeStatus = 'in-progress' | 'not-solved' | 'solved';
 export type CompanyChallenge = {
@@ -126,12 +125,7 @@ export default function CompanyDetailsScreen({
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <CompanyThumbnail
-            companyId={companySummary.id}
-            companyName={companySummary.name}
-            companyLogoSrc={companySummary.logo}
-          />
-          <h1 className="t-title">{companySummary.name}</h1>
+          <h1 className="t-title">Home</h1>
         </header>
 
         <CompanySummaryCard company={companySummary} className="app-card mb-5" />
