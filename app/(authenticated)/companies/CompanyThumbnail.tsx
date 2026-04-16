@@ -25,19 +25,19 @@ export default function CompanyThumbnail({
     <div
       className={
         className ??
-        'grid h-14 w-14 shrink-0 place-items-center rounded-card bg-container text-muted'
+        'relative h-14 w-14 shrink-0 overflow-hidden rounded-card bg-container text-muted'
       }
     >
       {logoSrc ? (
         <Image
           src={logoSrc}
           alt={`${companyName} logo`}
-          width={36}
-          height={36}
-          className="h-9 w-9 object-contain"
+          fill
+          sizes="56px"
+          className="object-cover"
         />
       ) : (
-        <div className="text-lg font-bold text-muted">
+        <div className="grid h-full w-full place-items-center text-lg font-bold text-muted">
           {companyName[0]?.toUpperCase() ?? 'C'}
         </div>
       )}

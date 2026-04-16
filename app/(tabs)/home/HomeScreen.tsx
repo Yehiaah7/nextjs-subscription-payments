@@ -371,14 +371,12 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
           )}
         >
           <div className="mb-3 flex items-start gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#f1f5f9]">
-              <CompanyThumbnail
-                companyId={track.companySummary.id}
-                companyName={track.companySummary.name}
-                companyLogoSrc={track.companySummary.logo}
-                className="grid h-9 w-9 place-items-center rounded-[10px] bg-white"
-              />
-            </div>
+            <CompanyThumbnail
+              companyId={track.companySummary.id}
+              companyName={track.companySummary.name}
+              companyLogoSrc={track.companySummary.logo}
+              className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[#f1f5f9]"
+            />
             <div className="min-w-0 flex-1">
               <h4 className="truncate text-[16px] font-bold text-[#0f172a]">
                 {track.companySummary.name}

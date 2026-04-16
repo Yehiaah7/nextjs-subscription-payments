@@ -7,7 +7,7 @@ export const btnInteractive =
   `${buttonMotion} active:brightness-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:brightness-100 disabled:hover:brightness-100`;
 
 export const btnInteractiveColored =
-  'hover:brightness-[0.98] active:brightness-[0.96] disabled:hover:brightness-100';
+  'hover:brightness-[0.94] active:brightness-[0.96] disabled:hover:brightness-100';
 
 export const btnInteractiveNeutral = 'hover:bg-blue-50';
 
