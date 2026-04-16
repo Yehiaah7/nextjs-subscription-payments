@@ -51,8 +51,7 @@ a {
 }
 
 a:hover {
-  text-decoration: underline;
-  text-decoration-color: currentColor;
+  text-decoration: none;
 }
 
 a:focus-visible {
@@ -60,7 +59,7 @@ a:focus-visible {
 }
 
 p a {
-  @apply hover:underline;
+  @apply hover:no-underline;
 }
 
 .animated {
