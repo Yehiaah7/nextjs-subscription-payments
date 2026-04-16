@@ -9,18 +9,14 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { MotionCard } from '@/components/motion';
 import MotionPage from '@/components/motion/MotionPage';
 import {
   cardInteractive,
   focusRingInteractive,
   iconBtnInteractive
 } from '@/components/ui/interactive';
-import {
-  fadeSlideUp,
-  listVariants,
-  tapScale,
-  useReducedMotionPref
-} from '@/lib/motion';
+import { fadeSlideUp, listVariants } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import { getCompanyHref } from './navigation';
 
@@ -38,8 +34,6 @@ export default function CompaniesScreen({
 }: {
   companyTracks: CompanyTrack[];
 }) {
-  const reducedMotion = useReducedMotionPref();
-
   return (
     <MotionPage>
       <section>
@@ -64,12 +58,8 @@ export default function CompaniesScreen({
           animate="animate"
         >
           {companyTracks.map((track) => (
-            <motion.div
-              key={track.id}
-              variants={fadeSlideUp}
-              whileTap={reducedMotion ? undefined : tapScale.card}
-              whileHover={reducedMotion ? undefined : { y: -1 }}
-            >
+            <motion.div key={track.id} variants={fadeSlideUp}>
+              <MotionCard>
               <Link
                 href={getCompanyHref(track.id)}
                 className={cn(
@@ -120,6 +110,7 @@ export default function CompaniesScreen({
                   </span>
                 </div>
               </Link>
+              </MotionCard>
             </motion.div>
           ))}
         </motion.div>

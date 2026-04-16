@@ -6,6 +6,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import { MotionButton } from '@/components/motion';
 import {
   btnInteractive,
   btnInteractiveColored,
@@ -15,7 +16,7 @@ import {
   iconBtnInteractive
 } from '@/components/ui/interactive';
 import MotionPage from '@/components/motion/MotionPage';
-import { tapScale, useReducedMotionPref } from '@/lib/motion';
+import { useReducedMotionPref } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
 
@@ -319,9 +320,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           <p className="animate-completion-pop text-sm text-[#45556c]">
             Points earned: {result.awarded}/{result.total}
           </p>
-          <motion.button
+          <MotionButton
             type="button"
-            whileTap={reducedMotion ? undefined : tapScale.cta}
             onClick={() => router.push(returnToTrackHref)}
             className={cn(
               'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white',
@@ -331,7 +331,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             )}
           >
             Back to Company
-          </motion.button>
+          </MotionButton>
         </section>
       </MotionPage>
     );
@@ -408,7 +408,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                 <motion.button
                   key={option.id}
                   type="button"
-                  whileTap={reducedMotion ? undefined : tapScale.card}
+                  whileHover={reducedMotion ? undefined : { scale: 1.008 }}
+                  whileTap={reducedMotion ? undefined : { scale: 0.99 }}
                   animate={
                     selected &&
                     !isCorrect &&
@@ -422,7 +423,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                   transition={{ duration: 0.22, ease: 'easeOut' }}
                   onClick={() => onSelectOption(currentQuestion, option.id)}
                   className={cn(
-                    'w-full rounded-2xl border p-3 text-left transition-colors duration-150',
+                    'w-full cursor-pointer rounded-2xl border p-3 text-left transition-colors duration-150',
                     className,
                     cardInteractive,
                     selected && isCorrect && 'animate-option-correct',
@@ -476,9 +477,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-[10px]">
-            <motion.button
+            <MotionButton
               type="button"
-              whileTap={reducedMotion ? undefined : tapScale.cta}
               onClick={() => setActiveIndex((value) => Math.max(0, value - 1))}
               disabled={activeIndex === 0}
               className={cn(
@@ -489,10 +489,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               )}
             >
               <ChevronLeft className="h-4 w-4" /> Previous
-            </motion.button>
-            <motion.button
+            </MotionButton>
+            <MotionButton
               type="button"
-              whileTap={reducedMotion ? undefined : tapScale.cta}
               onClick={() => {
                 if (!canMoveNext || finishing) return;
                 if (isLastStep) {
@@ -513,11 +512,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             >
               {isLastStep ? 'Finish' : 'Next'}{' '}
               <ChevronRight className="h-4 w-4" />
-            </motion.button>
+            </MotionButton>
           </div>
-          <motion.button
+          <MotionButton
             type="button"
-            whileTap={reducedMotion ? undefined : tapScale.cta}
             onClick={() => router.push(returnToTrackHref)}
             className={cn(
               'inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
@@ -527,7 +525,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             )}
           >
             Back to challenges
-          </motion.button>
+          </MotionButton>
         </div>
       </section>
     </MotionPage>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ReactNode, useMemo, useState } from 'react';
 import { logout } from '@/app/auth/actions';
+import { MotionButton, MotionInput } from '@/components/motion';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import PasswordField from '@/components/ui/PasswordField';
 import { changePassword, updateAccountPreferences } from './actions';
@@ -215,14 +216,14 @@ export default function SettingsScreen({
             />
 
             <div className="flex justify-end gap-2 pt-1">
-              <button
+              <MotionButton
                 type="button"
                 onClick={() => setFormValues(initialValues)}
                 className="h-[43px] w-[90px] rounded-[12px] border border-[#dbeafe] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]"
               >
                 Discard
-              </button>
-              <button
+              </MotionButton>
+              <MotionButton
                 type="submit"
                 disabled={
                   !Object.keys(formValues).some(
@@ -234,7 +235,7 @@ export default function SettingsScreen({
                 className="h-[43px] w-[90px] rounded-[12px] bg-[#2563eb] text-[10px] font-black uppercase tracking-[1px] text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Save
-              </button>
+              </MotionButton>
             </div>
           </form>
         </section>
@@ -269,12 +270,12 @@ export default function SettingsScreen({
               minLength={8}
             />
             <div className="flex justify-end pt-1">
-              <button
+              <MotionButton
                 type="submit"
                 className="h-[43px] rounded-[12px] bg-[#2563eb] px-10 text-[10px] font-black uppercase tracking-[1px] text-white"
               >
                 CHANGE PASSWORD
-              </button>
+              </MotionButton>
             </div>
           </form>
         </section>
@@ -351,7 +352,7 @@ function PhoneField({
       <p className="mb-1 text-[9px] font-black uppercase tracking-[1px] text-[#94a3b8]">
         Phone
       </p>
-      <div className="flex h-[43px] w-full items-center overflow-hidden rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc]">
+      <MotionInput className="flex h-[43px] w-full items-center overflow-hidden rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc]">
         <label className="flex h-full min-w-[124px] items-center border-r border-[#dbeafe] pl-3 pr-2 text-[14px] font-medium text-[var(--profile-title-color)]">
           <select
             name="phone_country"
@@ -376,7 +377,7 @@ function PhoneField({
           placeholder="123 456 7890"
           className="h-full w-full bg-[#f8fafc] px-3 text-[14px] font-medium text-[var(--profile-title-color)] outline-none"
         />
-      </div>
+      </MotionInput>
       <input
         type="hidden"
         name="phone"
@@ -438,20 +439,22 @@ function Field({
           iconClassName="h-4 w-4 text-[#94a3b8]"
         />
       ) : (
-        <input
-          type={type}
-          name={name}
-          value={value}
-          defaultValue={defaultValue}
-          onChange={(event) => onChange?.(event.target.value)}
-          readOnly={readOnly}
-          required={required}
-          minLength={minLength}
-          maxLength={maxLength}
-          pattern={pattern}
-          title={title}
-          className="h-[43px] w-full rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc] px-3 text-[14px] font-medium text-[var(--profile-title-color)]"
-        />
+        <MotionInput>
+          <input
+            type={type}
+            name={name}
+            value={value}
+            defaultValue={defaultValue}
+            onChange={(event) => onChange?.(event.target.value)}
+            readOnly={readOnly}
+            required={required}
+            minLength={minLength}
+            maxLength={maxLength}
+            pattern={pattern}
+            title={title}
+            className="h-[43px] w-full rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc] px-3 text-[14px] font-medium text-[var(--profile-title-color)]"
+          />
+        </MotionInput>
       )}
     </div>
   );

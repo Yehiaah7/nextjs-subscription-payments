@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { ChevronLeft, Lock, UserRound } from 'lucide-react';
 import { login } from '@/app/auth/actions';
+import { MotionButton, MotionInput } from '@/components/motion';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
@@ -60,7 +61,7 @@ export default async function LoginPage({
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Email or username
             </label>
-            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
+            <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
               <input
                 name="email"
                 type="text"
@@ -72,7 +73,7 @@ export default async function LoginPage({
                 )}
               />
               <UserRound className="h-4 w-4 text-slate-300" />
-            </div>
+            </MotionInput>
           </div>
 
           <div>
@@ -105,7 +106,7 @@ export default async function LoginPage({
             />
           </div>
 
-          <button
+          <MotionButton
             type="submit"
             className={cn(
               'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
@@ -115,7 +116,7 @@ export default async function LoginPage({
             )}
           >
             Sign in
-          </button>
+          </MotionButton>
         </form>
 
         {searchParams.error && (

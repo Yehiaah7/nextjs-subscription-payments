@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ChevronLeft, Eye, Lock } from 'lucide-react';
 import { resetPassword } from '@/app/auth/actions';
+import { MotionButton, MotionInput } from '@/components/motion';
 import {
   btnInteractive,
   btnInteractiveColored,
@@ -41,7 +42,7 @@ export default function ResetPasswordPage({
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               New password
             </label>
-            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
+            <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
               <Lock className="h-4 w-4 text-slate-300" />
               <input
                 name="password"
@@ -52,14 +53,14 @@ export default function ResetPasswordPage({
                 className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
               />
               <Eye className="h-4 w-4 text-slate-300" />
-            </div>
+            </MotionInput>
           </div>
 
           <div>
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Confirm password
             </label>
-            <div className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
+            <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
               <Lock className="h-4 w-4 text-slate-300" />
               <input
                 name="passwordConfirm"
@@ -70,10 +71,10 @@ export default function ResetPasswordPage({
                 className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
               />
               <Eye className="h-4 w-4 text-slate-300" />
-            </div>
+            </MotionInput>
           </div>
 
-          <button
+          <MotionButton
             type="submit"
             className={cn(
               'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
@@ -83,7 +84,7 @@ export default function ResetPasswordPage({
             )}
           >
             Update password
-          </button>
+          </MotionButton>
         </form>
 
         {searchParams.error && (

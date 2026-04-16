@@ -1,6 +1,7 @@
 'use client';
 
 import SeniorityDropdown from '@/components/seniority/SeniorityDropdown';
+import { MotionButton, MotionCard } from '@/components/motion';
 import {
   cardInteractive,
   focusRingInteractive,
@@ -16,9 +17,7 @@ import MotionPage from '@/components/motion/MotionPage';
 import {
   fadeSlideUp,
   listVariants,
-  springTransition,
-  tapScale,
-  useReducedMotionPref
+  springTransition
 } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import {
@@ -85,8 +84,6 @@ export default function CompanyDetailsScreen({
   const [filter, setFilter] = useState<FilterTab>('all');
   const [selectedSeniority, setSelectedSeniority] =
     useState<Seniority>('junior');
-  const reducedMotion = useReducedMotionPref();
-
   useEffect(() => {
     const stored = window.localStorage.getItem(SENIORITY_STORAGE_KEY);
     if (stored && SENIORITY_OPTIONS.includes(stored as Seniority)) {
@@ -166,7 +163,7 @@ export default function CompanyDetailsScreen({
 
         <div className="app-segment mb-4 grid grid-cols-4 gap-1 text-center">
           {FILTERS.map((tab) => (
-            <button
+            <MotionButton
               key={tab.key}
               onClick={() => setFilter(tab.key)}
               className={cn(
@@ -185,7 +182,7 @@ export default function CompanyDetailsScreen({
                 />
               ) : null}
               <span className="relative">{tab.label}</span>
-            </button>
+            </MotionButton>
           ))}
         </div>
 
@@ -204,13 +201,12 @@ export default function CompanyDetailsScreen({
               <motion.div
                 key={challenge.id}
                 variants={fadeSlideUp}
-                whileTap={reducedMotion ? undefined : tapScale.card}
-                whileHover={reducedMotion ? undefined : { y: -1 }}
               >
+                <MotionCard>
                 <Link
                   href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
                   className={cn(
-                    'app-card block',
+                    'app-card block cursor-pointer',
                     cardInteractive,
                     focusRingInteractive
                   )}
@@ -280,6 +276,7 @@ export default function CompanyDetailsScreen({
                     </div>
                   </div>
                 </Link>
+                </MotionCard>
               </motion.div>
             ))
           )}

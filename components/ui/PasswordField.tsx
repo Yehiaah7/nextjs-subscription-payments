@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff } from 'lucide-react';
 import { InputHTMLAttributes, ReactNode, useEffect, useRef, useState } from 'react';
+import { MotionInput } from '@/components/motion';
 import { cn } from '@/utils/cn';
 import { iconBtnInteractive } from '@/components/ui/interactive';
 
@@ -59,7 +60,7 @@ export default function PasswordField({
   }, [isVisible, wasFocused]);
 
   return (
-    <div className={containerClassName}>
+    <MotionInput className={containerClassName}>
       {leftIcon}
       <input
         {...inputProps}
@@ -80,6 +81,6 @@ export default function PasswordField({
           <Eye className={iconClassName} aria-hidden="true" />
         )}
       </button>
-    </div>
+    </MotionInput>
   );
 }
