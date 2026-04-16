@@ -156,7 +156,12 @@ export default function HomeScreen({
           </div>
         </header>
 
-        <div className="app-card mb-4 border border-primary-soft">
+        <MotionCard
+          className={cn(
+            'app-card mb-4 border border-primary-soft',
+            cardInteractive
+          )}
+        >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="rounded-lg bg-primary-soft p-1.5">
@@ -180,10 +185,10 @@ export default function HomeScreen({
               Upgrade
             </MotionButton>
           </div>
-        </div>
+        </MotionCard>
 
-        <section
-          className="app-card mb-4 border"
+        <MotionCard
+          className={cn('app-card mb-4 border', cardInteractive)}
           style={{
             backgroundColor: '#dbeafe',
             borderColor: '#bedbff'
@@ -197,8 +202,8 @@ export default function HomeScreen({
               <h2 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
                 {userName}
               </h2>
-              <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2563eb]">
-                PRODUCT GYM MEMBER
+              <p className="text-[10px] font-black tracking-[0.04em] text-[#2563eb]">
+                Product Gym member
               </p>
             </div>
           </div>
@@ -220,7 +225,7 @@ export default function HomeScreen({
               value={userStats.solvingDays}
             />
           </div>
-        </section>
+        </MotionCard>
 
         <div className="app-segment mb-4">
           <div className="grid h-full grid-cols-3 gap-1">
@@ -309,10 +314,10 @@ function SkillPathChallengeCard({
         <h4 className="line-clamp-2 text-[16px] font-bold leading-[1.35] text-[#0f172a]">
           {challenge.title}
         </h4>
-        <div className="mt-2 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.1em] text-[#64748b]">
-          <span>{challenge.practicingCount} PRACTICING</span>
+        <div className="mt-2 flex items-center gap-3 text-[10px] font-black tracking-[0.04em] text-[#64748b]">
+          <span>{challenge.practicingCount} Practicing</span>
           <span>
-            {challenge.durationMin}–{challenge.durationMax} MINS
+            {challenge.durationMin}–{challenge.durationMax} mins
           </span>
         </div>
       </div>
@@ -345,7 +350,7 @@ function StatTile({
       <div className="mb-1 inline-flex items-center justify-center rounded-full bg-white p-1 text-primary">
         {icon}
       </div>
-      <p className="text-[9px] font-black uppercase tracking-[0.1em] text-[#64748b]">
+      <p className="text-[9px] font-black tracking-[0.04em] text-[#64748b]">
         {label}
       </p>
       <p className="mt-1 text-[20px] font-bold leading-none text-[#0f172a]">
@@ -386,7 +391,7 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
                   ? `Focus: ${track.companySummary.focus}`
                   : ''}
               </p>
-              <div className="mt-2 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.1em] text-[#64748b]">
+              <div className="mt-2 flex items-center gap-3 text-[10px] font-bold tracking-[0.04em] text-[#64748b]">
                 <span className="inline-flex items-center gap-1 whitespace-nowrap">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   {track.companySummary.challengesCount} Challenges
@@ -406,10 +411,10 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
                 style={{ width: `${boundedProgress}%` }}
               />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-primary">
+            <span className="text-[10px] font-black tracking-[0.04em] text-primary">
               {boundedProgress}%
             </span>
-            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-primary">
+            <span className="text-[10px] font-black tracking-[0.04em] text-primary">
               Resume
             </span>
             <span
