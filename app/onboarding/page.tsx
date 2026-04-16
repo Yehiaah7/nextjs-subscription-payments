@@ -153,7 +153,7 @@ export default async function OnboardingPage() {
             {onboardingFeatures.map(({ icon: Icon, iconColor, label }) => (
               <div
                 key={label}
-                className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3"
+                className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)]"
               >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#f8fafc]">
                   <Icon className={iconColor} size={18} aria-hidden="true" />
