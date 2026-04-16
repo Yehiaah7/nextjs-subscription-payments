@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { ChevronLeft, Eye, Lock } from 'lucide-react';
+import { ChevronLeft, Lock } from 'lucide-react';
 import { resetPassword } from '@/app/auth/actions';
-import { MotionButton, MotionInput } from '@/components/motion';
+import { MotionInput } from '@/components/motion';
 import {
   btnInteractive,
   btnInteractiveColored,
@@ -9,6 +9,8 @@ import {
   iconBtnInteractive,
   inputInteractive
 } from '@/components/ui/interactive';
+import PasswordField from '@/components/ui/PasswordField';
+import AuthSubmitButton from '@/components/ui/AuthSubmitButton';
 import { cn } from '@/utils/cn';
 
 export default function ResetPasswordPage({
@@ -42,40 +44,43 @@ export default function ResetPasswordPage({
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               New password
             </label>
-            <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
-              <Lock className="h-4 w-4 text-slate-300" />
-              <input
-                name="password"
-                type="password"
-                required
-                minLength={6}
-                placeholder="Password"
-                className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
-              />
-              <Eye className="h-4 w-4 text-slate-300" />
-            </MotionInput>
+            <PasswordField
+              name="password"
+              required
+              minLength={6}
+              autoComplete="new-password"
+              placeholder="Password"
+              containerClassName={cn(
+                'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
+                inputInteractive
+              )}
+              inputClassName={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
+              leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
+              iconClassName="h-4 w-4 text-slate-300"
+            />
           </div>
 
           <div>
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Confirm password
             </label>
-            <MotionInput className={cn('flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4', inputInteractive)}>
-              <Lock className="h-4 w-4 text-slate-300" />
-              <input
-                name="passwordConfirm"
-                type="password"
-                required
-                minLength={6}
-                placeholder="Confirm password"
-                className={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
-              />
-              <Eye className="h-4 w-4 text-slate-300" />
-            </MotionInput>
+            <PasswordField
+              name="passwordConfirm"
+              required
+              minLength={6}
+              autoComplete="new-password"
+              placeholder="Confirm password"
+              containerClassName={cn(
+                'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
+                inputInteractive
+              )}
+              inputClassName={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
+              leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
+              iconClassName="h-4 w-4 text-slate-300"
+            />
           </div>
 
-          <MotionButton
-            type="submit"
+          <AuthSubmitButton
             className={cn(
               'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
               btnInteractive,
@@ -84,7 +89,7 @@ export default function ResetPasswordPage({
             )}
           >
             Update password
-          </MotionButton>
+          </AuthSubmitButton>
         </form>
 
         {searchParams.error && (

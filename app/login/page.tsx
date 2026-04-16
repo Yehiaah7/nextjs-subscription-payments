@@ -2,10 +2,11 @@
 import Link from 'next/link';
 import { ChevronLeft, Lock, UserRound } from 'lucide-react';
 import { login } from '@/app/auth/actions';
-import { MotionButton, MotionInput } from '@/components/motion';
+import { MotionInput } from '@/components/motion';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
+import AuthSubmitButton from '@/components/ui/AuthSubmitButton';
 import {
   btnInteractive,
   btnInteractiveColored,
@@ -106,8 +107,7 @@ export default async function LoginPage({
             />
           </div>
 
-          <MotionButton
-            type="submit"
+          <AuthSubmitButton
             className={cn(
               'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
               btnInteractive,
@@ -116,7 +116,7 @@ export default async function LoginPage({
             )}
           >
             Sign in
-          </MotionButton>
+          </AuthSubmitButton>
         </form>
 
         {searchParams.error && (
