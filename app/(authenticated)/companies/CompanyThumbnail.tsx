@@ -2,15 +2,24 @@ import Image from 'next/image';
 import { getCompanyLogoSrc } from './company-logo';
 
 type CompanyThumbnailProps = {
+  companyId?: string;
   companyName: string;
+  companyLogoSrc?: string | null;
   className?: string;
 };
 
 export default function CompanyThumbnail({
+  companyId,
   companyName,
+  companyLogoSrc,
   className
 }: CompanyThumbnailProps) {
-  const logoSrc = getCompanyLogoSrc(companyName);
+  const logoSrc =
+    companyLogoSrc ??
+    getCompanyLogoSrc({
+      companyId,
+      companyName
+    });
 
   return (
     <div

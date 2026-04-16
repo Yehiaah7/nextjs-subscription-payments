@@ -20,7 +20,6 @@ import { cn } from '@/utils/cn';
 import {
   ChevronLeft,
   ChevronRight,
-  CircleDot,
   Clock3,
   RotateCcw,
   UserRound
@@ -28,6 +27,8 @@ import {
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import type { CompanySummary } from '../company-summary';
+import CompanySummaryCard from '../CompanySummaryCard';
 import CompanyThumbnail from '../CompanyThumbnail';
 
 export type ChallengeStatus = 'in-progress' | 'not-solved' | 'solved';
@@ -73,14 +74,7 @@ export default function CompanyDetailsScreen({
   challenges,
   companyId
 }: {
-  companySummary: {
-    id: string;
-    title: string;
-    focus: string;
-    challengesCount: number;
-    practicingCount: string;
-    progress: number;
-  };
+  companySummary: CompanySummary;
   companyId: string;
   challenges: CompanyChallenge[];
 }) {
@@ -132,34 +126,15 @@ export default function CompanyDetailsScreen({
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <CompanyThumbnail companyName={companySummary.title} />
-          <h1 className="t-title">{companySummary.title}</h1>
+          <CompanyThumbnail
+            companyId={companySummary.id}
+            companyName={companySummary.name}
+            companyLogoSrc={companySummary.logo}
+          />
+          <h1 className="t-title">{companySummary.name}</h1>
         </header>
 
-        <article className="app-card mb-5">
-          <h2 className="t-card-title text-[22px]">{companySummary.title}</h2>
-          {companySummary.focus ? (
-            <p className="t-body-muted">Focus: {companySummary.focus}</p>
-          ) : null}
-          <div className="t-label mt-1 flex items-center gap-3 text-muted">
-            <span className="flex items-center gap-1">
-              <CircleDot className="h-4 w-4" />
-              {companySummary.challengesCount} Challenges
-            </span>
-            <span className="flex items-center gap-1">
-              <UserRound className="h-4 w-4" />
-              {companySummary.practicingCount} Practicing
-            </span>
-          </div>
-          <div className="mt-3 h-2.5 rounded-pill bg-surface-soft">
-            <div
-              className="h-full rounded-pill bg-primary"
-              style={{
-                width: `${Math.max(0, Math.min(100, companySummary.progress))}%`
-              }}
-            />
-          </div>
-        </article>
+        <CompanySummaryCard company={companySummary} className="app-card mb-5" />
 
         <div className="mb-4 flex items-center gap-2">
           <span className="t-card-title">Practice</span>

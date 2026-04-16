@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, CircleDot, UserRound } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { MotionCard } from '@/components/motion';
@@ -12,22 +12,14 @@ import {
 } from '@/components/ui/interactive';
 import { fadeSlideUp, listVariants } from '@/lib/motion';
 import { cn } from '@/utils/cn';
+import type { CompanySummary } from './company-summary';
 import { getCompanyHref } from './navigation';
-import CompanyThumbnail from './CompanyThumbnail';
-
-export type CompanyTrack = {
-  id: string;
-  title: string;
-  focus: string;
-  challengesCount: number;
-  practicingCount: string;
-  progress: number;
-};
+import CompanySummaryCard from './CompanySummaryCard';
 
 export default function CompaniesScreen({
   companyTracks
 }: {
-  companyTracks: CompanyTrack[];
+  companyTracks: CompanySummary[];
 }) {
   return (
     <MotionPage>
@@ -62,48 +54,26 @@ export default function CompaniesScreen({
                     cardInteractive,
                     focusRingInteractive
                   )}
+                  aria-label={`Open ${track.name}`}
                 >
-                  <div className="mb-3 flex items-start gap-3">
-                    <CompanyThumbnail companyName={track.title} />
-                    <div>
-                      <h2 className="t-card-title text-[22px]">
-                        {track.title}
-                      </h2>
-                      {track.focus ? (
-                        <p className="t-body-muted">Focus: {track.focus}</p>
-                      ) : null}
-                      <div className="t-label mt-1 flex items-center gap-3 text-muted">
-                        <span className="flex items-center gap-1">
-                          <CircleDot className="h-4 w-4" />
-                          {track.challengesCount} Challenges
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <UserRound className="h-4 w-4" />
-                          {track.practicingCount} Practicing
+                  <CompanySummaryCard
+                    company={track}
+                    className="p-0"
+                    footer={
+                      <div className="flex items-center gap-3">
+                        <span className="t-label ml-auto text-primary">Resume</span>
+                        <span
+                          className={cn(
+                            'grid h-8 w-8 place-items-center rounded-pill bg-primary-soft text-primary',
+                            iconBtnInteractive
+                          )}
+                          aria-hidden="true"
+                        >
+                          <ChevronRight className="h-4 w-4" />
                         </span>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-2.5 flex-1 rounded-pill bg-surface-soft">
-                      <div
-                        className="h-full rounded-pill bg-primary"
-                        style={{
-                          width: `${Math.max(0, Math.min(100, track.progress))}%`
-                        }}
-                      />
-                    </div>
-                    <span className="t-label text-primary">Resume</span>
-                    <span
-                      className={cn(
-                        'grid h-8 w-8 place-items-center rounded-pill bg-primary-soft text-primary',
-                        iconBtnInteractive
-                      )}
-                      aria-label={`Resume ${track.title}`}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </span>
-                  </div>
+                    }
+                  />
                 </Link>
               </MotionCard>
             </motion.div>

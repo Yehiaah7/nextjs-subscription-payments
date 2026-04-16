@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { Bolt, Compass, ShieldCheck } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
+import { cn } from '@/utils/cn';
+import { btnInteractive, btnInteractiveColored, focusRingInteractive } from '@/components/ui/interactive';
 
 const onboardingFeatures = [
   {
@@ -166,7 +168,12 @@ export default async function OnboardingPage() {
           <div className="space-y-4">
             <Link
               href="/sign-up"
-              className="flex h-12 w-full items-center justify-center rounded-2xl bg-[#155dfc] text-center text-xs font-bold uppercase tracking-[1.2px] text-white"
+              className={cn(
+                'flex h-12 w-full items-center justify-center rounded-2xl bg-[#155dfc] text-center text-xs font-bold uppercase tracking-[1.2px] text-white',
+                btnInteractive,
+                btnInteractiveColored,
+                focusRingInteractive
+              )}
             >
               GET STARTED →
             </Link>
