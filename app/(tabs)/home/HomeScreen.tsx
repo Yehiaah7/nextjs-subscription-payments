@@ -39,17 +39,13 @@ import {
   springTransition
 } from '@/lib/motion';
 import { cn } from '@/utils/cn';
+import type { CompanySummary } from '@/app/(authenticated)/companies/company-summary';
+import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
 export type HomeTrack = {
-  id: string;
-  title: string;
-  description: string | null;
-  moduleCount: number;
-  challengeCountsBySeniority?: Partial<Record<Seniority, number>>;
-  practicingCount?: string;
-  progress?: number;
+  companySummary: CompanySummary;
 };
 
 export type SkillPathCategory = {
@@ -121,9 +117,13 @@ export default function HomeScreen({
     : [];
 
   const filteredCompanyTracks = companyTracks
-    .filter((track) => track.moduleCount > 0)
+    .filter((track) => track.companySummary.challengesCount > 0)
     .reduce<HomeTrack[]>((acc, track) => {
-      if (acc.some((existing) => existing.id === track.id)) {
+      if (
+        acc.some(
+          (existing) => existing.companySummary.id === track.companySummary.id
+        )
+      ) {
         return acc;
       }
 
@@ -264,10 +264,13 @@ export default function HomeScreen({
                 <EmptyState message="No challenges for this level yet." />
               ) : (
                 filteredCompanyTracks.map((track) => (
-                  <motion.div key={track.id} variants={fadeSlideUp}>
+                  <motion.div
+                    key={track.companySummary.id}
+                    variants={fadeSlideUp}
+                  >
                     <CompanyTrackCard
                       track={track}
-                      href={getCompanyHref(track.id)}
+                      href={getCompanyHref(track.companySummary.id)}
                     />
                   </motion.div>
                 ))
@@ -353,7 +356,10 @@ function StatTile({
 }
 
 function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
-  const boundedProgress = Math.max(0, Math.min(100, track.progress ?? 45));
+  const boundedProgress = Math.max(
+    0,
+    Math.min(100, track.companySummary.progress)
+  );
 
   return (
     <MotionCard>
@@ -366,25 +372,30 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
         >
           <div className="mb-3 flex items-start gap-3">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#f1f5f9]">
-              <div className="grid h-9 w-9 place-items-center rounded-[10px] bg-white text-sm font-bold text-[#0f172a]">
-                {track.title[0] ?? 'C'}
-              </div>
+              <CompanyThumbnail
+                companyId={track.companySummary.id}
+                companyName={track.companySummary.name}
+                companyLogoSrc={track.companySummary.logo}
+                className="grid h-9 w-9 place-items-center rounded-[10px] bg-white"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <h4 className="truncate text-[16px] font-bold text-[#0f172a]">
-                {track.title}
+                {track.companySummary.name}
               </h4>
               <p className="mt-0.5 truncate text-[12px] font-medium text-[#64748b]">
-                {track.description ?? 'Product Sense'}
+                {track.companySummary.focus
+                  ? `Focus: ${track.companySummary.focus}`
+                  : ''}
               </p>
               <div className="mt-2 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.1em] text-[#64748b]">
                 <span className="inline-flex items-center gap-1 whitespace-nowrap">
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  {track.moduleCount} Challenges
+                  {track.companySummary.challengesCount} Challenges
                 </span>
                 <span className="inline-flex items-center gap-1 whitespace-nowrap">
                   <UserRound className="h-3.5 w-3.5" />
-                  {track.practicingCount ?? '1.2K'} Practicing
+                  {track.companySummary.practicingCount} Practicing
                 </span>
               </div>
             </div>
@@ -405,7 +416,7 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
             </span>
             <span
               className="grid h-7 w-7 place-items-center rounded-full bg-primary-soft text-primary"
-              aria-label={`Resume ${track.title}`}
+              aria-label={`Resume ${track.companySummary.name}`}
             >
               <ChevronRight className="h-4 w-4" />
             </span>
