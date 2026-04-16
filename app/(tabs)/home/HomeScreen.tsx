@@ -275,52 +275,9 @@ export default function HomeScreen({
           </section>
         )}
         {tab === 'skill-paths' && (
-          <section>
-            <div className="mb-4 flex h-[31px] w-full max-w-[361px] items-center gap-2 overflow-x-auto pb-1">
-              {skillPathCategories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedSkillCategoryKey(category.key)}
-                  className={`shrink-0 rounded-pill px-3 py-1 text-[10px] font-black uppercase tracking-[0.08em] whitespace-nowrap ${
-                    selectedCategory?.id === category.id
-                      ? 'bg-container text-primary shadow-button'
-                      : 'bg-[#e2e8f0] text-[#64748b]'
-                  } ${tabInteractive} ${focusRingInteractive}`}
-                >
-                  {category.title}
-                </button>
-              ))}
-            </div>
-
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
-                {selectedCategory?.title ?? 'Skill Path'} Challenges
-              </h3>
-              <MotionButton
-                className={cn(
-                  'rounded-pill px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-primary',
-                  btnInteractive,
-                  btnInteractiveNeutral,
-                  focusRingInteractive
-                )}
-              >
-                VIEW ALL
-              </MotionButton>
-            </div>
-
-            <div className="space-y-3 pb-24">
-              {selectedCategoryChallenges.length === 0 ? (
-                <EmptyState message="No skill path challenges yet." />
-              ) : (
-                selectedCategoryChallenges.map((challenge) => (
-                  <SkillPathChallengeCard
-                    key={challenge.id}
-                    challenge={challenge}
-                  />
-                ))
-              )}
-            </div>
-          </section>
+          <div className="space-y-4">
+            <EmptyState message="No skill path challenges yet." />
+          </div>
         )}
         {tab === 'products' && (
           <div className="space-y-4">
