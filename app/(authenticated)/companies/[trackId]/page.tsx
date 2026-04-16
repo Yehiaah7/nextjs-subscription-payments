@@ -1,6 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import CompanyDetailsScreen, { CompanyChallenge } from './CompanyDetailsScreen';
+import {
+  buildCompanySummary,
+  calculateCompanyProgress
+} from '../company-summary';
 
 type Seniority = 'junior' | 'mid' | 'senior';
 
@@ -37,18 +41,6 @@ type AnswerRow = {
   question_id: string;
   option_id: string | null;
   points_awarded: number | null;
-};
-
-const formatCompact = (value: number) =>
-  value >= 1000 ? `${(value / 1000).toFixed(1)}K` : `${value}`;
-const hashString = (value: string) =>
-  value
-    .split('')
-    .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 100000, 11);
-
-const deterministicRange = (seedSource: string, min: number, max: number) => {
-  const seed = hashString(seedSource);
-  return min + (seed % (max - min + 1));
 };
 
 export default async function CompanyDetailsPage({
@@ -198,7 +190,7 @@ export default async function CompanyDetailsPage({
       category: quiz.modules?.title ?? 'Challenge',
       categorySortOrder: 99,
       status,
-      practicingCount: `${deterministicRange(quiz.id, 10, 100)}`,
+      practicingCount: `${10 + ((quiz.title.length * 13) % 91)}`,
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
       seniority: (quiz.difficulty ?? 'junior') as Seniority,
       answeredSteps,
@@ -210,24 +202,25 @@ export default async function CompanyDetailsPage({
     };
   });
 
-  const totalSteps = challenges.reduce(
-    (sum, challenge) => sum + challenge.totalSteps,
-    0
-  );
-  const completedSteps = challenges.reduce(
-    (sum, challenge) => sum + challenge.completedSteps,
-    0
-  );
-  const progressPercent = totalSteps
-    ? Math.round((completedSteps / totalSteps) * 100)
-    : 0;
+  const companySummary = buildCompanySummary({
+    id: company.id,
+    title: company.title,
+    description: company.description,
+    challengeCount: quizzes.length,
+    progress: calculateCompanyProgress({
+      quizIds,
+      questionCountByQuizId: totalQuestionsByQuiz,
+      latestAttemptByQuizId,
+      latestActiveAttemptByQuizId,
+      answeredCountByAttempt
+    })
+  });
 
   return (
     <CompanyDetailsScreen
-      company={company}
+      companySummary={companySummary}
+      companyId={company.id}
       challenges={challenges}
-      progressPercent={progressPercent}
-      practicingCount={formatCompact(1200 + challenges.length * 12)}
     />
   );
 }

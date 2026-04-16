@@ -68,15 +68,20 @@ const STATUS_LABELS: Record<ChallengeStatus, string> = {
 };
 
 export default function CompanyDetailsScreen({
-  company,
+  companySummary,
   challenges,
-  progressPercent,
-  practicingCount
+  companyId
 }: {
-  company: { id: string; title: string; description: string | null };
+  companySummary: {
+    id: string;
+    title: string;
+    focus: string;
+    challengesCount: number;
+    practicingCount: string;
+    progress: number;
+  };
+  companyId: string;
   challenges: CompanyChallenge[];
-  progressPercent: number;
-  practicingCount: string;
 }) {
   const [filter, setFilter] = useState<FilterTab>('all');
   const [selectedSeniority, setSelectedSeniority] =
@@ -111,8 +116,6 @@ export default function CompanyDetailsScreen({
     [challenges, filter, selectedSeniority]
   );
 
-  const visibleChallengeCount = filteredChallenges.length;
-
   return (
     <MotionPage>
       <section>
@@ -128,29 +131,29 @@ export default function CompanyDetailsScreen({
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <h1 className="t-title">{company.title}</h1>
+          <h1 className="t-title">{companySummary.title}</h1>
         </header>
 
         <article className="app-card mb-5">
-          <h2 className="t-card-title text-[22px]">{company.title}</h2>
-          <p className="t-body-muted">
-            Focus: {company.description ?? 'Metrics · Product Sense'}
-          </p>
+          <h2 className="t-card-title text-[22px]">{companySummary.title}</h2>
+          {companySummary.focus ? (
+            <p className="t-body-muted">Focus: {companySummary.focus}</p>
+          ) : null}
           <div className="t-label mt-1 flex items-center gap-3 text-muted">
             <span className="flex items-center gap-1">
               <CircleDot className="h-4 w-4" />
-              {visibleChallengeCount} Challenges
+              {companySummary.challengesCount} Challenges
             </span>
             <span className="flex items-center gap-1">
               <UserRound className="h-4 w-4" />
-              {practicingCount} Practicing
+              {companySummary.practicingCount} Practicing
             </span>
           </div>
           <div className="mt-3 h-2.5 rounded-pill bg-surface-soft">
             <div
               className="h-full rounded-pill bg-primary"
               style={{
-                width: `${Math.max(0, Math.min(100, progressPercent))}%`
+                width: `${Math.max(0, Math.min(100, companySummary.progress))}%`
               }}
             />
           </div>
@@ -204,7 +207,7 @@ export default function CompanyDetailsScreen({
               <motion.div key={challenge.id} variants={fadeSlideUp}>
                 <MotionCard>
                   <Link
-                    href={`/challenge/${challenge.id}?company=${company.id}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
+                    href={`/challenge/${challenge.id}?company=${companyId}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
                     className={cn(
                       'app-card block cursor-pointer',
                       cardInteractive,
