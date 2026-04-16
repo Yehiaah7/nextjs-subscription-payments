@@ -1,6 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { requireUser } from '@/utils/auth/require-user';
-import CompaniesScreen, { CompanyTrack } from '../CompaniesScreen';
+import CompaniesScreen from '../CompaniesScreen';
+import {
+  buildCompanySummary,
+  calculateCompanyProgress
+} from '../company-summary';
 
 type TrackRow = {
   id: string;
@@ -30,30 +34,6 @@ type AnswerRow = {
   attempt_id: string;
   question_id: string;
 };
-
-const hashString = (value: string) =>
-  value
-    .split('')
-    .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 100000, 7);
-
-const deterministicRange = (seedSource: string, min: number, max: number) =>
-  min + (hashString(seedSource) % (max - min + 1));
-
-const normalizeFocus = (description: string | null) =>
-  (description ?? '').replace(/^(focus:\s*)+/i, '').trim();
-
-const toCompanyTrack = (
-  track: TrackRow,
-  challengeCount: number,
-  progress: number
-): CompanyTrack => ({
-  id: track.id,
-  title: track.title,
-  focus: normalizeFocus(track.description),
-  challengesCount: challengeCount,
-  practicingCount: `${deterministicRange(track.id, 50, 150)}`,
-  progress
-});
 
 export default async function ViewAllCompaniesPage() {
   const user = await requireUser();
@@ -185,25 +165,21 @@ export default async function ViewAllCompaniesPage() {
 
   const companyTracks = tracks.map((track) => {
     const companyQuizzes = quizzesByTrackId[track.id] ?? [];
+    const progress = calculateCompanyProgress({
+      quizIds: companyQuizzes.map((quiz) => quiz.id),
+      questionCountByQuizId,
+      latestAttemptByQuizId,
+      latestActiveAttemptByQuizId,
+      answeredCountByAttempt
+    });
 
-    const totalSteps = companyQuizzes.reduce(
-      (sum, quiz) => sum + (questionCountByQuizId[quiz.id] ?? 0),
-      0
-    );
-
-    const answeredSteps = companyQuizzes.reduce((sum, quiz) => {
-      const attemptId =
-        latestActiveAttemptByQuizId[quiz.id]?.id ??
-        latestAttemptByQuizId[quiz.id]?.id;
-      if (!attemptId) return sum;
-      return sum + (answeredCountByAttempt[attemptId]?.size ?? 0);
-    }, 0);
-
-    const progress = totalSteps
-      ? Math.round((answeredSteps / totalSteps) * 100)
-      : 0;
-
-    return toCompanyTrack(track, companyQuizzes.length, progress);
+    return buildCompanySummary({
+      id: track.id,
+      title: track.title,
+      description: track.description,
+      challengeCount: companyQuizzes.length,
+      progress
+    });
   });
 
   return <CompaniesScreen companyTracks={companyTracks} />;
