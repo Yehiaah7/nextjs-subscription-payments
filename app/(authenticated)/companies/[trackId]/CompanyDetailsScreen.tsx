@@ -28,6 +28,7 @@ import {
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import CompanyThumbnail from '../CompanyThumbnail';
 
 export type ChallengeStatus = 'in-progress' | 'not-solved' | 'solved';
 export type CompanyChallenge = {
@@ -135,10 +136,17 @@ export default function CompanyDetailsScreen({
         </header>
 
         <article className="app-card mb-5">
-          <h2 className="t-card-title text-[22px]">{companySummary.title}</h2>
-          {companySummary.focus ? (
-            <p className="t-body-muted">Focus: {companySummary.focus}</p>
-          ) : null}
+          <div className="mb-3 flex items-start gap-3">
+            <CompanyThumbnail companyName={companySummary.title} />
+            <div>
+              <h2 className="t-card-title text-[22px]">
+                {companySummary.title}
+              </h2>
+              {companySummary.focus ? (
+                <p className="t-body-muted">Focus: {companySummary.focus}</p>
+              ) : null}
+            </div>
+          </div>
           <div className="t-label mt-1 flex items-center gap-3 text-muted">
             <span className="flex items-center gap-1">
               <CircleDot className="h-4 w-4" />
