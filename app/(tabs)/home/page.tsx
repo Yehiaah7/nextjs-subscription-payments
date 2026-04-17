@@ -159,6 +159,13 @@ export default async function HomePage() {
   const companyCards: HomeTrack[] = tracks.map((track) => {
     const quizzesForTrack = quizzesByTrack[track.id] ?? [];
     const quizIdsForTrack = quizzesForTrack.map((quiz) => quiz.id);
+    const seniorities = Array.from(
+      new Set(
+        quizzesForTrack
+          .map((quiz) => quiz.difficulty)
+          .filter((difficulty): difficulty is Seniority => Boolean(difficulty))
+      )
+    );
 
     return {
       companySummary: buildCompanySummary({
@@ -173,7 +180,8 @@ export default async function HomePage() {
           latestActiveAttemptByQuizId: latestActiveAttemptByQuiz,
           answeredCountByAttempt: solvedQuestionsByAttempt
         })
-      })
+      }),
+      seniorities
     };
   });
 
