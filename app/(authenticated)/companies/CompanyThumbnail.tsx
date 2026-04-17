@@ -34,7 +34,7 @@ export default function CompanyThumbnail({
           alt={`${companyName} logo`}
           fill
           sizes="56px"
-          className="object-contain object-center p-[2px]"
+          className="object-contain object-center p-1"
         />
       ) : (
         <div className="grid h-full w-full place-items-center text-lg font-bold text-muted">

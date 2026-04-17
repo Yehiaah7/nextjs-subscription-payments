@@ -190,8 +190,8 @@ export default function HomeScreen({
         <MotionCard
           className={cn('app-card mb-4 border', cardInteractive)}
           style={{
-            backgroundColor: '#dbeafe',
-            borderColor: '#bedbff'
+            backgroundColor: '#ffffff',
+            borderColor: '#dbeafe'
           }}
         >
           <div className="mb-3 flex items-center gap-3">
