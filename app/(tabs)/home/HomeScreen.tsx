@@ -26,7 +26,6 @@ import {
   iconBtnInteractive,
   tabInteractive
 } from '@/components/ui/interactive';
-import SeniorityDropdown from '@/components/seniority/SeniorityDropdown';
 import {
   SENIORITY_OPTIONS,
   SENIORITY_STORAGE_KEY,
@@ -227,6 +226,10 @@ export default function HomeScreen({
           </div>
         </MotionCard>
 
+        <h3 className="t-card-title mb-3">
+          Practice PM interview questions across all levels
+        </h3>
+
         <div className="app-segment mb-4">
           <div className="grid h-full grid-cols-3 gap-1">
             <TabButton
@@ -249,16 +252,6 @@ export default function HomeScreen({
 
         {tab === 'companies' && (
           <section>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="t-card-title flex items-center gap-1.5">
-                <span>Practice</span>
-                <SeniorityDropdown
-                  selected={selectedSeniority}
-                  onSelect={setSelectedSeniority}
-                />
-                <span>PM skills</span>
-              </h3>
-            </div>
             <motion.div
               className="space-y-4"
               variants={listVariants}
