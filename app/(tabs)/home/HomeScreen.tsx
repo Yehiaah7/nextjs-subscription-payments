@@ -27,6 +27,7 @@ import {
   tabInteractive
 } from '@/components/ui/interactive';
 import {
+  SENIORITY_FILTER_LABELS,
   SENIORITY_OPTIONS,
   SENIORITY_STORAGE_KEY,
   Seniority,
@@ -45,6 +46,7 @@ type MainTab = 'companies' | 'skill-paths' | 'products';
 
 export type HomeTrack = {
   companySummary: CompanySummary;
+  seniorities: Seniority[];
 };
 
 export type SkillPathCategory = {
@@ -116,6 +118,11 @@ export default function HomeScreen({
     : [];
 
   const filteredCompanyTracks = companyTracks
+    .filter((track) =>
+      selectedSeniority === 'all'
+        ? true
+        : track.seniorities.includes(selectedSeniority)
+    )
     .filter((track) => track.companySummary.challengesCount > 0)
     .reduce<HomeTrack[]>((acc, track) => {
       if (
@@ -226,8 +233,31 @@ export default function HomeScreen({
           </div>
         </MotionCard>
 
-        <h3 className="t-card-title mb-3">
-          Practice PM interview questions across all levels
+        <h3 className="t-card-title mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <span>Practice</span>
+          <span className="relative inline-flex">
+            <select
+              value={selectedSeniority}
+              onChange={(event) =>
+                setSelectedSeniority(event.target.value as SeniorityFilter)
+              }
+              className={cn(
+                'appearance-none rounded-pill bg-primary-soft py-0.5 pl-2 pr-6 text-[14px] font-semibold text-primary',
+                btnInteractive,
+                btnInteractiveNeutral,
+                focusRingInteractive
+              )}
+              aria-label="Filter interview questions by level"
+            >
+              {SENIORITY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {SENIORITY_FILTER_LABELS[option]}
+                </option>
+              ))}
+            </select>
+            <ChevronRight className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-primary" />
+          </span>
+          <span>PM interview questions</span>
         </h3>
 
         <div className="app-segment mb-4">
