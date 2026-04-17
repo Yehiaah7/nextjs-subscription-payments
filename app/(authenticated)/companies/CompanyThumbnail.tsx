@@ -25,7 +25,7 @@ export default function CompanyThumbnail({
     <div
       className={
         className ??
-        'relative h-14 w-14 shrink-0 overflow-hidden rounded-card bg-container text-muted'
+        'relative h-14 w-14 shrink-0 overflow-hidden rounded-card bg-white text-muted'
       }
     >
       {logoSrc ? (

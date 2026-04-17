@@ -210,17 +210,17 @@ export default function HomeScreen({
 
           <div className="grid grid-cols-3 gap-2">
             <StatTile
-              icon={<Trophy className="h-3.5 w-3.5" />}
+              icon={<Trophy className="h-3.5 w-3.5 text-[#eab308]" />}
               label="Rank"
               value={userStats.rank}
             />
             <StatTile
-              icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+              icon={<CheckCircle2 className="h-3.5 w-3.5 text-[#22c55e]" />}
               label="Solved"
               value={userStats.solved}
             />
             <StatTile
-              icon={<Flame className="h-3.5 w-3.5" />}
+              icon={<Flame className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />}
               label="Solving Days"
               value={userStats.solvingDays}
             />
@@ -347,7 +347,7 @@ function StatTile({
 }) {
   return (
     <article className="rounded-xl bg-[#eff6ff] px-2 py-2 text-center">
-      <div className="mb-1 inline-flex items-center justify-center rounded-full bg-white p-1 text-primary">
+      <div className="mb-1 inline-flex items-center justify-center rounded-full bg-white p-1">
         {icon}
       </div>
       <p className="text-[9px] font-black tracking-[0.04em] text-[#64748b]">
@@ -380,7 +380,7 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
               companyId={track.companySummary.id}
               companyName={track.companySummary.name}
               companyLogoSrc={track.companySummary.logo}
-              className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[#f1f5f9]"
+              className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-white"
             />
             <div className="min-w-0 flex-1">
               <h4 className="truncate text-[16px] font-bold text-[#0f172a]">
