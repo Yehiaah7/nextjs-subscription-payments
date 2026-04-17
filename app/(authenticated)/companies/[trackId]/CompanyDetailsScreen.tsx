@@ -131,7 +131,7 @@ export default function CompanyDetailsScreen({
         <CompanySummaryCard company={companySummary} className="app-card mb-5" />
 
         <div className="mb-4 flex items-center gap-2">
-          <span className="t-card-title">Practice</span>
+          <span className="t-card-title">PM interview practice</span>
           <SeniorityDropdown
             selected={selectedSeniority}
             onSelect={setSelectedSeniority}
