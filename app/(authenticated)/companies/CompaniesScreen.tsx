@@ -47,40 +47,45 @@ export default function CompaniesScreen({
           initial="initial"
           animate="animate"
         >
-          {companyTracks.map((track) => (
-            <motion.div key={track.id} variants={fadeSlideUp}>
-              <MotionCard>
-                <Link
-                  href={getCompanyHref(track.id)}
-                  className={cn(
-                    'app-card block cursor-pointer',
-                    cardInteractive,
-                    focusRingInteractive
-                  )}
-                  aria-label={`Open ${track.name}`}
-                >
-                  <CompanySummaryCard
-                    company={track}
-                    className="p-0"
-                    footer={
-                      <div className="flex items-center gap-3">
-                        <span className="t-label ml-auto text-primary">Continue</span>
-                        <span
-                          className={cn(
-                            'grid h-8 w-8 place-items-center rounded-pill bg-primary-soft text-primary',
-                            iconBtnInteractive
-                          )}
-                          aria-hidden="true"
-                        >
-                          <ChevronRightFilledIcon className="h-4 w-4" />
-                        </span>
-                      </div>
-                    }
-                  />
-                </Link>
-              </MotionCard>
-            </motion.div>
-          ))}
+          {companyTracks.map((track) => {
+            const boundedProgress = Math.max(0, Math.min(100, track.progress));
+            const ctaLabel = boundedProgress === 0 ? 'Start' : 'Continue';
+
+            return (
+              <motion.div key={track.id} variants={fadeSlideUp}>
+                <MotionCard>
+                  <Link
+                    href={getCompanyHref(track.id)}
+                    className={cn(
+                      'app-card block cursor-pointer',
+                      cardInteractive,
+                      focusRingInteractive
+                    )}
+                    aria-label={`Open ${track.name}`}
+                  >
+                    <CompanySummaryCard
+                      company={track}
+                      className="p-0"
+                      footer={
+                        <div className="flex items-center gap-3">
+                          <span className="t-label ml-auto text-primary">{ctaLabel}</span>
+                          <span
+                            className={cn(
+                              'grid h-8 w-8 place-items-center rounded-pill bg-primary-soft text-primary',
+                              iconBtnInteractive
+                            )}
+                            aria-hidden="true"
+                          >
+                            <ChevronRightFilledIcon className="h-4 w-4" />
+                          </span>
+                        </div>
+                      }
+                    />
+                  </Link>
+                </MotionCard>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </section>
     </MotionPage>

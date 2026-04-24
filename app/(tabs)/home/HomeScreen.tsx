@@ -191,7 +191,7 @@ export default function HomeScreen({
               <div className="flex shrink-0 items-center gap-1.5">
                 <MotionButton
                   className={cn(
-                    'rounded-pill whitespace-nowrap bg-amber-400 px-2.5 py-1 t-label text-amber-950 hover:bg-amber-500',
+                    'rounded-pill whitespace-nowrap bg-emerald-500 px-2.5 py-1 t-label text-white hover:bg-emerald-600',
                     btnInteractive,
                     btnInteractiveColored,
                     focusRingInteractive
@@ -411,6 +411,7 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
     0,
     Math.min(100, track.companySummary.progress)
   );
+  const ctaLabel = boundedProgress === 0 ? 'Start' : 'Continue';
 
   return (
     <MotionCard>
@@ -461,11 +462,11 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
               {boundedProgress}%
             </span>
             <span className="text-[10px] font-black tracking-[0.04em] text-primary">
-              Continue
+              {ctaLabel}
             </span>
             <span
               className="grid h-7 w-7 place-items-center rounded-full bg-primary-soft text-primary"
-              aria-label={`Continue ${track.companySummary.name}`}
+              aria-label={`${ctaLabel} ${track.companySummary.name}`}
             >
               <ChevronRightFilledIcon className="h-4 w-4" />
             </span>
