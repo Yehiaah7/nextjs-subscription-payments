@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { ListFilledIcon, UsersFilledIcon } from '@/components/icons/FilledIcons';
+import { TrophyFilledIcon, UsersFilledIcon } from '@/components/icons/FilledIcons';
 import type { CompanySummary } from './company-summary';
 import CompanyThumbnail from './CompanyThumbnail';
 
@@ -24,10 +24,10 @@ export default function CompanySummaryCard({
         />
         <div>
           <h2 className="t-card-title text-[22px]">{company.name}</h2>
-          {company.focus ? <p className="t-body-muted">Focus: {company.focus}</p> : null}
+          {company.focus ? <p className="text-[#9a7a30]">Focus: {company.focus}</p> : null}
           <div className="t-label mt-1 flex items-center gap-3 text-muted">
             <span className="flex items-center gap-1">
-              <ListFilledIcon className="h-4 w-4" />
+              <TrophyFilledIcon className="h-4 w-4" />
               {company.challengesCount} Challenges
             </span>
             <span className="flex items-center gap-1">
