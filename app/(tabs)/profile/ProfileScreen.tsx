@@ -3,13 +3,13 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
 import {
-  CalendarDays,
-  CheckCircle2,
-  Crown,
-  Globe2,
-  Medal,
-  Trophy
-} from 'lucide-react';
+  CalendarFilledIcon,
+  CheckCircleFilledIcon,
+  CrownFilledIcon,
+  GlobeFilledIcon,
+  MedalFilledIcon,
+  TrophyFilledIcon
+} from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
 import ProGymPassCard from '@/components/ProGymPassCard';
@@ -39,7 +39,7 @@ export default function ProfileScreen({
                 </div>
 
                 <span className="absolute -right-0.5 -top-0.5 grid h-6 w-6 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[#2563eb]">
-                  <Crown className="h-3.5 w-3.5" />
+                  <CrownFilledIcon className="h-3.5 w-3.5" />
                 </span>
               </div>
 
@@ -53,27 +53,27 @@ export default function ProfileScreen({
 
             <div className="mt-5 grid grid-cols-3 gap-2">
               <StatCard
-                icon={<Trophy className="h-3.5 w-3.5" />}
+                icon={<TrophyFilledIcon className="h-3.5 w-3.5" />}
                 label="RANK"
                 value="#12"
               />
               <StatCard
-                icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                icon={<CheckCircleFilledIcon className="h-3.5 w-3.5" />}
                 label="SOLVED"
                 value="42"
               />
               <StatCard
-                icon={<CalendarDays className="h-3.5 w-3.5" />}
+                icon={<CalendarFilledIcon className="h-3.5 w-3.5" />}
                 label="SOLVING DAYS"
                 value="32"
               />
               <StatCard
-                icon={<Medal className="h-3.5 w-3.5" />}
+                icon={<MedalFilledIcon className="h-3.5 w-3.5" />}
                 label="WEEKLY TOP PERFORMER"
                 value="4X"
               />
               <StatCard
-                icon={<Globe2 className="h-3.5 w-3.5" />}
+                icon={<GlobeFilledIcon className="h-3.5 w-3.5" />}
                 label="GLOBAL STANDINGS"
                 value="#98"
               />

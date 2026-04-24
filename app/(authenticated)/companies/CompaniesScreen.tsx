@@ -1,8 +1,11 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import {
+  ChevronLeftFilledIcon,
+  ChevronRightFilledIcon
+} from '@/components/icons/FilledIcons';
 import { MotionCard } from '@/components/motion';
 import MotionPage from '@/components/motion/MotionPage';
 import {
@@ -34,7 +37,7 @@ export default function CompaniesScreen({
             )}
             aria-label="Back to home"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeftFilledIcon className="h-5 w-5" />
           </Link>
           <h1 className="t-title">All Companies</h1>
         </header>
@@ -69,7 +72,7 @@ export default function CompaniesScreen({
                           )}
                           aria-hidden="true"
                         >
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRightFilledIcon className="h-4 w-4" />
                         </span>
                       </div>
                     }

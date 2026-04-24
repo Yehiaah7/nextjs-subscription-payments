@@ -1,7 +1,7 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { ChevronDownFilledIcon } from '@/components/icons/FilledIcons';
 import { cn } from '@/utils/cn';
 import {
   btnInteractive,
@@ -39,7 +39,7 @@ export default function SeniorityDropdown({
         aria-expanded={showSeniorityMenu}
       >
         {SENIORITY_FILTER_LABELS[selected]}
-        <ChevronDown className="h-3.5 w-3.5" />
+        <ChevronDownFilledIcon className="h-3.5 w-3.5" />
       </button>
       {showSeniorityMenu && (
         <div className="absolute left-0 top-full z-10 mt-1 min-w-[120px] rounded-card border border-line bg-container p-1 shadow-card">
