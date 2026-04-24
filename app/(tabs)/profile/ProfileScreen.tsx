@@ -27,8 +27,7 @@ type ProfileScreenProps = {
 };
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-const DEFAULT_AVATAR_BUCKET =
-  process.env.NEXT_PUBLIC_SUPABASE_AVATAR_BUCKET ?? 'avatars';
+const AVATAR_BUCKET = 'avatars';
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/png',
@@ -98,39 +97,6 @@ function extractAvatarLocationFromPublicUrl(
   }
 }
 
-async function resolveAvatarBucket(
-  supabase: ReturnType<typeof createClient>
-): Promise<string> {
-  const { data: buckets, error } = await supabase.storage.listBuckets();
-  if (error) {
-    return DEFAULT_AVATAR_BUCKET;
-  }
-
-  const existingBucketNames = new Set(
-    (buckets ?? []).map((bucket) => bucket.name).filter(Boolean)
-  );
-
-  if (existingBucketNames.has(DEFAULT_AVATAR_BUCKET)) {
-    return DEFAULT_AVATAR_BUCKET;
-  }
-
-  const fallbackBuckets = ['avatars', 'avatar', 'profile-avatars', 'public'];
-  const matchedFallbackBucket = fallbackBuckets.find((bucket) =>
-    existingBucketNames.has(bucket)
-  );
-  if (matchedFallbackBucket) {
-    return matchedFallbackBucket;
-  }
-
-  const knownBuckets = Array.from(existingBucketNames);
-  const knownBucketList =
-    knownBuckets.length > 0 ? knownBuckets.join(', ') : '(none visible)';
-
-  throw new Error(
-    `Avatar storage bucket not found. Expected "${DEFAULT_AVATAR_BUCKET}". Existing buckets: ${knownBucketList}. Create a public bucket named "${DEFAULT_AVATAR_BUCKET}".`
-  );
-}
-
 export default function ProfileScreen({
   email,
   fullName,
@@ -173,10 +139,9 @@ export default function ProfileScreen({
         throw new Error('Please sign in again to update your avatar.');
       }
 
-      const avatarBucket = await resolveAvatarBucket(supabase);
       const nextAvatarPath = `${user.id}/avatar.jpg`;
       const { error: uploadError } = await supabase.storage
-        .from(avatarBucket)
+        .from(AVATAR_BUCKET)
         .upload(nextAvatarPath, optimizedAvatarBlob, {
           upsert: true,
           contentType: 'image/jpeg'
@@ -187,7 +152,7 @@ export default function ProfileScreen({
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from(avatarBucket)
+        .from(AVATAR_BUCKET)
         .getPublicUrl(nextAvatarPath);
       const cacheBustedUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
 
@@ -196,7 +161,7 @@ export default function ProfileScreen({
       );
       if (
         previousAvatarLocation &&
-        (previousAvatarLocation.bucket !== avatarBucket ||
+        (previousAvatarLocation.bucket !== AVATAR_BUCKET ||
           previousAvatarLocation.path !== nextAvatarPath)
       ) {
         await supabase.storage
