@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import {
+  Bell,
   CheckCircle2,
   ChevronRight,
   Flame,
@@ -153,12 +154,25 @@ export default function HomeScreen({
       <section className="text-text">
         <header className="mb-4 flex items-start justify-between gap-3">
           <h1 className="t-title">Product Gym Floor</h1>
-          <div className="text-right">
-            <p className="t-label text-primary">Streak</p>
-            <p className="t-streak mt-1 flex items-center justify-end gap-1">
-              <Flame className="h-4 w-4 fill-orange-500 text-orange-500" />
-              12 Days
-            </p>
+          <div className="flex items-start gap-2">
+            <Link
+              href="/alerts"
+              aria-label="Open Notifications"
+              className={cn(
+                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-muted',
+                iconBtnInteractive,
+                focusRingInteractive
+              )}
+            >
+              <Bell className="h-4 w-4" />
+            </Link>
+            <div className="text-right">
+              <p className="t-label text-primary">Streak</p>
+              <p className="t-streak mt-1 flex items-center justify-end gap-1">
+                <Flame className="h-4 w-4 fill-orange-500 text-orange-500" />
+                12 Days
+              </p>
+            </div>
           </div>
         </header>
 

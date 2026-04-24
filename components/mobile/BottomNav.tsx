@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Home, Trophy, User } from 'lucide-react';
+import { Home, Trophy, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ComponentProps } from 'react';
@@ -12,7 +12,6 @@ const visibleRoutes = new Set(['/home', '/leaderboard', '/alerts', '/profile']);
 const navItems = [
   { href: '/home', label: 'Home', icon: Home },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-  { href: '/alerts', label: 'Alerts', icon: Bell },
   { href: '/profile', label: 'Profile', icon: User }
 ];
 
@@ -34,7 +33,7 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
       {...props}
     >
       <div className="mx-auto h-[68px] w-full max-w-[393px] px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
-        <div className="grid h-full grid-cols-4">
+        <div className="grid h-full grid-cols-3">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
 
