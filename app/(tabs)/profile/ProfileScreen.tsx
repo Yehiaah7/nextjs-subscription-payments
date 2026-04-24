@@ -16,6 +16,7 @@ import ProGymPassCard from '@/components/ProGymPassCard';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { createClient } from '@/utils/supabase/client';
 import { Camera } from 'lucide-react';
+import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 
 type ProfileScreenProps = {
   email: string;
@@ -62,7 +63,7 @@ export default function ProfileScreen({
   lastName,
   avatarUrl
 }: ProfileScreenProps) {
-  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(avatarUrl ?? null);
+  const { avatar, setAvatarImageUrl } = useUserAvatar();
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const supabase = useMemo(() => createClient(), []);
@@ -106,7 +107,7 @@ export default function ProfileScreen({
         throw error;
       }
 
-      setCurrentAvatarUrl(optimizedAvatarDataUrl);
+      setAvatarImageUrl(optimizedAvatarDataUrl);
     } catch (error) {
       setUploadError(
         error instanceof Error
@@ -132,11 +133,11 @@ export default function ProfileScreen({
             <div className="flex flex-col items-center">
               <div className="relative">
                 <UserAvatar
-                  imageUrl={currentAvatarUrl}
-                  firstName={firstName}
-                  lastName={lastName}
-                  fullName={fullName}
-                  email={email}
+                  imageUrl={avatar.imageUrl ?? avatarUrl}
+                  firstName={avatar.firstName ?? firstName}
+                  lastName={avatar.lastName ?? lastName}
+                  fullName={avatar.fullName ?? fullName}
+                  email={avatar.email ?? email}
                   className="h-[80px] w-[80px]"
                   initialsClassName="text-2xl"
                 />

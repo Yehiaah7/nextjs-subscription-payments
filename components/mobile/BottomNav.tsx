@@ -10,6 +10,7 @@ import {
 import UserAvatar from '@/components/ui/UserAvatar';
 import { focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
+import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 
 const visibleRoutes = new Set(['/home', '/leaderboard', '/alerts', '/profile']);
 
@@ -29,6 +30,7 @@ type BottomNavProps = ComponentProps<'div'>;
 
 export default function BottomNav({ className = '', ...props }: BottomNavProps) {
   const pathname = usePathname();
+  const { avatar } = useUserAvatar();
 
   if (!visibleRoutes.has(pathname)) {
     return null;
@@ -63,6 +65,11 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                   />
                 ) : (
                   <UserAvatar
+                    imageUrl={avatar.imageUrl}
+                    firstName={avatar.firstName}
+                    lastName={avatar.lastName}
+                    fullName={avatar.fullName}
+                    email={avatar.email}
                     className={cn(
                       'h-[18px] w-[18px]',
                       active ? 'ring-1 ring-rose-200' : 'opacity-85'

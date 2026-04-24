@@ -44,6 +44,7 @@ import { cn } from '@/utils/cn';
 import type { CompanySummary } from '@/app/(authenticated)/companies/company-summary';
 import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
 import UserAvatar from '@/components/ui/UserAvatar';
+import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
@@ -95,6 +96,7 @@ export default function HomeScreen({
   userEmail?: string | null;
   userStats: UserStats;
 }) {
+  const { avatar } = useUserAvatar();
   const [tab, setTab] = useState<MainTab>('companies');
   const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
   const [selectedSeniority, setSelectedSeniority] =
@@ -224,11 +226,11 @@ export default function HomeScreen({
         >
           <div className="mb-3 flex items-center gap-3">
             <UserAvatar
-              imageUrl={userAvatarUrl}
-              firstName={userFirstName}
-              lastName={userLastName}
-              fullName={userName}
-              email={userEmail}
+              imageUrl={avatar.imageUrl ?? userAvatarUrl}
+              firstName={avatar.firstName ?? userFirstName}
+              lastName={avatar.lastName ?? userLastName}
+              fullName={avatar.fullName ?? userName}
+              email={avatar.email ?? userEmail}
               className="h-11 w-11"
               initialsClassName="text-sm"
             />
