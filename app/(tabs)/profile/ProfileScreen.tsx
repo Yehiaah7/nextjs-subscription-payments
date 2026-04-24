@@ -84,7 +84,7 @@ export default function ProfileScreen({
 
           <Link
             href="/profile/settings"
-            className="flex h-[82px] items-center justify-between rounded-[16px] border border-[#d7e3f7] bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+            className="flex h-[82px] items-center justify-between rounded-[16px] border border-[#d7e3f7] bg-white p-3"
           >
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.9px] text-[#cad5e2]">
