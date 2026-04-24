@@ -14,13 +14,15 @@ export default function ThumbnailPlaceholder({
   return (
     <div
       className={cn(
-        'grid place-items-center rounded-[12px] border border-slate-200 bg-slate-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]',
+        'relative grid place-items-center overflow-hidden rounded-full border border-white/80 bg-gradient-to-br from-slate-100 via-white to-blue-100 shadow-[0_6px_18px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.95)]',
         className
       )}
     >
+      <span className="pointer-events-none absolute inset-[8%] rounded-full border border-slate-200/80" />
+      <span className="pointer-events-none absolute right-[16%] top-[16%] h-[18%] w-[18%] rounded-full bg-white/70 shadow-[0_1px_2px_rgba(15,23,42,0.08)]" />
       <span
         className={cn(
-          'select-none text-sm font-semibold uppercase tracking-[0.02em] text-slate-500',
+          'relative z-10 select-none text-sm font-semibold uppercase tracking-[0.03em] text-slate-600',
           contentClassName
         )}
       >

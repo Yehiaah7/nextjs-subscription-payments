@@ -65,7 +65,7 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                   <ThumbnailPlaceholder
                     fallback="P"
                     className={cn(
-                      'h-[18px] w-[18px] rounded-[6px] border shadow-none',
+                      'h-[18px] w-[18px] border shadow-none',
                       active
                         ? 'border-blue-200 bg-blue-50'
                         : 'border-slate-200 bg-slate-50'
