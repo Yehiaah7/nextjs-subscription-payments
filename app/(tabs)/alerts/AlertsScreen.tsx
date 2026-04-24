@@ -3,7 +3,7 @@
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
 
-const alerts = [
+const notifications = [
   {
     title: 'New Company Mock',
     message: 'A new Tesla product strategy challenge is now available.',
@@ -28,12 +28,12 @@ export default function AlertsScreen() {
         <section className="mx-auto w-full max-w-[361px]">
           <header className="mb-4">
             <h1 className="text-[var(--alerts-title-size)] font-bold leading-[1.4] tracking-[var(--alerts-title-track)] text-[var(--alerts-title-color)]">
-              Alerts
+              Notifications
             </h1>
           </header>
 
           <div className="space-y-4">
-            {alerts.map((alert) => (
+            {notifications.map((alert) => (
               <article
                 key={alert.title}
                 className="h-[82px] w-full rounded-[var(--alerts-card-radius)] border border-[var(--alerts-card-stroke)] bg-[var(--alerts-card-bg)] p-3"
