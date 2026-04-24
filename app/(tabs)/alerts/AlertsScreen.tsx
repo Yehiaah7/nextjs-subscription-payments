@@ -1,7 +1,11 @@
 'use client';
 
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
+import { focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 
 const notifications = [
   {
@@ -26,7 +30,18 @@ export default function AlertsScreen() {
     <MobileScreen>
       <MotionPage>
         <section className="mx-auto w-full max-w-[361px]">
-          <header className="mb-4">
+          <header className="mb-4 flex items-center gap-2">
+            <Link
+              href="/home"
+              aria-label="Back to Home"
+              className={cn(
+                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-muted',
+                iconBtnInteractive,
+                focusRingInteractive
+              )}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
             <h1 className="text-[var(--alerts-title-size)] font-bold leading-[1.4] tracking-[var(--alerts-title-track)] text-[var(--alerts-title-color)]">
               Notifications
             </h1>

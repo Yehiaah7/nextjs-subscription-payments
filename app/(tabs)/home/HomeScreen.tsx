@@ -159,7 +159,7 @@ export default function HomeScreen({
               href="/alerts"
               aria-label="Open Notifications"
               className={cn(
-                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-muted',
+                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-muted hover:border-gray-300 hover:text-primary',
                 iconBtnInteractive,
                 focusRingInteractive
               )}
