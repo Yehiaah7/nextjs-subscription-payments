@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeftFilledIcon } from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
 import { focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
@@ -40,7 +40,7 @@ export default function AlertsScreen() {
                 focusRingInteractive
               )}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeftFilledIcon className="h-4 w-4" />
             </Link>
             <h1 className="text-[var(--alerts-title-size)] font-bold leading-[1.4] tracking-[var(--alerts-title-track)] text-[var(--alerts-title-color)]">
               Notifications

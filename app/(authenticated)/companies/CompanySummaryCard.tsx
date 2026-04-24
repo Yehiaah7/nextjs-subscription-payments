@@ -1,5 +1,5 @@
-import { CircleDot, UserRound } from 'lucide-react';
 import { ReactNode } from 'react';
+import { ListFilledIcon, UsersFilledIcon } from '@/components/icons/FilledIcons';
 import type { CompanySummary } from './company-summary';
 import CompanyThumbnail from './CompanyThumbnail';
 
@@ -27,11 +27,11 @@ export default function CompanySummaryCard({
           {company.focus ? <p className="t-body-muted">Focus: {company.focus}</p> : null}
           <div className="t-label mt-1 flex items-center gap-3 text-muted">
             <span className="flex items-center gap-1">
-              <CircleDot className="h-4 w-4" />
+              <ListFilledIcon className="h-4 w-4" />
               {company.challengesCount} Challenges
             </span>
             <span className="flex items-center gap-1">
-              <UserRound className="h-4 w-4" />
+              <UsersFilledIcon className="h-4 w-4" />
               {company.practicingCount} Practicing
             </span>
           </div>

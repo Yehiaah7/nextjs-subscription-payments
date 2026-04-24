@@ -2,10 +2,15 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import {
+  CheckCircleFilledIcon,
+  ChevronLeftFilledIcon,
+  ChevronRightFilledIcon
+} from '@/components/icons/FilledIcons';
 import { MotionButton } from '@/components/motion';
 import {
   btnInteractive,
@@ -356,7 +361,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           <div className="relative flex items-center justify-center py-1">
             <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white">
               <div className="grid h-12 w-12 place-items-center rounded-full bg-[#155dfc] text-white">
-                <CheckCircle2 className="h-7 w-7" />
+                <CheckCircleFilledIcon className="h-7 w-7" />
               </div>
             </div>
           </div>
@@ -396,7 +401,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             )}
             aria-label="Back"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeftFilledIcon className="h-4 w-4" />
           </Link>
           <p className="text-xs font-black uppercase tracking-[0.08em] text-primary">
             Step {activeIndex + 1}/{quiz.questions.length}
@@ -424,7 +429,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         <section className="w-full rounded-2xl bg-white p-3">
           {currentState.isSolved ? (
             <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-green-800">
-              <CheckCircle2 className="h-3 w-3" />
+              <CheckCircleFilledIcon className="h-3 w-3" />
               Solved
             </div>
           ) : null}
@@ -532,7 +537,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                 focusRingInteractive
               )}
             >
-              <ChevronLeft className="h-4 w-4" /> Previous
+              <ChevronLeftFilledIcon className="h-4 w-4" /> Previous
             </MotionButton>
             <MotionButton
               type="button"
@@ -555,7 +560,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               )}
             >
               {isLastStep ? 'Finish' : 'Next'}{' '}
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRightFilledIcon className="h-4 w-4" />
             </MotionButton>
           </div>
           <MotionButton

@@ -1,18 +1,22 @@
 'use client';
 
-import { Home, Trophy, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ComponentProps } from 'react';
+import {
+  HomeFilledIcon,
+  TrophyFilledIcon,
+  UserFilledIcon
+} from '@/components/icons/FilledIcons';
 import { focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 
 const visibleRoutes = new Set(['/home', '/leaderboard', '/alerts', '/profile']);
 
 const navItems = [
-  { href: '/home', label: 'Home', icon: Home },
-  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-  { href: '/profile', label: 'Profile', icon: User }
+  { href: '/home', label: 'Home', icon: HomeFilledIcon },
+  { href: '/leaderboard', label: 'Leaderboard', icon: TrophyFilledIcon },
+  { href: '/profile', label: 'Profile', icon: UserFilledIcon }
 ];
 
 type BottomNavProps = ComponentProps<'div'>;

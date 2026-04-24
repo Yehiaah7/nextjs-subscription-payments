@@ -18,12 +18,12 @@ import MotionPage from '@/components/motion/MotionPage';
 import { fadeSlideUp, listVariants, springTransition } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import {
-  ChevronLeft,
-  ChevronRight,
-  Clock3,
-  RotateCcw,
-  UserRound
-} from 'lucide-react';
+  ArrowPathFilledIcon,
+  ChevronLeftFilledIcon,
+  ChevronRightFilledIcon,
+  ClockFilledIcon,
+  UsersFilledIcon
+} from '@/components/icons/FilledIcons';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -123,7 +123,7 @@ export default function CompanyDetailsScreen({
             )}
             aria-label="Back to companies"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeftFilledIcon className="h-5 w-5" />
           </Link>
           <h1 className="t-title">Home</h1>
         </header>
@@ -201,7 +201,7 @@ export default function CompanyDetailsScreen({
                           {STATUS_LABELS[challenge.status]}
                         </span>
                         {challenge.retake ? (
-                          <RotateCcw
+                          <ArrowPathFilledIcon
                             className="h-4 w-4 text-amber-500"
                             aria-label="Retake"
                           />
@@ -213,16 +213,16 @@ export default function CompanyDetailsScreen({
                           iconBtnInteractive
                         )}
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRightFilledIcon className="h-4 w-4" />
                       </span>
                     </div>
                     <div className="t-label mt-2 flex items-center gap-3 text-muted">
                       <span className="inline-flex items-center gap-1">
-                        <UserRound className="h-3.5 w-3.5" />
+                        <UsersFilledIcon className="h-3.5 w-3.5" />
                         {challenge.practicingCount} practicing
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <Clock3 className="h-3.5 w-3.5" />
+                        <ClockFilledIcon className="h-3.5 w-3.5" />
                         {challenge.duration}
                       </span>
                       <span className="inline-flex items-center gap-1">

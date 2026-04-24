@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import {
-  Bell,
-  CheckCircle2,
-  ChevronRight,
-  Flame,
-  X,
-  Rocket,
-  Trophy,
-  UserRound
-} from 'lucide-react';
+  BellFilledIcon,
+  CheckCircleFilledIcon,
+  ChevronRightFilledIcon,
+  FireFilledIcon,
+  RocketFilledIcon,
+  TrophyFilledIcon,
+  UsersFilledIcon,
+  XFilledIcon
+} from '@/components/icons/FilledIcons';
 import { motion } from 'framer-motion';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import {
@@ -165,7 +165,7 @@ export default function HomeScreen({
               focusRingInteractive
             )}
           >
-            <Bell className="h-4 w-4" />
+            <BellFilledIcon className="h-4 w-4" />
           </Link>
         </header>
 
@@ -179,7 +179,7 @@ export default function HomeScreen({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex items-center gap-2">
                 <div className="rounded-lg bg-primary-soft p-1.5">
-                  <Rocket className="h-3.5 w-3.5 text-primary" />
+                  <RocketFilledIcon className="h-3.5 w-3.5 text-primary" />
                 </div>
                 <div className="min-w-0">
                   <p className="t-label text-primary">Free Trial Active</p>
@@ -209,7 +209,7 @@ export default function HomeScreen({
                     focusRingInteractive
                   )}
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <XFilledIcon className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
@@ -239,17 +239,17 @@ export default function HomeScreen({
 
           <div className="grid grid-cols-3 gap-2">
             <StatTile
-              icon={<Trophy className="h-3.5 w-3.5 text-[#eab308]" />}
+              icon={<TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />}
               label="Rank"
               value={userStats.rank}
             />
             <StatTile
-              icon={<CheckCircle2 className="h-3.5 w-3.5 text-[#22c55e]" />}
+              icon={<CheckCircleFilledIcon className="h-3.5 w-3.5 text-[#22c55e]" />}
               label="Solved"
               value={userStats.solved}
             />
             <StatTile
-              icon={<Flame className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />}
+              icon={<FireFilledIcon className="h-3.5 w-3.5 text-orange-500" />}
               label="Solving Days"
               value={userStats.solvingDays}
             />
@@ -278,7 +278,7 @@ export default function HomeScreen({
                 </option>
               ))}
             </select>
-            <ChevronRight className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-primary" />
+            <ChevronRightFilledIcon className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-primary" />
           </span>
           <span>PM interview questions</span>
         </h3>
@@ -375,7 +375,7 @@ function SkillPathChallengeCard({
         )}
       >
         <Link href={`/challenge/${challenge.id}`} aria-label={challenge.title}>
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRightFilledIcon className="h-4 w-4" />
         </Link>
       </MotionCard>
     </MotionCard>
@@ -439,11 +439,11 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
               </p>
               <div className="mt-2 flex items-center gap-3 text-[10px] font-bold tracking-[0.04em] text-[#64748b]">
                 <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <CheckCircleFilledIcon className="h-3.5 w-3.5" />
                   {track.companySummary.challengesCount} Challenges
                 </span>
                 <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <UserRound className="h-3.5 w-3.5" />
+                  <UsersFilledIcon className="h-3.5 w-3.5" />
                   {track.companySummary.practicingCount} Practicing
                 </span>
               </div>
@@ -467,7 +467,7 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
               className="grid h-7 w-7 place-items-center rounded-full bg-primary-soft text-primary"
               aria-label={`Resume ${track.companySummary.name}`}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRightFilledIcon className="h-4 w-4" />
             </span>
           </div>
         </article>
