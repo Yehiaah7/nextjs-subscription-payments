@@ -156,26 +156,17 @@ export default function HomeScreen({
       <section className="text-text">
         <header className="mb-4 flex items-start justify-between gap-3">
           <h1 className="t-title">Product Gym Floor</h1>
-          <div className="flex items-start gap-2">
-            <Link
-              href="/alerts"
-              aria-label="Open Notifications"
-              className={cn(
-                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-muted hover:border-gray-300 hover:text-primary',
-                iconBtnInteractive,
-                focusRingInteractive
-              )}
-            >
-              <Bell className="h-4 w-4" />
-            </Link>
-            <div className="text-right">
-              <p className="t-label text-primary">Streak</p>
-              <p className="t-streak mt-1 flex items-center justify-end gap-1">
-                <Flame className="h-4 w-4 fill-orange-500 text-orange-500" />
-                12 Days
-              </p>
-            </div>
-          </div>
+          <Link
+            href="/alerts"
+            aria-label="Open Notifications"
+            className={cn(
+              'inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-muted hover:text-primary',
+              iconBtnInteractive,
+              focusRingInteractive
+            )}
+          >
+            <Bell className="h-4 w-4" />
+          </Link>
         </header>
 
         {showFreeTrialCard ? (
@@ -185,41 +176,43 @@ export default function HomeScreen({
               cardInteractive
             )}
           >
-            <div className="mb-2 flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex items-center gap-2">
                 <div className="rounded-lg bg-primary-soft p-1.5">
                   <Rocket className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="t-label text-primary">Free Trial Active</p>
                   <p className="text-[11px] font-semibold text-muted">
                     7 Days remaining in your Pro trial
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowFreeTrialCard(false)}
-                aria-label="Dismiss free trial card"
-                className={cn(
-                  'inline-flex h-6 w-6 items-center justify-center rounded-full text-muted hover:bg-primary-soft hover:text-primary',
-                  iconBtnInteractive,
-                  focusRingInteractive
-                )}
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <MotionButton
+                  className={cn(
+                    'rounded-pill whitespace-nowrap bg-amber-400 px-2.5 py-1 t-label text-amber-950 hover:bg-amber-500',
+                    btnInteractive,
+                    btnInteractiveColored,
+                    focusRingInteractive
+                  )}
+                >
+                  Upgrade
+                </MotionButton>
+                <button
+                  type="button"
+                  onClick={() => setShowFreeTrialCard(false)}
+                  aria-label="Dismiss free trial card"
+                  className={cn(
+                    'inline-flex h-6 w-6 items-center justify-center rounded-full text-muted hover:bg-primary-soft hover:text-primary',
+                    iconBtnInteractive,
+                    focusRingInteractive
+                  )}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
-            <MotionButton
-              className={cn(
-                'rounded-pill bg-amber-400 px-2.5 py-1 t-label text-amber-950 hover:bg-amber-500',
-                btnInteractive,
-                btnInteractiveColored,
-                focusRingInteractive
-              )}
-            >
-              Upgrade
-            </MotionButton>
           </MotionCard>
         ) : null}
 
@@ -505,7 +498,7 @@ function TabButton({
       onClick={onClick}
       className={cn(
         'relative h-full rounded-pill px-2 t-label whitespace-nowrap',
-        active ? 'text-primary' : 'text-muted',
+        active ? 'text-white' : 'text-muted',
         tabInteractive,
         focusRingInteractive
       )}
@@ -514,7 +507,7 @@ function TabButton({
         <motion.span
           layoutId="home-tab-indicator"
           transition={springTransition}
-          className="absolute inset-0 rounded-pill bg-container shadow-button"
+          className="absolute inset-0 rounded-pill bg-primary shadow-button"
         />
       ) : null}
       <span className="relative">{label}</span>
