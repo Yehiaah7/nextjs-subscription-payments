@@ -12,7 +12,7 @@ import {
 } from '@/components/icons/FilledIcons';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import {
   MotionButton,
   MotionCard
@@ -43,7 +43,7 @@ import {
 import { cn } from '@/utils/cn';
 import type { CompanySummary } from '@/app/(authenticated)/companies/company-summary';
 import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
-import ThumbnailPlaceholder from '@/components/ui/ThumbnailPlaceholder';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
@@ -79,12 +79,20 @@ export default function HomeScreen({
   skillPathCategories,
   skillPathChallenges,
   userName,
+  userFirstName,
+  userLastName,
+  userAvatarUrl,
+  userEmail,
   userStats
 }: {
   companyTracks: HomeTrack[];
   skillPathCategories: SkillPathCategory[];
   skillPathChallenges: SkillPathChallenge[];
   userName: string;
+  userFirstName?: string | null;
+  userLastName?: string | null;
+  userAvatarUrl?: string | null;
+  userEmail?: string | null;
   userStats: UserStats;
 }) {
   const [tab, setTab] = useState<MainTab>('companies');
@@ -98,16 +106,6 @@ export default function HomeScreen({
   const [selectedSkillCategoryKey, setSelectedSkillCategoryKey] = useState<
     string | null
   >(defaultSkillCategoryKey);
-
-  const initials = useMemo(
-    () =>
-      userName
-        .split(' ')
-        .slice(0, 2)
-        .map((name) => name[0]?.toUpperCase())
-        .join(''),
-    [userName]
-  );
 
   const selectedCategory =
     skillPathCategories.find(
@@ -225,10 +223,14 @@ export default function HomeScreen({
           }}
         >
           <div className="mb-3 flex items-center gap-3">
-            <ThumbnailPlaceholder
-              fallback={initials || 'PG'}
+            <UserAvatar
+              imageUrl={userAvatarUrl}
+              firstName={userFirstName}
+              lastName={userLastName}
+              fullName={userName}
+              email={userEmail}
               className="h-11 w-11"
-              contentClassName="text-sm font-bold text-slate-500"
+              initialsClassName="text-sm"
             />
             <div>
               <h2 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
