@@ -27,8 +27,15 @@ type ProfileScreenProps = {
 };
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const AVATAR_BUCKET = 'avatars';
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif'
+]);
 
-async function optimizeImage(file: File): Promise<string> {
+async function optimizeImage(file: File): Promise<Blob> {
   const imageUrl = URL.createObjectURL(file);
 
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -53,7 +60,37 @@ async function optimizeImage(file: File): Promise<string> {
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   URL.revokeObjectURL(imageUrl);
 
-  return canvas.toDataURL('image/jpeg', 0.85);
+  return await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('Could not process image.'));
+          return;
+        }
+
+        resolve(blob);
+      },
+      'image/jpeg',
+      0.85
+    );
+  });
+}
+
+function extractAvatarPathFromPublicUrl(url: string): string | null {
+  try {
+    const parsedUrl = new URL(url);
+    const marker = `/storage/v1/object/public/${AVATAR_BUCKET}/`;
+    const markerIndex = parsedUrl.pathname.indexOf(marker);
+
+    if (markerIndex === -1) {
+      return null;
+    }
+
+    const pathFromBucket = parsedUrl.pathname.slice(markerIndex + marker.length);
+    return decodeURIComponent(pathFromBucket);
+  } catch {
+    return null;
+  }
 }
 
 export default function ProfileScreen({
@@ -76,7 +113,7 @@ export default function ProfileScreen({
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
+    if (!ALLOWED_MIME_TYPES.has(file.type)) {
       setUploadError('Please upload an image file.');
       return;
     }
@@ -89,7 +126,7 @@ export default function ProfileScreen({
     try {
       setUploadError(null);
       setIsUploading(true);
-      const optimizedAvatarDataUrl = await optimizeImage(file);
+      const optimizedAvatarBlob = await optimizeImage(file);
       const {
         data: { user }
       } = await supabase.auth.getUser();
@@ -98,16 +135,40 @@ export default function ProfileScreen({
         throw new Error('Please sign in again to update your avatar.');
       }
 
+      const nextAvatarPath = `${user.id}/avatar.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from(AVATAR_BUCKET)
+        .upload(nextAvatarPath, optimizedAvatarBlob, {
+          upsert: true,
+          contentType: 'image/jpeg'
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from(AVATAR_BUCKET)
+        .getPublicUrl(nextAvatarPath);
+      const cacheBustedUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
+
+      const previousAvatarPath = extractAvatarPathFromPublicUrl(
+        avatar.imageUrl ?? avatarUrl ?? ''
+      );
+      if (previousAvatarPath && previousAvatarPath !== nextAvatarPath) {
+        await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
+      }
+
       const { error } = await (supabase as any)
         .from('users')
-        .update({ avatar_url: optimizedAvatarDataUrl })
+        .update({ avatar_url: cacheBustedUrl })
         .eq('id', user.id);
 
       if (error) {
         throw error;
       }
 
-      setAvatarImageUrl(optimizedAvatarDataUrl);
+      setAvatarImageUrl(cacheBustedUrl);
     } catch (error) {
       setUploadError(
         error instanceof Error
