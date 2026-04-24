@@ -1,5 +1,5 @@
 :root {
-  --app-font-sans: 'Geist', -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue', 'Helvetica', sans-serif;
+  --app-font-sans: var(--font-sans), -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue', 'Helvetica', sans-serif;
 
   --color-bg: #F7F7F7;
   --color-container: #ffffff;
