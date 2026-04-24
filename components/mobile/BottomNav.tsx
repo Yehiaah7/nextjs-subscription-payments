@@ -39,11 +39,11 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
       role="navigation"
       aria-label="Bottom navigation"
       data-testid="bottom-nav"
-      className={`fixed inset-x-0 bottom-0 z-[9999] bg-white ${className}`.trim()}
+      className={`pointer-events-none fixed inset-x-0 bottom-0 z-[9999] ${className}`.trim()}
       {...props}
     >
-      <div className="mx-auto h-[68px] w-full max-w-[393px] px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
-        <div className="grid h-full grid-cols-3">
+      <div className="mx-auto flex w-full justify-center px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
+        <div className="pointer-events-auto grid h-16 w-[min(100%,393px)] grid-cols-3 rounded-full border border-slate-200/80 bg-white px-2 shadow-[0_8px_24px_rgba(15,23,42,0.08)] sm:w-fit">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
 
@@ -52,7 +52,7 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                 key={href}
                 href={href}
                 className={cn(
-                  'flex h-full flex-col items-center justify-center gap-0.5 rounded-md',
+                  'flex h-full min-w-[96px] flex-col items-center justify-center gap-0.5 rounded-full px-4',
                   iconBtnInteractive,
                   focusRingInteractive
                 )}
