@@ -15,6 +15,10 @@ import MotionPage from '@/components/motion/MotionPage';
 import ProGymPassCard from '@/components/ProGymPassCard';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { createClient } from '@/utils/supabase/client';
+import {
+  AVATAR_BUCKET,
+  AVATAR_BUCKET_CANDIDATES
+} from '@/utils/supabase/storage';
 import { Camera } from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 
@@ -27,7 +31,6 @@ type ProfileScreenProps = {
 };
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-const AVATAR_BUCKET = 'avatars';
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/png',
@@ -76,18 +79,29 @@ async function optimizeImage(file: File): Promise<Blob> {
   });
 }
 
-function extractAvatarPathFromPublicUrl(url: string): string | null {
+function extractAvatarPathFromPublicUrl(
+  url: string
+): { bucket: string; path: string } | null {
   try {
     const parsedUrl = new URL(url);
-    const marker = `/storage/v1/object/public/${AVATAR_BUCKET}/`;
-    const markerIndex = parsedUrl.pathname.indexOf(marker);
+    for (const bucketName of AVATAR_BUCKET_CANDIDATES) {
+      const marker = `/storage/v1/object/public/${bucketName}/`;
+      const markerIndex = parsedUrl.pathname.indexOf(marker);
 
-    if (markerIndex === -1) {
-      return null;
+      if (markerIndex === -1) {
+        continue;
+      }
+
+      const pathFromBucket = parsedUrl.pathname.slice(
+        markerIndex + marker.length
+      );
+      return {
+        bucket: bucketName,
+        path: decodeURIComponent(pathFromBucket)
+      };
     }
 
-    const pathFromBucket = parsedUrl.pathname.slice(markerIndex + marker.length);
-    return decodeURIComponent(pathFromBucket);
+    return null;
   } catch {
     return null;
   }
@@ -136,27 +150,49 @@ export default function ProfileScreen({
       }
 
       const nextAvatarPath = `${user.id}/avatar.jpg`;
-      const { error: uploadError } = await supabase.storage
-        .from(AVATAR_BUCKET)
-        .upload(nextAvatarPath, optimizedAvatarBlob, {
-          upsert: true,
-          contentType: 'image/jpeg'
-        });
+      let selectedBucket = AVATAR_BUCKET;
+      let uploadError: Error | null = null;
+
+      for (const candidateBucket of AVATAR_BUCKET_CANDIDATES) {
+        const { error } = await supabase.storage
+          .from(candidateBucket)
+          .upload(nextAvatarPath, optimizedAvatarBlob, {
+            upsert: true,
+            contentType: 'image/jpeg'
+          });
+
+        if (!error) {
+          selectedBucket = candidateBucket;
+          uploadError = null;
+          break;
+        }
+
+        uploadError = error;
+        if (!error.message.toLowerCase().includes('bucket not found')) {
+          break;
+        }
+      }
 
       if (uploadError) {
         throw uploadError;
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from(AVATAR_BUCKET)
+        .from(selectedBucket)
         .getPublicUrl(nextAvatarPath);
       const cacheBustedUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
 
-      const previousAvatarPath = extractAvatarPathFromPublicUrl(
+      const previousAvatarRef = extractAvatarPathFromPublicUrl(
         avatar.imageUrl ?? avatarUrl ?? ''
       );
-      if (previousAvatarPath && previousAvatarPath !== nextAvatarPath) {
-        await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
+      if (
+        previousAvatarRef &&
+        (previousAvatarRef.bucket !== selectedBucket ||
+          previousAvatarRef.path !== nextAvatarPath)
+      ) {
+        await supabase.storage
+          .from(previousAvatarRef.bucket)
+          .remove([previousAvatarRef.path]);
       }
 
       const { error } = await (supabase as any)
