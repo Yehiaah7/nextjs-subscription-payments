@@ -12,7 +12,7 @@ import {
 } from '@/components/icons/FilledIcons';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import {
   MotionButton,
   MotionCard
@@ -98,17 +98,6 @@ export default function HomeScreen({
   const [selectedSkillCategoryKey, setSelectedSkillCategoryKey] = useState<
     string | null
   >(defaultSkillCategoryKey);
-
-  const initials = useMemo(
-    () =>
-      userName
-        .split(' ')
-        .slice(0, 2)
-        .map((name) => name[0]?.toUpperCase())
-        .join(''),
-    [userName]
-  );
-
   const selectedCategory =
     skillPathCategories.find(
       (category) => category.key === selectedSkillCategoryKey
@@ -225,11 +214,7 @@ export default function HomeScreen({
           }}
         >
           <div className="mb-3 flex items-center gap-3">
-            <ThumbnailPlaceholder
-              fallback={initials || 'PG'}
-              className="h-11 w-11"
-              contentClassName="text-sm font-bold text-slate-500"
-            />
+            <ThumbnailPlaceholder className="h-11 w-11" />
             <div>
               <h2 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
                 {userName}
