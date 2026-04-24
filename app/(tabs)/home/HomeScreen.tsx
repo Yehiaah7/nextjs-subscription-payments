@@ -432,14 +432,14 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
               <h4 className="truncate text-[16px] font-bold text-[#0f172a]">
                 {track.companySummary.name}
               </h4>
-              <p className="mt-0.5 truncate text-[12px] font-medium text-[#64748b]">
+              <p className="mt-0.5 truncate text-[12px] font-medium text-[#9a7a30]">
                 {track.companySummary.focus
                   ? `Focus: ${track.companySummary.focus}`
                   : ''}
               </p>
               <div className="mt-2 flex items-center gap-3 text-[10px] font-bold tracking-[0.04em] text-[#64748b]">
                 <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <CheckCircleFilledIcon className="h-3.5 w-3.5" />
+                  <TrophyFilledIcon className="h-3.5 w-3.5" />
                   {track.companySummary.challengesCount} Challenges
                 </span>
                 <span className="inline-flex items-center gap-1 whitespace-nowrap">
@@ -461,11 +461,11 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
               {boundedProgress}%
             </span>
             <span className="text-[10px] font-black tracking-[0.04em] text-primary">
-              Resume
+              Continue
             </span>
             <span
               className="grid h-7 w-7 place-items-center rounded-full bg-primary-soft text-primary"
-              aria-label={`Resume ${track.companySummary.name}`}
+              aria-label={`Continue ${track.companySummary.name}`}
             >
               <ChevronRightFilledIcon className="h-4 w-4" />
             </span>

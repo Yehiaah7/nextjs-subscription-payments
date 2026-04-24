@@ -64,7 +64,7 @@ export default function CompaniesScreen({
                     className="p-0"
                     footer={
                       <div className="flex items-center gap-3">
-                        <span className="t-label ml-auto text-primary">Resume</span>
+                        <span className="t-label ml-auto text-primary">Continue</span>
                         <span
                           className={cn(
                             'grid h-8 w-8 place-items-center rounded-pill bg-primary-soft text-primary',
