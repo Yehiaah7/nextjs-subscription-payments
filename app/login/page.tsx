@@ -38,7 +38,7 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="flex justify-center min-h-[calc(100vh-80px)] bg-slate-200 px-4 py-6">
+    <div className="flex justify-center min-h-[calc(100vh-80px)] bg-[#F7F7F7] px-4 py-6">
       <div className="w-full max-w-sm">
         <div
           className={cn(

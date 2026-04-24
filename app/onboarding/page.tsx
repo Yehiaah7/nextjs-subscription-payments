@@ -39,7 +39,7 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f1f5f9] px-4">
+    <main className="min-h-screen bg-[#F7F7F7] px-4">
       <div className="mx-auto flex min-h-screen w-full max-w-[420px] flex-col py-6">
         <section className="flex flex-1 flex-col items-center">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#155dfc] shadow-sm">
@@ -164,7 +164,7 @@ export default async function OnboardingPage() {
           </div>
         </section>
 
-        <footer className="sticky bottom-0 mt-auto w-full bg-[#f1f5f9] pt-4 [padding-bottom:calc(24px+env(safe-area-inset-bottom))]">
+        <footer className="sticky bottom-0 mt-auto w-full bg-[#F7F7F7] pt-4 [padding-bottom:calc(24px+env(safe-area-inset-bottom))]">
           <div className="space-y-4">
             <Link
               href="/sign-up"
