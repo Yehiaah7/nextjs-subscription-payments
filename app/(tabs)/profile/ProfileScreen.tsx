@@ -37,7 +37,7 @@ export default function ProfileScreen({
               <div className="relative">
                 <ThumbnailPlaceholder
                   fallback={email.charAt(0)}
-                  className="h-[80px] w-[80px] rounded-[20px]"
+                  className="h-[80px] w-[80px]"
                   contentClassName="text-2xl font-bold text-slate-500"
                 />
 
