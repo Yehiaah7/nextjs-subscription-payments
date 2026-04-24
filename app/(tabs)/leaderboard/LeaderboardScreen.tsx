@@ -7,6 +7,7 @@ import {
   focusRingInteractive,
   tabInteractive
 } from '@/components/ui/interactive';
+import ThumbnailPlaceholder from '@/components/ui/ThumbnailPlaceholder';
 import { springTransition } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import { useMemo, useState } from 'react';
@@ -167,9 +168,11 @@ function LeaderCard({
       }`}
     >
       <div className="flex items-center gap-3">
-        <div className="grid h-[56px] w-[56px] place-items-center rounded-[12px] bg-[var(--lb-avatar-bg)] text-sm font-bold text-white">
-          {leader.avatar}
-        </div>
+        <ThumbnailPlaceholder
+          fallback={leader.avatar ?? leader.name.slice(0, 1)}
+          className="h-[56px] w-[56px]"
+          contentClassName="text-sm font-bold text-slate-500"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">

@@ -13,6 +13,7 @@ import {
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
 import ProGymPassCard from '@/components/ProGymPassCard';
+import ThumbnailPlaceholder from '@/components/ui/ThumbnailPlaceholder';
 
 export default function ProfileScreen({
   email,
@@ -34,9 +35,11 @@ export default function ProfileScreen({
           <section className="rounded-[var(--profile-card-radius)] border border-[var(--profile-main-stroke)] bg-[var(--profile-main-bg)] p-3">
             <div className="flex flex-col items-center">
               <div className="relative">
-                <div className="grid h-[80px] w-[80px] place-items-center rounded-full bg-[var(--profile-avatar-bg)] text-2xl font-bold uppercase text-white">
-                  {email.charAt(0)}
-                </div>
+                <ThumbnailPlaceholder
+                  fallback={email.charAt(0)}
+                  className="h-[80px] w-[80px] rounded-[20px]"
+                  contentClassName="text-2xl font-bold text-slate-500"
+                />
 
                 <span className="absolute -right-0.5 -top-0.5 grid h-6 w-6 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[#2563eb]">
                   <CrownFilledIcon className="h-3.5 w-3.5" />

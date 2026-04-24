@@ -5,19 +5,25 @@ import { usePathname } from 'next/navigation';
 import { ComponentProps } from 'react';
 import {
   HomeFilledIcon,
-  TrophyFilledIcon,
-  UserFilledIcon
+  TrophyFilledIcon
 } from '@/components/icons/FilledIcons';
+import ThumbnailPlaceholder from '@/components/ui/ThumbnailPlaceholder';
 import { focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 
 const visibleRoutes = new Set(['/home', '/leaderboard', '/alerts', '/profile']);
 
+type NavItem = {
+  href: string;
+  label: string;
+  icon?: typeof HomeFilledIcon;
+};
+
 const navItems = [
   { href: '/home', label: 'Home', icon: HomeFilledIcon },
   { href: '/leaderboard', label: 'Leaderboard', icon: TrophyFilledIcon },
-  { href: '/profile', label: 'Profile', icon: UserFilledIcon }
-];
+  { href: '/profile', label: 'Profile' }
+] satisfies ReadonlyArray<NavItem>;
 
 type BottomNavProps = ComponentProps<'div'>;
 
@@ -51,7 +57,25 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                   focusRingInteractive
                 )}
               >
-                <Icon className={cn('h-[18px] w-[18px]', active ? 'text-primary' : 'text-slate-400')} />
+                {Icon ? (
+                  <Icon
+                    className={cn('h-[18px] w-[18px]', active ? 'text-primary' : 'text-slate-400')}
+                  />
+                ) : (
+                  <ThumbnailPlaceholder
+                    fallback="P"
+                    className={cn(
+                      'h-[18px] w-[18px] rounded-[6px] border shadow-none',
+                      active
+                        ? 'border-blue-200 bg-blue-50'
+                        : 'border-slate-200 bg-slate-50'
+                    )}
+                    contentClassName={cn(
+                      'text-[9px] font-bold leading-none',
+                      active ? 'text-primary' : 'text-slate-400'
+                    )}
+                  />
+                )}
                 <span className={cn('t-label whitespace-nowrap', active ? 'text-primary' : 'text-muted')}>
                   {label}
                 </span>
