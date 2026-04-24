@@ -8,9 +8,9 @@ import {
   FireFilledIcon,
   RocketFilledIcon,
   TrophyFilledIcon,
-  UsersFilledIcon,
-  XFilledIcon
+  UsersFilledIcon
 } from '@/components/icons/FilledIcons';
+import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import {
@@ -209,7 +209,7 @@ export default function HomeScreen({
                     focusRingInteractive
                   )}
                 >
-                  <XFilledIcon className="h-3.5 w-3.5" />
+                  <X className="h-3.5 w-3.5" strokeWidth={2} />
                 </button>
               </div>
             </div>

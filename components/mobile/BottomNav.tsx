@@ -47,13 +47,14 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                 href={href}
                 className={cn(
                   'flex h-full flex-col items-center justify-center gap-0.5 rounded-md',
-                  active ? 'text-primary' : 'text-muted',
                   iconBtnInteractive,
                   focusRingInteractive
                 )}
               >
-                <Icon className="h-[18px] w-[18px]" />
-                <span className="t-label whitespace-nowrap">{label}</span>
+                <Icon className={cn('h-[18px] w-[18px]', active ? 'text-primary' : 'text-slate-400')} />
+                <span className={cn('t-label whitespace-nowrap', active ? 'text-primary' : 'text-muted')}>
+                  {label}
+                </span>
               </Link>
             );
           })}
