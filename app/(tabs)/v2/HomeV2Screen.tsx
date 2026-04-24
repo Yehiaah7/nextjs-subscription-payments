@@ -129,6 +129,9 @@ export default function HomeV2Screen({
   return (
     <MotionPage>
       <section className="space-y-4 text-slate-900">
+        <div className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-700">
+          V2 Preview
+        </div>
         <header className="rounded-[28px] border border-slate-200/70 bg-white p-4 shadow-[0_14px_40px_rgba(15,23,42,0.09)]">
           <div className="mb-4 flex items-center justify-between">
             <div>
