@@ -47,7 +47,7 @@ export function getUserInitials({
     return firstLetter(safeEmail);
   }
 
-  return 'P';
+  return 'U';
 }
 
 export function getUserDisplayName({
