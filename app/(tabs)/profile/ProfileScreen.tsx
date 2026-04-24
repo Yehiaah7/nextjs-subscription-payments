@@ -27,7 +27,8 @@ type ProfileScreenProps = {
 };
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-const AVATAR_BUCKET = 'avatars';
+const DEFAULT_AVATAR_BUCKET =
+  process.env.NEXT_PUBLIC_SUPABASE_AVATAR_BUCKET ?? 'avatars';
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/png',
@@ -76,21 +77,58 @@ async function optimizeImage(file: File): Promise<Blob> {
   });
 }
 
-function extractAvatarPathFromPublicUrl(url: string): string | null {
+function extractAvatarLocationFromPublicUrl(
+  url: string
+): { bucket: string; path: string } | null {
   try {
     const parsedUrl = new URL(url);
-    const marker = `/storage/v1/object/public/${AVATAR_BUCKET}/`;
-    const markerIndex = parsedUrl.pathname.indexOf(marker);
-
-    if (markerIndex === -1) {
+    const matches = parsedUrl.pathname.match(
+      /\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/
+    );
+    if (!matches) {
       return null;
     }
 
-    const pathFromBucket = parsedUrl.pathname.slice(markerIndex + marker.length);
-    return decodeURIComponent(pathFromBucket);
+    return {
+      bucket: decodeURIComponent(matches[1]),
+      path: decodeURIComponent(matches[2])
+    };
   } catch {
     return null;
   }
+}
+
+async function resolveAvatarBucket(
+  supabase: ReturnType<typeof createClient>
+): Promise<string> {
+  const { data: buckets, error } = await supabase.storage.listBuckets();
+  if (error) {
+    return DEFAULT_AVATAR_BUCKET;
+  }
+
+  const existingBucketNames = new Set(
+    (buckets ?? []).map((bucket) => bucket.name).filter(Boolean)
+  );
+
+  if (existingBucketNames.has(DEFAULT_AVATAR_BUCKET)) {
+    return DEFAULT_AVATAR_BUCKET;
+  }
+
+  const fallbackBuckets = ['avatars', 'avatar', 'profile-avatars', 'public'];
+  const matchedFallbackBucket = fallbackBuckets.find((bucket) =>
+    existingBucketNames.has(bucket)
+  );
+  if (matchedFallbackBucket) {
+    return matchedFallbackBucket;
+  }
+
+  const knownBuckets = Array.from(existingBucketNames);
+  const knownBucketList =
+    knownBuckets.length > 0 ? knownBuckets.join(', ') : '(none visible)';
+
+  throw new Error(
+    `Avatar storage bucket not found. Expected "${DEFAULT_AVATAR_BUCKET}". Existing buckets: ${knownBucketList}. Create a public bucket named "${DEFAULT_AVATAR_BUCKET}".`
+  );
 }
 
 export default function ProfileScreen({
@@ -135,9 +173,10 @@ export default function ProfileScreen({
         throw new Error('Please sign in again to update your avatar.');
       }
 
+      const avatarBucket = await resolveAvatarBucket(supabase);
       const nextAvatarPath = `${user.id}/avatar.jpg`;
       const { error: uploadError } = await supabase.storage
-        .from(AVATAR_BUCKET)
+        .from(avatarBucket)
         .upload(nextAvatarPath, optimizedAvatarBlob, {
           upsert: true,
           contentType: 'image/jpeg'
@@ -148,15 +187,21 @@ export default function ProfileScreen({
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from(AVATAR_BUCKET)
+        .from(avatarBucket)
         .getPublicUrl(nextAvatarPath);
       const cacheBustedUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
 
-      const previousAvatarPath = extractAvatarPathFromPublicUrl(
+      const previousAvatarLocation = extractAvatarLocationFromPublicUrl(
         avatar.imageUrl ?? avatarUrl ?? ''
       );
-      if (previousAvatarPath && previousAvatarPath !== nextAvatarPath) {
-        await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
+      if (
+        previousAvatarLocation &&
+        (previousAvatarLocation.bucket !== avatarBucket ||
+          previousAvatarLocation.path !== nextAvatarPath)
+      ) {
+        await supabase.storage
+          .from(previousAvatarLocation.bucket)
+          .remove([previousAvatarLocation.path]);
       }
 
       const { error } = await (supabase as any)
@@ -170,10 +215,14 @@ export default function ProfileScreen({
 
       setAvatarImageUrl(cacheBustedUrl);
     } catch (error) {
-      setUploadError(
+      const message =
         error instanceof Error
           ? error.message
-          : 'Could not upload avatar. Please try again.'
+          : 'Could not upload avatar. Please try again.';
+      setUploadError(
+        message.toLowerCase().includes('bucket not found')
+          ? `Avatar storage bucket is missing in this Supabase project. ${message}`
+          : message
       );
     } finally {
       setIsUploading(false);
