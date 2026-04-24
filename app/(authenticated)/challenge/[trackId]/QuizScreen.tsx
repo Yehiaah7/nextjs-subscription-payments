@@ -349,13 +349,13 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   if (result) {
     return (
       <MotionPage>
-        <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 rounded-2xl bg-white p-4 text-text shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
+        <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 rounded-2xl bg-white p-4 text-text">
           <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">
             Challenge Complete
           </p>
           <div className="relative flex items-center justify-center py-1">
-            <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white shadow-[0_8px_24px_-14px_rgba(21,93,252,0.7)]">
-              <div className="grid h-12 w-12 place-items-center rounded-full bg-[#155dfc] text-white shadow-[0_4px_16px_-8px_rgba(21,93,252,0.9)]">
+            <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-[#155dfc] text-white">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
             </div>
@@ -421,7 +421,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           </h1>
         </section>
 
-        <section className="w-full rounded-2xl bg-white p-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.2)]">
+        <section className="w-full rounded-2xl bg-white p-3">
           {currentState.isSolved ? (
             <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-green-800">
               <CheckCircle2 className="h-3 w-3" />

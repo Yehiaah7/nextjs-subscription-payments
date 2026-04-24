@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Flame,
+  X,
   Rocket,
   Trophy,
   UserRound
@@ -86,6 +87,7 @@ export default function HomeScreen({
   userStats: UserStats;
 }) {
   const [tab, setTab] = useState<MainTab>('companies');
+  const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
   const [selectedSeniority, setSelectedSeniority] =
     useState<SeniorityFilter>('all');
   const defaultSkillCategoryKey =
@@ -176,23 +178,37 @@ export default function HomeScreen({
           </div>
         </header>
 
-        <MotionCard
-          className={cn(
-            'app-card mb-4 border border-primary-soft',
-            cardInteractive
-          )}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-primary-soft p-1.5">
-                <Rocket className="h-3.5 w-3.5 text-primary" />
+        {showFreeTrialCard ? (
+          <MotionCard
+            className={cn(
+              'app-card mb-4 border border-primary-soft',
+              cardInteractive
+            )}
+          >
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-primary-soft p-1.5">
+                  <Rocket className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <div>
+                  <p className="t-label text-primary">Free Trial Active</p>
+                  <p className="text-[11px] font-semibold text-muted">
+                    7 Days remaining in your Pro trial
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="t-label text-primary">Free Trial Active</p>
-                <p className="text-[11px] font-semibold text-muted">
-                  7 Days remaining in your Pro trial
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowFreeTrialCard(false)}
+                aria-label="Dismiss free trial card"
+                className={cn(
+                  'inline-flex h-6 w-6 items-center justify-center rounded-full text-muted hover:bg-primary-soft hover:text-primary',
+                  iconBtnInteractive,
+                  focusRingInteractive
+                )}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
             </div>
             <MotionButton
               className={cn(
@@ -204,8 +220,8 @@ export default function HomeScreen({
             >
               Upgrade
             </MotionButton>
-          </div>
-        </MotionCard>
+          </MotionCard>
+        ) : null}
 
         <MotionCard
           className={cn('app-card mb-4 border', cardInteractive)}

@@ -24,7 +24,7 @@ export function MotionCard({
       whileHover={
         reducedMotion || disabled
           ? undefined
-          : { y: -2, scale: 1.01, boxShadow: '0 8px 20px rgba(15,23,42,0.08)' }
+          : { y: -2, scale: 1.01 }
       }
       whileTap={reducedMotion || disabled ? undefined : { scale: 0.99 }}
       transition={transition}
