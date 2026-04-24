@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { getCompanyLogoSrc } from './company-logo';
+import ThumbnailPlaceholder from '@/components/ui/ThumbnailPlaceholder';
 
 type CompanyThumbnailProps = {
   companyId?: string;
@@ -37,9 +38,11 @@ export default function CompanyThumbnail({
           className="object-contain object-center p-1"
         />
       ) : (
-        <div className="grid h-full w-full place-items-center text-lg font-bold text-muted">
-          {companyName[0]?.toUpperCase() ?? 'C'}
-        </div>
+        <ThumbnailPlaceholder
+          fallback={companyName[0]?.toUpperCase() ?? 'C'}
+          className="h-full w-full"
+          contentClassName="text-lg font-bold text-slate-500"
+        />
       )}
     </div>
   );

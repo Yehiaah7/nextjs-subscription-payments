@@ -43,6 +43,7 @@ import {
 import { cn } from '@/utils/cn';
 import type { CompanySummary } from '@/app/(authenticated)/companies/company-summary';
 import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
+import ThumbnailPlaceholder from '@/components/ui/ThumbnailPlaceholder';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
@@ -224,9 +225,11 @@ export default function HomeScreen({
           }}
         >
           <div className="mb-3 flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#60a5fa] text-sm font-bold text-white">
-              {initials || 'PG'}
-            </div>
+            <ThumbnailPlaceholder
+              fallback={initials || 'PG'}
+              className="h-11 w-11"
+              contentClassName="text-sm font-bold text-slate-500"
+            />
             <div>
               <h2 className="text-[16px] font-bold leading-[1.35] text-[#0f172a]">
                 {userName}
