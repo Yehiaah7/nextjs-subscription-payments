@@ -7,7 +7,7 @@ import {
   HomeFilledIcon,
   TrophyFilledIcon
 } from '@/components/icons/FilledIcons';
-import ThumbnailPlaceholder from '@/components/ui/ThumbnailPlaceholder';
+import UserAvatar from '@/components/ui/UserAvatar';
 import { focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 
@@ -62,17 +62,14 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                     className={cn('h-[18px] w-[18px]', active ? 'text-primary' : 'text-slate-400')}
                   />
                 ) : (
-                  <ThumbnailPlaceholder
-                    fallback="P"
+                  <UserAvatar
                     className={cn(
-                      'h-[18px] w-[18px] border shadow-none',
-                      active
-                        ? 'border-blue-200 bg-blue-50'
-                        : 'border-slate-200 bg-slate-50'
+                      'h-[18px] w-[18px]',
+                      active ? 'ring-1 ring-rose-200' : 'opacity-85'
                     )}
-                    contentClassName={cn(
+                    initialsClassName={cn(
                       'text-[9px] font-bold leading-none',
-                      active ? 'text-primary' : 'text-slate-400'
+                      active ? 'text-white' : 'text-white/95'
                     )}
                   />
                 )}

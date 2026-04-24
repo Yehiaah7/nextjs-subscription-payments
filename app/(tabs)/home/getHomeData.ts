@@ -9,6 +9,7 @@ import type {
   SkillPathCategory,
   SkillPathChallenge
 } from './HomeScreen';
+import { getUserDisplayName } from '@/utils/user-avatar';
 
 type Seniority = 'junior' | 'mid' | 'senior';
 
@@ -49,11 +50,26 @@ type QuestionRow = {
   quiz_id: string;
 };
 
+type ProfileRecord = {
+  name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+};
+
+type UserRecord = {
+  full_name: string | null;
+  avatar_url: string | null;
+};
+
 export async function getHomePageData(): Promise<{
   companyTracks: HomeTrack[];
   skillPathCategories: SkillPathCategory[];
   skillPathChallenges: SkillPathChallenge[];
   userName: string;
+  userFirstName: string | null;
+  userLastName: string | null;
+  userAvatarUrl: string | null;
+  userEmail: string | null;
   userStats: {
     rank: string;
     solved: string;
@@ -62,6 +78,21 @@ export async function getHomePageData(): Promise<{
 }> {
   const user = await requireUser();
   const db = createClient();
+  const [{ data: profileData }, { data: userData }] = await Promise.all([
+    (db as any)
+      .from('profiles')
+      .select('name, first_name, last_name')
+      .eq('id', user.id)
+      .maybeSingle(),
+    (db as any)
+      .from('users')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle()
+  ]);
+
+  const profile = (profileData ?? null) as ProfileRecord | null;
+  const userRecord = (userData ?? null) as UserRecord | null;
 
   const { data: tracksData } = await db
     .from('tracks')
@@ -193,17 +224,26 @@ export async function getHomePageData(): Promise<{
     };
   });
 
-  const userName =
-    user.user_metadata?.full_name ||
-    user.user_metadata?.name ||
-    user.email?.split('@')[0] ||
-    'Product Gym Member';
+  const userName = getUserDisplayName({
+    firstName: profile?.first_name,
+    lastName: profile?.last_name,
+    fullName:
+      profile?.name ??
+      userRecord?.full_name ??
+      user.user_metadata?.full_name ??
+      user.user_metadata?.name,
+    email: user.email
+  });
 
   return {
     companyTracks,
     skillPathCategories: [] as SkillPathCategory[],
     skillPathChallenges: [] as SkillPathChallenge[],
     userName,
+    userFirstName: profile?.first_name ?? null,
+    userLastName: profile?.last_name ?? null,
+    userAvatarUrl: userRecord?.avatar_url ?? null,
+    userEmail: user.email ?? null,
     userStats: { rank: '#12', solved: '42', solvingDays: '32' }
   };
 }
