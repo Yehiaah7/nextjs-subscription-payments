@@ -215,8 +215,7 @@ export async function getHomePageData(): Promise<{
         progress: calculateCompanyProgress({
           quizIds: quizIdsForTrack,
           questionCountByQuizId: totalQuestionsByQuiz,
-          latestAttemptByQuizId: latestAttemptByQuiz,
-          latestActiveAttemptByQuizId: latestActiveAttemptByQuiz,
+          canonicalActiveAttemptByQuizId: latestActiveAttemptByQuiz,
           answeredCountByAttempt: solvedQuestionsByAttempt
         })
       }),
