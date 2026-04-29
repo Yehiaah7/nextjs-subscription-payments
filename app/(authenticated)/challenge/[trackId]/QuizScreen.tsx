@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import {
@@ -125,6 +124,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const [attemptStates, setAttemptStates] = useState<
     Record<string, AttemptState>
   >({});
+  const [persistedAnsweredQuestionIds, setPersistedAnsweredQuestionIds] = useState<Set<string>>(new Set());
+  const pendingSaveRef = useRef<Promise<unknown> | null>(null);
   const [wrongAnimatingOptionId, setWrongAnimatingOptionId] = useState<
     string | null
   >(null);
@@ -220,6 +221,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }
 
       setAttemptStates(nextStates);
+      setPersistedAnsweredQuestionIds(new Set((answersData ?? []).map((answer: any) => answer.question_id)));
 
       const firstPending = normalizedQuiz.questions.findIndex(
         (question) => !nextStates[question.id]?.lastSelectedOptionId
@@ -304,7 +306,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }, 220);
     }
 
-    await supabase.from('answers').upsert(
+    const savePromise = supabase.from('answers').upsert(
       {
         attempt_id: attemptId,
         question_id: question.id,
@@ -318,6 +320,16 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       },
       { onConflict: 'attempt_id,question_id' }
     );
+    pendingSaveRef.current = savePromise;
+    await savePromise;
+    setPersistedAnsweredQuestionIds((current) => {
+      const next = new Set(current);
+      next.add(question.id);
+      return next;
+    });
+    if (pendingSaveRef.current === savePromise) {
+      pendingSaveRef.current = null;
+    }
   };
 
   if (loading || !quiz || !currentQuestion) {
@@ -329,9 +341,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   }
 
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
-  const answeredCount = quiz.questions.filter(
-    (question) => Boolean(attemptStates[question.id]?.lastSelectedOptionId)
-  ).length;
+  const answeredCount = persistedAnsweredQuestionIds.size;
   const isLastStep = activeIndex === quiz.questions.length - 1;
   const canMoveNext = Boolean(currentState.lastSelectedOptionId);
   const allQuestionsAnswered = answeredCount === quiz.questions.length;
@@ -391,12 +401,21 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     );
   }
 
+  const goBackToTrack = async () => {
+    if (pendingSaveRef.current) {
+      await pendingSaveRef.current;
+    }
+    router.push(returnToTrackHref);
+    router.refresh();
+  };
+
   return (
     <MotionPage>
       <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 pb-4 text-text">
         <header className="flex items-center justify-between">
-          <Link
-            href={returnToTrackHref}
+          <button
+            type="button"
+            onClick={goBackToTrack}
             className={cn(
               'inline-flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[#0f172b]',
               iconBtnInteractive,
@@ -405,7 +424,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             aria-label="Back"
           >
             <ChevronLeftFilledIcon className="h-4 w-4" />
-          </Link>
+          </button>
           <p className="text-xs font-black uppercase tracking-[0.08em] text-primary">
             Step {activeIndex + 1}/{quiz.questions.length}
           </p>
