@@ -184,6 +184,8 @@ export default async function CompanyDetailsPage({
             : 'not-solved'
       : 'not-solved';
 
+    const completedSteps = status === 'solved' ? totalSteps : answeredSteps;
+
     return {
       id: quiz.id,
       title: quiz.title,
@@ -193,8 +195,8 @@ export default async function CompanyDetailsPage({
       practicingCount: `${10 + ((quiz.title.length * 13) % 91)}`,
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
       seniority: (quiz.difficulty ?? 'junior') as Seniority,
-      answeredSteps,
-      completedSteps: answeredSteps,
+      answeredSteps: completedSteps,
+      completedSteps,
       totalSteps,
       score,
       retake: isSubmitted && score < 60,
