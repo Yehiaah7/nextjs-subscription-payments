@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
+import { unstable_noStore as noStore } from 'next/cache';
 import CompanyDetailsScreen, { CompanyChallenge } from './CompanyDetailsScreen';
 import {
   buildCompanySummary,
@@ -49,6 +50,7 @@ export default async function CompanyDetailsPage({
   params: { trackId: string };
 }) {
   const { trackId } = params;
+  noStore();
 
   const supabase = createClient();
 
@@ -175,19 +177,14 @@ export default async function CompanyDetailsPage({
     const score = currentAttempt?.score ?? 0;
 
     const isFullyAnswered = totalSteps > 0 && answeredSteps >= totalSteps;
-    const isSolved = Boolean(currentAttempt?.passed) && isFullyAnswered;
 
-    const status = currentAttempt
-      ? isSolved
-        ? 'solved'
-        : isSubmitted
-          ? 'not-solved'
-          : answeredSteps > 0
-            ? 'in-progress'
-            : 'not-solved'
-      : 'not-solved';
+    const status = isFullyAnswered
+      ? 'solved'
+      : answeredSteps > 0
+        ? 'in-progress'
+        : 'not-solved';
 
-    const completedSteps = status === 'solved' ? totalSteps : answeredSteps;
+    const completedSteps = Math.min(answeredSteps, totalSteps);
 
     return {
       id: quiz.id,
