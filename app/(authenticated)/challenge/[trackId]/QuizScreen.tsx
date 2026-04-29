@@ -325,8 +325,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   }
 
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
-  const completedCount = quiz.questions.filter(
-    (question) => attemptStates[question.id]?.isSolved
+  const answeredCount = quiz.questions.filter(
+    (question) => Boolean(attemptStates[question.id]?.lastSelectedOptionId)
   ).length;
   const isLastStep = activeIndex === quiz.questions.length - 1;
   const canMoveNext = Boolean(
@@ -412,7 +412,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           <div
             className="h-full rounded-pill bg-primary"
             style={{
-              width: `${(completedCount / Math.max(quiz.questions.length, 1)) * 100}%`
+              width: `${(answeredCount / Math.max(quiz.questions.length, 1)) * 100}%`
             }}
           />
         </div>
