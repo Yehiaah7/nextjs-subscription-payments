@@ -174,8 +174,11 @@ export default async function CompanyDetailsPage({
     const isSubmitted = Boolean(currentAttempt?.submitted_at);
     const score = currentAttempt?.score ?? 0;
 
+    const isFullyAnswered = totalSteps > 0 && answeredSteps >= totalSteps;
+    const isSolved = Boolean(currentAttempt?.passed) && isFullyAnswered;
+
     const status = currentAttempt
-      ? currentAttempt.passed
+      ? isSolved
         ? 'solved'
         : isSubmitted
           ? 'not-solved'
