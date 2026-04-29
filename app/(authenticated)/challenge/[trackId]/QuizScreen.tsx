@@ -183,6 +183,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
       if (!effectiveAttempt) return;
       setAttemptId(effectiveAttempt.id);
+      console.log('[QuizTrace] load attempt + resume seed', {
+        challengeId,
+        attemptId: effectiveAttempt.id,
+        totalQuestions: normalizedQuiz.questions.length
+      });
 
       const { data: answersData } = await supabase
         .from('answers')
@@ -226,11 +231,18 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       const firstPending = normalizedQuiz.questions.findIndex(
         (question) => !nextStates[question.id]?.lastSelectedOptionId
       );
-      setActiveIndex(
+      const resumeIndex =
         firstPending >= 0
           ? firstPending
-          : Math.max(normalizedQuiz.questions.length - 1, 0)
-      );
+          : Math.max(normalizedQuiz.questions.length - 1, 0);
+      setActiveIndex(resumeIndex);
+      console.log('[QuizTrace] resume index chosen', {
+        attemptId: effectiveAttempt.id,
+        answeredCount: (answersData ?? []).length,
+        firstPending,
+        resumeIndex,
+        resumeStep: resumeIndex + 1
+      });
     };
 
     loadQuiz().finally(() => setLoading(false));
@@ -321,7 +333,24 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       { onConflict: 'attempt_id,question_id' }
     );
     pendingSaveRef.current = savePromise;
-    await savePromise;
+    const saveResult = await savePromise;
+    const { count: savedCount } = await supabase
+      .from('answers')
+      .select('question_id', { count: 'exact', head: true })
+      .eq('attempt_id', attemptId);
+    const nextAnsweredCount = persistedAnsweredQuestionIds.has(question.id)
+      ? persistedAnsweredQuestionIds.size
+      : persistedAnsweredQuestionIds.size + 1;
+    const inQuizProgressValue =
+      (nextAnsweredCount / Math.max(quiz?.questions.length ?? 1, 1)) * 100;
+    console.log('[QuizTrace] answer saved', {
+      attemptId,
+      questionId: question.id,
+      saveResultError: saveResult.error ?? null,
+      saveResultData: saveResult.data ?? null,
+      savedAnswersCountForAttempt: savedCount ?? null,
+      inQuizProgressValue
+    });
     setPersistedAnsweredQuestionIds((current) => {
       const next = new Set(current);
       next.add(question.id);
