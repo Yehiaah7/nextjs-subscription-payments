@@ -193,6 +193,9 @@ export default async function CompanyDetailsPage({
       totalSteps,
       outerProgressValue
     });
+    console.log(
+      `[RuntimeProof] outer card attempt id=${currentAttempt?.id ?? 'null'} quiz attempt id=${progressAttempt?.id ?? currentAttempt?.id ?? 'null'} outer card progress=${outerProgressValue}% answered steps=${answeredSteps}`
+    );
 
     return {
       id: quiz.id,
