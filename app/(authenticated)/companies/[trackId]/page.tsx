@@ -161,8 +161,9 @@ export default async function CompanyDetailsPage({
   );
 
   const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
-    const currentAttempt = latestAttemptByQuizId[quiz.id];
+    const latestAttempt = latestAttemptByQuizId[quiz.id];
     const progressAttempt = canonicalActiveAttemptByQuizId[quiz.id];
+    const currentAttempt = progressAttempt ?? latestAttempt;
     const answeredSteps = progressAttempt
       ? (answeredCountByAttempt[progressAttempt.id]?.size ?? 0)
       : 0;
@@ -179,6 +180,19 @@ export default async function CompanyDetailsPage({
         : 'not-solved';
 
     const completedSteps = Math.min(answeredSteps, totalSteps);
+    const outerProgressValue = totalSteps
+      ? (completedSteps / totalSteps) * 100
+      : 0;
+
+    console.log('[ChallengeCardTrace] quiz card progress inputs', {
+      quizId: quiz.id,
+      latestAttemptId: latestAttempt?.id ?? null,
+      progressAttemptId: progressAttempt?.id ?? null,
+      outerCardAttemptIdUsed: currentAttempt?.id ?? null,
+      answeredSteps,
+      totalSteps,
+      outerProgressValue
+    });
 
     return {
       id: quiz.id,
