@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
 import CompanyDetailsScreen, { CompanyChallenge } from './CompanyDetailsScreen';
 import {
+  buildCanonicalActiveAttemptByQuizId,
   buildCompanySummary,
   calculateCompanyProgress
 } from '../company-summary';
@@ -114,20 +115,14 @@ export default async function CompanyDetailsPage({
     {}
   );
 
-  const latestActiveAttemptByQuizId = attempts.reduce(
-    (acc: Record<string, AttemptRow>, attempt) => {
-      if (!attempt.submitted_at && !acc[attempt.quiz_id]) {
-        acc[attempt.quiz_id] = attempt;
-      }
-      return acc;
-    },
-    {}
+  const canonicalActiveAttemptByQuizId = buildCanonicalActiveAttemptByQuizId(
+    attempts
   );
 
   const attemptIdsToLoadAnswers = Array.from(
     new Set([
       ...Object.values(latestAttemptByQuizId).map((attempt) => attempt?.id),
-      ...Object.values(latestActiveAttemptByQuizId).map(
+      ...Object.values(canonicalActiveAttemptByQuizId).map(
         (attempt) => attempt?.id
       )
     ])
@@ -167,8 +162,7 @@ export default async function CompanyDetailsPage({
 
   const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
     const currentAttempt = latestAttemptByQuizId[quiz.id];
-    const activeAttempt = latestActiveAttemptByQuizId[quiz.id];
-    const progressAttempt = activeAttempt ?? currentAttempt;
+    const progressAttempt = canonicalActiveAttemptByQuizId[quiz.id];
     const answeredSteps = progressAttempt
       ? (answeredCountByAttempt[progressAttempt.id]?.size ?? 0)
       : 0;
@@ -212,8 +206,7 @@ export default async function CompanyDetailsPage({
     progress: calculateCompanyProgress({
       quizIds,
       questionCountByQuizId: totalQuestionsByQuiz,
-      latestAttemptByQuizId,
-      latestActiveAttemptByQuizId,
+      canonicalActiveAttemptByQuizId,
       answeredCountByAttempt
     })
   });
