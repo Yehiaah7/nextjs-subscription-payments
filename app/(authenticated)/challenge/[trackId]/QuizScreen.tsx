@@ -160,17 +160,17 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         setCompanyId(normalizedQuiz.modules.track_id);
       }
 
-      const { data: latestAttempt } = await supabase
+      const { data: canonicalActiveAttempt } = await supabase
         .from('attempts')
         .select('id,submitted_at,passed,score,started_at')
         .eq('quiz_id', challengeId)
         .eq('user_id', user.id)
+        .is('submitted_at', null)
         .order('started_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      let effectiveAttempt =
-        latestAttempt && !latestAttempt.submitted_at ? latestAttempt : null;
+      let effectiveAttempt = canonicalActiveAttempt;
       if (!effectiveAttempt) {
         const { data: newAttempt } = await supabase
           .from('attempts')
@@ -224,7 +224,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       const firstPending = normalizedQuiz.questions.findIndex(
         (question) => !nextStates[question.id]?.lastSelectedOptionId
       );
-      setActiveIndex(firstPending >= 0 ? firstPending : 0);
+      setActiveIndex(
+        firstPending >= 0
+          ? firstPending
+          : Math.max(normalizedQuiz.questions.length - 1, 0)
+      );
     };
 
     loadQuiz().finally(() => setLoading(false));
