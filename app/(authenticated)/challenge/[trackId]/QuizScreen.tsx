@@ -321,20 +321,24 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }, 220);
     }
 
-    const savePromise = supabase.from('answers').upsert(
-      {
-        attempt_id: attemptId,
-        question_id: question.id,
-        option_id: option.id,
-        points_awarded: nextStateForQuestion.pointsAwarded,
-        text_answer: JSON.stringify({
-          wrongAttemptsCount: nextStateForQuestion.wrongAttemptsCount,
-          solvedOptionId: nextStateForQuestion.solvedOptionId,
-          lastSelectedOptionId: nextStateForQuestion.lastSelectedOptionId
-        })
-      },
-      { onConflict: 'attempt_id,question_id' }
-    );
+    const answerPayload = {
+      attempt_id: attemptId,
+      question_id: question.id,
+      option_id: option.id,
+      points_awarded: nextStateForQuestion.pointsAwarded,
+      text_answer: JSON.stringify({
+        wrongAttemptsCount: nextStateForQuestion.wrongAttemptsCount,
+        solvedOptionId: nextStateForQuestion.solvedOptionId,
+        lastSelectedOptionId: nextStateForQuestion.lastSelectedOptionId
+      })
+    };
+
+    console.log('[QuizTrace] answers upsert payload', answerPayload);
+
+    const savePromise = supabase
+      .from('answers')
+      .upsert(answerPayload, { onConflict: 'attempt_id,question_id' })
+      .select('attempt_id,question_id,option_id,points_awarded,text_answer');
     pendingSaveRef.current = savePromise;
     const saveResult = await savePromise;
     const { count: savedCount } = await supabase
@@ -346,10 +350,20 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       : persistedAnsweredQuestionIds.size + 1;
     const inQuizProgressValue =
       (nextAnsweredCount / Math.max(quiz?.questions.length ?? 1, 1)) * 100;
+    const rawSaveError = saveResult.error
+      ? {
+          message: saveResult.error.message,
+          code: saveResult.error.code ?? null,
+          details: saveResult.error.details ?? null,
+          hint: saveResult.error.hint ?? null,
+          raw: JSON.stringify(saveResult.error)
+        }
+      : null;
+
     console.log('[QuizTrace] answer saved', {
       attemptId,
       questionId: question.id,
-      saveResultError: saveResult.error ?? null,
+      saveResultError: rawSaveError,
       saveResultData: saveResult.data ?? null,
       savedAnswersCountForAttempt: savedCount ?? null,
       inQuizProgressValue
