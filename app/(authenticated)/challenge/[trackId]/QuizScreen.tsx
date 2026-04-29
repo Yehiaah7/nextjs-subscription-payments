@@ -243,6 +243,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         resumeIndex,
         resumeStep: resumeIndex + 1
       });
+      console.log(
+        `[RuntimeProof] reopen resume index=${resumeIndex} resume question number=${resumeIndex + 1} quiz attempt id=${effectiveAttempt.id}`
+      );
     };
 
     loadQuiz().finally(() => setLoading(false));
@@ -351,6 +354,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       savedAnswersCountForAttempt: savedCount ?? null,
       inQuizProgressValue
     });
+    console.log(
+      `[RuntimeProof] quiz attempt id=${attemptId} saved answers count=${savedCount ?? 'null'} in-quiz progress=${inQuizProgressValue}% after question=${nextAnsweredCount}`
+    );
     setPersistedAnsweredQuestionIds((current) => {
       const next = new Set(current);
       next.add(question.id);
