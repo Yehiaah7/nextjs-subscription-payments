@@ -222,7 +222,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       setAttemptStates(nextStates);
 
       const firstPending = normalizedQuiz.questions.findIndex(
-        (question) => !nextStates[question.id]?.isSolved
+        (question) => !nextStates[question.id]?.lastSelectedOptionId
       );
       setActiveIndex(firstPending >= 0 ? firstPending : 0);
     };
@@ -329,9 +329,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     (question) => Boolean(attemptStates[question.id]?.lastSelectedOptionId)
   ).length;
   const isLastStep = activeIndex === quiz.questions.length - 1;
-  const canMoveNext = Boolean(
-    currentState.isSolved || currentState.lastSelectedOptionId
-  );
+  const canMoveNext = Boolean(currentState.lastSelectedOptionId);
+  const allQuestionsAnswered = answeredCount === quiz.questions.length;
   const showCorrectFeedback =
     currentState.isSolved &&
     currentState.lastSelectedOptionId === currentState.solvedOptionId;
@@ -544,6 +543,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               onClick={() => {
                 if (!canMoveNext || finishing) return;
                 if (isLastStep) {
+                  if (!allQuestionsAnswered) return;
                   finalizeAttempt(attemptStates);
                   return;
                 }
@@ -551,7 +551,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                   Math.min(quiz.questions.length - 1, value + 1)
                 );
               }}
-              disabled={!canMoveNext || finishing}
+              disabled={!canMoveNext || finishing || (isLastStep && !allQuestionsAnswered)}
               className={cn(
                 'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
                 btnInteractive,
