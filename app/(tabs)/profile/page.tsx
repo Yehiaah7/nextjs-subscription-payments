@@ -12,7 +12,6 @@ type ProfileRecord = {
 
 type UserRecord = {
   full_name: string | null;
-  avatar_url: string | null;
 };
 
 export default async function ProfilePage() {
@@ -27,7 +26,7 @@ export default async function ProfilePage() {
       .maybeSingle(),
     (supabase as any)
       .from('users')
-      .select('full_name, avatar_url')
+      .select('full_name')
       .eq('id', user.id)
       .maybeSingle()
   ]);
@@ -51,7 +50,7 @@ export default async function ProfilePage() {
       fullName={fullName}
       firstName={profile?.first_name}
       lastName={profile?.last_name}
-      avatarUrl={profile?.avatar_url ?? userRecord?.avatar_url}
+      avatarUrl={profile?.avatar_url ?? null}
     />
   );
 }
