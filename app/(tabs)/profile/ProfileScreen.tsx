@@ -15,8 +15,6 @@ import {
   CheckCircleFilledIcon,
   FireFilledIcon,
   CrownFilledIcon,
-  GlobeFilledIcon,
-  MedalFilledIcon,
   TrophyFilledIcon
 } from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
@@ -620,6 +618,14 @@ export default function ProfileScreen({
                   <CrownFilledIcon className="h-3.5 w-3.5" />
                 </span>
 
+                <ProfilePhotoActionsMenu
+                  uploadInputId="avatar-upload"
+                  hasCurrentAvatar={Boolean(currentAvatarUrl)}
+                  isActionPending={isAvatarActionPending}
+                  onEditPhoto={handleAvatarEditCurrent}
+                  onRemovePhoto={handleAvatarRemove}
+                />
+
                 <input
                   id="avatar-upload"
                   type="file"
@@ -630,39 +636,7 @@ export default function ProfileScreen({
                 />
               </div>
 
-              <div className="mt-4 grid w-full grid-cols-3 gap-2">
-                <label
-                  htmlFor="avatar-upload"
-                  className={cn(
-                    'flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[14px] border border-[#d7e3f7] bg-white text-[11px] font-bold text-[#2563eb] shadow-sm',
-                    isAvatarActionPending && 'pointer-events-none opacity-50'
-                  )}
-                  aria-label="Change profile photo"
-                >
-                  <Camera className="h-3.5 w-3.5" />
-                  Change
-                </label>
-                <button
-                  type="button"
-                  onClick={handleAvatarEditCurrent}
-                  disabled={!currentAvatarUrl || isAvatarActionPending}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-[14px] border border-[#d7e3f7] bg-white text-[11px] font-bold text-[#475569] shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAvatarRemove}
-                  disabled={!currentAvatarUrl || isAvatarActionPending}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-[14px] border border-rose-100 bg-rose-50 text-[11px] font-bold text-rose-600 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Remove
-                </button>
-              </div>
-
-              <p className="mt-3 text-center text-[16px] font-bold tracking-[-0.3px] text-[#0f172b]">
+              <p className="mt-4 text-center text-[16px] font-bold tracking-[-0.3px] text-[#0f172b]">
                 {fullName}
               </p>
               <p className="mt-1 text-[10px] font-black tracking-[0.04em] text-[#2563eb]">
@@ -710,20 +684,6 @@ export default function ProfileScreen({
                 }
                 label="Solving Days"
                 value="32"
-              />
-              <StatCard
-                icon={
-                  <MedalFilledIcon className="h-3.5 w-3.5 text-[#2563eb]" />
-                }
-                label="Weekly Top Performer"
-                value="4X"
-              />
-              <StatCard
-                icon={
-                  <GlobeFilledIcon className="h-3.5 w-3.5 text-[#8b5cf6]" />
-                }
-                label="Global Standings"
-                value="#98"
               />
             </div>
           </MotionCard>
@@ -778,6 +738,125 @@ export default function ProfileScreen({
         ) : null}
       </MotionPage>
     </MobileScreen>
+  );
+}
+
+function ProfilePhotoActionsMenu({
+  uploadInputId,
+  hasCurrentAvatar,
+  isActionPending,
+  onEditPhoto,
+  onRemovePhoto
+}: {
+  uploadInputId: string;
+  hasCurrentAvatar: boolean;
+  isActionPending: boolean;
+  onEditPhoto: () => void;
+  onRemovePhoto: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: globalThis.PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isActionPending) {
+      setIsOpen(false);
+    }
+  }, [isActionPending]);
+
+  return (
+    <div ref={menuRef} className="absolute -bottom-1 -right-1">
+      <ProfilePhotoActionTrigger
+        isOpen={isOpen}
+        disabled={isActionPending}
+        onClick={() => setIsOpen((currentIsOpen) => !currentIsOpen)}
+      />
+
+      {isOpen ? (
+        <div
+          role="menu"
+          aria-label="Profile photo actions"
+          className="absolute right-0 top-9 z-20 w-40 overflow-hidden rounded-[16px] border border-[#d7e3f7] bg-white p-1.5 text-left shadow-xl"
+        >
+          <label
+            htmlFor={uploadInputId}
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+            className={cn(
+              'flex h-10 cursor-pointer items-center gap-2 rounded-[12px] px-3 text-[12px] font-bold text-[#2563eb] hover:bg-[#eff6ff]',
+              isActionPending && 'pointer-events-none opacity-50'
+            )}
+          >
+            <Camera className="h-3.5 w-3.5" />
+            Change photo
+          </label>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setIsOpen(false);
+              onEditPhoto();
+            }}
+            disabled={!hasCurrentAvatar || isActionPending}
+            className="flex h-10 w-full items-center gap-2 rounded-[12px] px-3 text-left text-[12px] font-bold text-[#475569] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Edit photo
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setIsOpen(false);
+              onRemovePhoto();
+            }}
+            disabled={!hasCurrentAvatar || isActionPending}
+            className="flex h-10 w-full items-center gap-2 rounded-[12px] px-3 text-left text-[12px] font-bold text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Remove photo
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ProfilePhotoActionTrigger({
+  isOpen,
+  disabled,
+  onClick
+}: {
+  isOpen: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label="Open profile photo actions"
+      aria-haspopup="menu"
+      aria-expanded={isOpen}
+      className="grid h-8 w-8 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[#2563eb] shadow-md transition hover:bg-[#eff6ff] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <Camera className="h-4 w-4" />
+    </button>
   );
 }
 
