@@ -8,7 +8,7 @@ import {
   TrophyFilledIcon
 } from '@/components/icons/FilledIcons';
 import UserAvatar from '@/components/ui/UserAvatar';
-import { focusRingInteractive, iconBtnInteractive } from '@/components/ui/interactive';
+import { iconBtnInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 
@@ -28,7 +28,10 @@ const navItems = [
 
 type BottomNavProps = ComponentProps<'div'>;
 
-export default function BottomNav({ className = '', ...props }: BottomNavProps) {
+export default function BottomNav({
+  className = '',
+  ...props
+}: BottomNavProps) {
   const pathname = usePathname();
   const { avatar } = useUserAvatar();
 
@@ -56,12 +59,15 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                 className={cn(
                   'flex h-full min-w-[96px] flex-col items-center justify-center gap-0.5 rounded-full px-4',
                   iconBtnInteractive,
-                  focusRingInteractive
+                  'focus:outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
                 )}
               >
                 {Icon ? (
                   <Icon
-                    className={cn('h-[18px] w-[18px]', active ? 'text-primary' : 'text-slate-400')}
+                    className={cn(
+                      'h-[18px] w-[18px]',
+                      active ? 'text-primary' : 'text-slate-400'
+                    )}
                   />
                 ) : (
                   <UserAvatar
@@ -72,7 +78,7 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                     email={avatar.email}
                     className={cn(
                       'h-[18px] w-[18px]',
-                      active ? 'ring-1 ring-rose-200' : 'opacity-85'
+                      active ? 'opacity-100' : 'opacity-85'
                     )}
                     initialsClassName={cn(
                       'text-[9px] font-bold leading-none',
@@ -80,7 +86,12 @@ export default function BottomNav({ className = '', ...props }: BottomNavProps) 
                     )}
                   />
                 )}
-                <span className={cn('t-label whitespace-nowrap', active ? 'text-primary' : 'text-muted')}>
+                <span
+                  className={cn(
+                    't-label whitespace-nowrap',
+                    active ? 'text-primary' : 'text-muted'
+                  )}
+                >
                   {label}
                 </span>
               </Link>
