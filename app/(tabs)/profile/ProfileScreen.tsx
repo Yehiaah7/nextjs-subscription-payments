@@ -819,9 +819,9 @@ function ProfilePhotoActionsModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-photo-actions-title"
-        className="relative w-full max-w-[320px] rounded-[24px] bg-white p-4 shadow-2xl"
+        className="relative w-full max-w-[320px] rounded-[24px] bg-white p-5 shadow-2xl"
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <h2
               id="profile-photo-actions-title"
@@ -829,7 +829,7 @@ function ProfilePhotoActionsModal({
             >
               Profile photo
             </h2>
-            <p className="mt-1 text-[11px] font-semibold text-slate-500">
+            <p className="mt-1.5 text-[11px] font-semibold leading-4 text-slate-500">
               Choose how you want to update your photo.
             </p>
           </div>
@@ -844,7 +844,7 @@ function ProfilePhotoActionsModal({
           </button>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           <button
             type="button"
             onClick={onChangePhoto}
