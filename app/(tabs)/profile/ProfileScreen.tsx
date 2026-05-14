@@ -27,7 +27,7 @@ import UserAvatar from '@/components/ui/UserAvatar';
 import { cardInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
-import { Camera, Minus, Plus, X } from 'lucide-react';
+import { Camera, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 
 type ProfileScreenProps = {
@@ -46,7 +46,8 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/webp',
   'image/gif'
 ]);
-const AVATAR_SUCCESS_MESSAGE = 'Profile photo updated successfully';
+const AVATAR_UPDATE_SUCCESS_MESSAGE = 'Profile photo updated successfully';
+const AVATAR_REMOVE_SUCCESS_MESSAGE = 'Profile photo removed successfully';
 const AVATAR_EDITOR_SIZE = 240;
 const CROPPED_AVATAR_SIZE = 512;
 const MIN_AVATAR_ZOOM = 1;
@@ -92,7 +93,9 @@ const logAvatarStage = (label: string, value: unknown) => {
   console.log(label, value);
 };
 
-async function loadEditableImage(file: File): Promise<AvatarEditorImage> {
+async function loadEditableImage(
+  file: File | Blob
+): Promise<AvatarEditorImage> {
   const previewUrl = URL.createObjectURL(file);
 
   try {
@@ -111,6 +114,24 @@ async function loadEditableImage(file: File): Promise<AvatarEditorImage> {
     URL.revokeObjectURL(previewUrl);
     throw error;
   }
+}
+
+async function loadEditableImageFromUrl(
+  imageUrl: string
+): Promise<AvatarEditorImage> {
+  const response = await fetch(imageUrl);
+
+  if (!response.ok) {
+    throw new Error('Could not load current profile photo for editing.');
+  }
+
+  const blob = await response.blob();
+
+  if (!blob.type.startsWith('image/')) {
+    throw new Error('Current profile photo is not an editable image.');
+  }
+
+  return loadEditableImage(blob);
 }
 
 function getAvatarCoverScale(image: AvatarEditorImage, frameSize: number) {
@@ -225,6 +246,7 @@ export default function ProfileScreen({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
   const [editorImage, setEditorImage] = useState<AvatarEditorImage | null>(
     null
   );
@@ -235,6 +257,9 @@ export default function ProfileScreen({
   });
   const [isPreparingEditor, setIsPreparingEditor] = useState(false);
   const supabase = useMemo(() => createClient(), []);
+  const currentAvatarUrl = avatar.imageUrl ?? null;
+  const isAvatarActionPending =
+    isUploading || isPreparingEditor || isRemovingAvatar;
 
   useEffect(() => {
     return () => {
@@ -414,7 +439,7 @@ export default function ProfileScreen({
 
       closeAvatarEditor();
       setAvatarImageUrl(nextAvatarUrl);
-      setUploadSuccess(AVATAR_SUCCESS_MESSAGE);
+      setUploadSuccess(AVATAR_UPDATE_SUCCESS_MESSAGE);
       router.refresh();
       logAvatarStage('avatar refresh completed', {
         profilePage: true,
@@ -439,6 +464,129 @@ export default function ProfileScreen({
     }
   };
 
+  const handleAvatarEditCurrent = async () => {
+    if (!currentAvatarUrl) {
+      setUploadError('Choose a photo before editing it.');
+      setUploadSuccess(null);
+      return;
+    }
+
+    try {
+      setIsPreparingEditor(true);
+      setUploadError(null);
+      setUploadSuccess(null);
+      const editableImage = await loadEditableImageFromUrl(currentAvatarUrl);
+      closeAvatarEditor();
+      setEditorImage(editableImage);
+      setAvatarZoom(MIN_AVATAR_ZOOM);
+      setAvatarOffset({ x: 0, y: 0 });
+    } catch (error) {
+      setUploadError('Could not open current profile photo for editing.');
+      console.error('avatar current edit preparation failure', error);
+    } finally {
+      setIsPreparingEditor(false);
+    }
+  };
+
+  const handleAvatarRemove = async () => {
+    const avatarUrlToRemove = currentAvatarUrl;
+
+    if (!avatarUrlToRemove) {
+      setUploadSuccess(null);
+      setUploadError('There is no profile photo to remove.');
+      return;
+    }
+
+    try {
+      setIsRemovingAvatar(true);
+      setUploadError(null);
+      setUploadSuccess(null);
+      closeAvatarEditor();
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new AvatarStageError(
+          'update the user profile record with the avatar path/url',
+          'avatar URL/path save failed',
+          'No authenticated user was available for avatar removal.'
+        );
+      }
+
+      logAvatarStage('profile avatar removal started', {
+        table: 'profiles',
+        id: user.id,
+        avatar_url: null
+      });
+      const profileUpdateResponse = await (supabase as any)
+        .from('profiles')
+        .upsert({ id: user.id, avatar_url: null }, { onConflict: 'id' })
+        .select('avatar_url')
+        .maybeSingle();
+      logAvatarStage(
+        'raw profile avatar removal response',
+        profileUpdateResponse
+      );
+      logAvatarStage(
+        'raw profile avatar removal error',
+        profileUpdateResponse.error
+      );
+
+      if (profileUpdateResponse.error) {
+        throw new AvatarStageError(
+          'update the user profile record with the avatar path/url',
+          'avatar URL/path save failed',
+          profileUpdateResponse.error.message
+        );
+      }
+
+      const previousAvatarLocation =
+        extractAvatarLocationFromPublicUrl(avatarUrlToRemove);
+      if (
+        previousAvatarLocation?.bucket === AVATAR_BUCKET &&
+        previousAvatarLocation.path.startsWith(`${user.id}/`)
+      ) {
+        const removeResponse = await supabase.storage
+          .from(AVATAR_BUCKET)
+          .remove([previousAvatarLocation.path]);
+        logAvatarStage('raw avatar storage removal response', removeResponse);
+        logAvatarStage(
+          'raw avatar storage removal error',
+          removeResponse.error
+        );
+
+        if (removeResponse.error) {
+          setUploadError(
+            'Profile photo was removed, but old file cleanup failed.'
+          );
+          console.error('avatar storage cleanup failure', removeResponse.error);
+        }
+      }
+
+      setAvatarImageUrl(null);
+      setUploadSuccess(AVATAR_REMOVE_SUCCESS_MESSAGE);
+      router.refresh();
+      logAvatarStage('avatar removal refresh completed', {
+        profilePage: true,
+        homeUserThumbnail: true,
+        profileTabThumbnail: true,
+        avatar_url: null
+      });
+    } catch (error) {
+      setUploadSuccess(null);
+      setUploadError(
+        error instanceof AvatarStageError
+          ? error.userMessage
+          : 'avatar URL/path save failed'
+      );
+      console.error('avatar removal stage failure', error);
+    } finally {
+      setIsRemovingAvatar(false);
+    }
+  };
+
   return (
     <MobileScreen>
       <MotionPage>
@@ -459,7 +607,7 @@ export default function ProfileScreen({
             <div className="flex flex-col items-center">
               <div className="relative">
                 <UserAvatar
-                  imageUrl={avatar.imageUrl ?? avatarUrl}
+                  imageUrl={currentAvatarUrl}
                   firstName={avatar.firstName ?? firstName}
                   lastName={avatar.lastName ?? lastName}
                   fullName={avatar.fullName ?? fullName}
@@ -472,21 +620,46 @@ export default function ProfileScreen({
                   <CrownFilledIcon className="h-3.5 w-3.5" />
                 </span>
 
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute -bottom-1 -right-1 grid h-7 w-7 cursor-pointer place-items-center rounded-full border border-rose-200 bg-white text-rose-600 shadow-sm"
-                  aria-label="Upload profile photo"
-                >
-                  <Camera className="h-3.5 w-3.5" />
-                </label>
                 <input
                   id="avatar-upload"
                   type="file"
                   accept="image/*"
                   className="sr-only"
                   onChange={handleAvatarUpload}
-                  disabled={isUploading || isPreparingEditor}
+                  disabled={isAvatarActionPending}
                 />
+              </div>
+
+              <div className="mt-4 grid w-full grid-cols-3 gap-2">
+                <label
+                  htmlFor="avatar-upload"
+                  className={cn(
+                    'flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[14px] border border-[#d7e3f7] bg-white text-[11px] font-bold text-[#2563eb] shadow-sm',
+                    isAvatarActionPending && 'pointer-events-none opacity-50'
+                  )}
+                  aria-label="Change profile photo"
+                >
+                  <Camera className="h-3.5 w-3.5" />
+                  Change
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAvatarEditCurrent}
+                  disabled={!currentAvatarUrl || isAvatarActionPending}
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-[14px] border border-[#d7e3f7] bg-white text-[11px] font-bold text-[#475569] shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAvatarRemove}
+                  disabled={!currentAvatarUrl || isAvatarActionPending}
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-[14px] border border-rose-100 bg-rose-50 text-[11px] font-bold text-rose-600 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Remove
+                </button>
               </div>
 
               <p className="mt-3 text-center text-[16px] font-bold tracking-[-0.3px] text-[#0f172b]">
@@ -495,11 +668,13 @@ export default function ProfileScreen({
               <p className="mt-1 text-[10px] font-black tracking-[0.04em] text-[#2563eb]">
                 Product Gym member
               </p>
-              {isPreparingEditor || isUploading ? (
+              {isAvatarActionPending ? (
                 <p className="mt-2 text-center text-[10px] font-semibold text-slate-500">
-                  {isPreparingEditor
-                    ? 'Preparing avatar editor...'
-                    : 'Uploading avatar...'}
+                  {isRemovingAvatar
+                    ? 'Removing avatar...'
+                    : isPreparingEditor
+                      ? 'Preparing avatar editor...'
+                      : 'Uploading avatar...'}
                 </p>
               ) : null}
               {uploadSuccess ? (
