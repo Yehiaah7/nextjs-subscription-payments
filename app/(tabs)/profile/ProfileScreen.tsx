@@ -37,6 +37,35 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 const AVATAR_SUCCESS_MESSAGE = 'Profile photo updated successfully';
 
+type AvatarStage =
+  | 'file validation'
+  | 'upload to Supabase Storage bucket avatars'
+  | 'generate/read final file path or public URL'
+  | 'update the user profile record with the avatar path/url'
+  | 'refresh avatar UI';
+
+type AvatarStageUserMessage =
+  | 'invalid file type'
+  | 'file too large'
+  | 'storage upload failed'
+  | 'avatar URL/path save failed'
+  | 'success';
+
+class AvatarStageError extends Error {
+  constructor(
+    readonly stage: AvatarStage,
+    readonly userMessage: AvatarStageUserMessage,
+    message: string
+  ) {
+    super(message);
+    this.name = 'AvatarStageError';
+  }
+}
+
+const logAvatarStage = (label: string, value: unknown) => {
+  console.log(label, value);
+};
+
 async function optimizeImage(file: File): Promise<Blob> {
   const imageUrl = URL.createObjectURL(file);
 
@@ -121,91 +150,134 @@ export default function ProfileScreen({
       return;
     }
 
+    logAvatarStage('file name', file.name);
+    logAvatarStage('file type', file.type);
+    logAvatarStage('file size', file.size);
+
+    setUploadError(null);
+    setUploadSuccess(null);
+
     if (!ALLOWED_MIME_TYPES.has(file.type)) {
-      setUploadSuccess(null);
-      setUploadError('Please upload an image file.');
+      logAvatarStage('validation passed', false);
+      setUploadError('invalid file type');
       return;
     }
 
-    if (file.size === 0) {
-      setUploadSuccess(null);
-      setUploadError(
-        'The selected image is empty. Please choose another file.'
-      );
+    if (file.size === 0 || file.size > MAX_UPLOAD_BYTES) {
+      logAvatarStage('validation passed', false);
+      setUploadError('file too large');
       return;
     }
 
-    if (file.size > MAX_UPLOAD_BYTES) {
-      setUploadSuccess(null);
-      setUploadError('Please upload an image smaller than 4MB.');
-      return;
-    }
+    logAvatarStage('validation passed', true);
+
+    let nextAvatarPath: string | null = null;
 
     try {
-      setUploadError(null);
-      setUploadSuccess(null);
       setIsUploading(true);
       const optimizedAvatarBlob = await optimizeImage(file);
 
       if (optimizedAvatarBlob.size > MAX_UPLOAD_BYTES) {
-        throw new Error('Please upload an image smaller than 4MB.');
+        throw new AvatarStageError(
+          'file validation',
+          'file too large',
+          'Optimized avatar exceeded the 4MB upload limit.'
+        );
       }
       const {
         data: { user }
       } = await supabase.auth.getUser();
 
       if (!user) {
-        throw new Error('Please sign in again to update your avatar.');
+        throw new AvatarStageError(
+          'update the user profile record with the avatar path/url',
+          'avatar URL/path save failed',
+          'No authenticated user was available for avatar profile update.'
+        );
       }
 
-      const nextAvatarPath = `${user.id}/${crypto.randomUUID()}.jpg`;
-      const { error: uploadError } = await supabase.storage
+      nextAvatarPath = `${user.id}/${crypto.randomUUID()}.jpg`;
+      logAvatarStage('upload started', {
+        bucket: AVATAR_BUCKET,
+        path: nextAvatarPath
+      });
+      const uploadResponse = await supabase.storage
         .from(AVATAR_BUCKET)
         .upload(nextAvatarPath, optimizedAvatarBlob, {
           cacheControl: '31536000',
           contentType: 'image/jpeg',
           upsert: false
         });
+      logAvatarStage('raw upload response', uploadResponse);
+      logAvatarStage('raw upload error', uploadResponse.error);
 
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from(AVATAR_BUCKET)
-        .getPublicUrl(nextAvatarPath);
-      const nextAvatarUrl = publicUrlData.publicUrl;
-
-      if (!nextAvatarUrl) {
-        await supabase.storage.from(AVATAR_BUCKET).remove([nextAvatarPath]);
-        throw new Error(
-          'Could not generate a public URL for the uploaded avatar.'
+      if (uploadResponse.error) {
+        throw new AvatarStageError(
+          'upload to Supabase Storage bucket avatars',
+          'storage upload failed',
+          uploadResponse.error.message
         );
       }
 
-      const { error: profileError } = await (supabase as any)
+      const storedFilePath = uploadResponse.data?.path ?? nextAvatarPath;
+      logAvatarStage('stored file path', storedFilePath);
+
+      const publicUrlResult = supabase.storage
+        .from(AVATAR_BUCKET)
+        .getPublicUrl(storedFilePath);
+      logAvatarStage('public URL result', publicUrlResult);
+      const nextAvatarUrl = publicUrlResult.data.publicUrl;
+
+      if (!nextAvatarUrl) {
+        throw new AvatarStageError(
+          'generate/read final file path or public URL',
+          'storage upload failed',
+          'Supabase Storage did not return a public URL for the uploaded avatar.'
+        );
+      }
+
+      logAvatarStage('profile update started', {
+        table: 'profiles',
+        id: user.id,
+        avatar_url: nextAvatarUrl
+      });
+      const profileUpdateResponse = await (supabase as any)
         .from('profiles')
         .upsert(
           { id: user.id, avatar_url: nextAvatarUrl },
           { onConflict: 'id' }
-        );
+        )
+        .select('avatar_url')
+        .maybeSingle();
+      logAvatarStage('raw profile update response', profileUpdateResponse);
+      logAvatarStage('raw profile update error', profileUpdateResponse.error);
 
-      if (profileError) {
-        await supabase.storage.from(AVATAR_BUCKET).remove([nextAvatarPath]);
-        throw profileError;
+      if (profileUpdateResponse.error) {
+        throw new AvatarStageError(
+          'update the user profile record with the avatar path/url',
+          'avatar URL/path save failed',
+          profileUpdateResponse.error.message
+        );
       }
 
-      await (supabase as any)
+      const usersUpdateResponse = await (supabase as any)
         .from('users')
         .update({ avatar_url: nextAvatarUrl })
         .eq('id', user.id);
+
+      if (usersUpdateResponse.error) {
+        console.warn(
+          'users avatar mirror update failed',
+          usersUpdateResponse.error
+        );
+      }
 
       const previousAvatarLocation = extractAvatarLocationFromPublicUrl(
         avatar.imageUrl ?? avatarUrl ?? ''
       );
       if (
         previousAvatarLocation?.bucket === AVATAR_BUCKET &&
-        previousAvatarLocation.path !== nextAvatarPath &&
+        previousAvatarLocation.path !== storedFilePath &&
         previousAvatarLocation.path.startsWith(`${user.id}/`)
       ) {
         await supabase.storage
@@ -216,17 +288,24 @@ export default function ProfileScreen({
       setAvatarImageUrl(nextAvatarUrl);
       setUploadSuccess(AVATAR_SUCCESS_MESSAGE);
       router.refresh();
+      logAvatarStage('avatar refresh completed', {
+        profilePage: true,
+        homeUserThumbnail: true,
+        profileTabThumbnail: true,
+        avatar_url: nextAvatarUrl
+      });
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Could not upload avatar. Please try again.';
+      if (nextAvatarPath) {
+        await supabase.storage.from(AVATAR_BUCKET).remove([nextAvatarPath]);
+      }
+
       setUploadSuccess(null);
       setUploadError(
-        message.toLowerCase().includes('bucket not found')
-          ? `Avatar storage bucket is missing in this Supabase project. ${message}`
-          : message
+        error instanceof AvatarStageError
+          ? error.userMessage
+          : 'avatar URL/path save failed'
       );
+      console.error('avatar upload stage failure', error);
     } finally {
       setIsUploading(false);
     }
