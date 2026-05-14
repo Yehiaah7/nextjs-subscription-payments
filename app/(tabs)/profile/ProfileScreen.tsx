@@ -2,6 +2,7 @@
 
 import { ChangeEvent, ReactNode, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   CalendarFilledIcon,
   CheckCircleFilledIcon,
@@ -34,6 +35,7 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/webp',
   'image/gif'
 ]);
+const AVATAR_SUCCESS_MESSAGE = 'Profile photo updated successfully';
 
 async function optimizeImage(file: File): Promise<Blob> {
   const imageUrl = URL.createObjectURL(file);
@@ -104,8 +106,10 @@ export default function ProfileScreen({
   lastName,
   avatarUrl
 }: ProfileScreenProps) {
+  const router = useRouter();
   const { avatar, setAvatarImageUrl } = useUserAvatar();
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const supabase = useMemo(() => createClient(), []);
 
@@ -118,19 +122,34 @@ export default function ProfileScreen({
     }
 
     if (!ALLOWED_MIME_TYPES.has(file.type)) {
+      setUploadSuccess(null);
       setUploadError('Please upload an image file.');
       return;
     }
 
+    if (file.size === 0) {
+      setUploadSuccess(null);
+      setUploadError(
+        'The selected image is empty. Please choose another file.'
+      );
+      return;
+    }
+
     if (file.size > MAX_UPLOAD_BYTES) {
+      setUploadSuccess(null);
       setUploadError('Please upload an image smaller than 4MB.');
       return;
     }
 
     try {
       setUploadError(null);
+      setUploadSuccess(null);
       setIsUploading(true);
       const optimizedAvatarBlob = await optimizeImage(file);
+
+      if (optimizedAvatarBlob.size > MAX_UPLOAD_BYTES) {
+        throw new Error('Please upload an image smaller than 4MB.');
+      }
       const {
         data: { user }
       } = await supabase.auth.getUser();
@@ -139,12 +158,13 @@ export default function ProfileScreen({
         throw new Error('Please sign in again to update your avatar.');
       }
 
-      const nextAvatarPath = `${user.id}/avatar.jpg`;
+      const nextAvatarPath = `${user.id}/${crypto.randomUUID()}.jpg`;
       const { error: uploadError } = await supabase.storage
         .from(AVATAR_BUCKET)
         .upload(nextAvatarPath, optimizedAvatarBlob, {
-          upsert: true,
-          contentType: 'image/jpeg'
+          cacheControl: '31536000',
+          contentType: 'image/jpeg',
+          upsert: false
         });
 
       if (uploadError) {
@@ -154,36 +174,54 @@ export default function ProfileScreen({
       const { data: publicUrlData } = supabase.storage
         .from(AVATAR_BUCKET)
         .getPublicUrl(nextAvatarPath);
-      const cacheBustedUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
+      const nextAvatarUrl = publicUrlData.publicUrl;
+
+      if (!nextAvatarUrl) {
+        await supabase.storage.from(AVATAR_BUCKET).remove([nextAvatarPath]);
+        throw new Error(
+          'Could not generate a public URL for the uploaded avatar.'
+        );
+      }
+
+      const { error: profileError } = await (supabase as any)
+        .from('profiles')
+        .upsert(
+          { id: user.id, avatar_url: nextAvatarUrl },
+          { onConflict: 'id' }
+        );
+
+      if (profileError) {
+        await supabase.storage.from(AVATAR_BUCKET).remove([nextAvatarPath]);
+        throw profileError;
+      }
+
+      await (supabase as any)
+        .from('users')
+        .update({ avatar_url: nextAvatarUrl })
+        .eq('id', user.id);
 
       const previousAvatarLocation = extractAvatarLocationFromPublicUrl(
         avatar.imageUrl ?? avatarUrl ?? ''
       );
       if (
-        previousAvatarLocation &&
-        (previousAvatarLocation.bucket !== AVATAR_BUCKET ||
-          previousAvatarLocation.path !== nextAvatarPath)
+        previousAvatarLocation?.bucket === AVATAR_BUCKET &&
+        previousAvatarLocation.path !== nextAvatarPath &&
+        previousAvatarLocation.path.startsWith(`${user.id}/`)
       ) {
         await supabase.storage
-          .from(previousAvatarLocation.bucket)
+          .from(AVATAR_BUCKET)
           .remove([previousAvatarLocation.path]);
       }
 
-      const { error } = await (supabase as any)
-        .from('users')
-        .update({ avatar_url: cacheBustedUrl })
-        .eq('id', user.id);
-
-      if (error) {
-        throw error;
-      }
-
-      setAvatarImageUrl(cacheBustedUrl);
+      setAvatarImageUrl(nextAvatarUrl);
+      setUploadSuccess(AVATAR_SUCCESS_MESSAGE);
+      router.refresh();
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : 'Could not upload avatar. Please try again.';
+      setUploadSuccess(null);
       setUploadError(
         message.toLowerCase().includes('bucket not found')
           ? `Avatar storage bucket is missing in this Supabase project. ${message}`
@@ -249,6 +287,11 @@ export default function ProfileScreen({
                   ? 'Uploading avatar...'
                   : 'Tap camera to upload or replace your photo'}
               </p>
+              {uploadSuccess ? (
+                <p className="mt-1 text-center text-[10px] font-semibold text-emerald-600">
+                  {uploadSuccess}
+                </p>
+              ) : null}
               {uploadError ? (
                 <p className="mt-1 text-center text-[10px] font-semibold text-rose-600">
                   {uploadError}
