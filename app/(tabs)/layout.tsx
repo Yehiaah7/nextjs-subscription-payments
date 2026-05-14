@@ -8,6 +8,7 @@ type ProfileRecord = {
   name: string | null;
   first_name: string | null;
   last_name: string | null;
+  avatar_url: string | null;
 };
 
 type UserRecord = {
@@ -22,7 +23,7 @@ export default async function TabsLayout({ children }: PropsWithChildren) {
   const [{ data: profileData }, { data: userData }] = await Promise.all([
     (supabase as any)
       .from('profiles')
-      .select('name, first_name, last_name')
+      .select('name, first_name, last_name, avatar_url')
       .eq('id', user.id)
       .maybeSingle(),
     (supabase as any)
@@ -46,7 +47,7 @@ export default async function TabsLayout({ children }: PropsWithChildren) {
           user.user_metadata?.full_name ??
           user.user_metadata?.name,
         email: user.email,
-        imageUrl: userRecord?.avatar_url
+        imageUrl: profile?.avatar_url ?? userRecord?.avatar_url
       }}
     >
       <MobileAppLayout showBottomNav>{children}</MobileAppLayout>

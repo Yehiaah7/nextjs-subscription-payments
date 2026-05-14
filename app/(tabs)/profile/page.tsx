@@ -7,6 +7,7 @@ type ProfileRecord = {
   name: string | null;
   first_name: string | null;
   last_name: string | null;
+  avatar_url: string | null;
 };
 
 type UserRecord = {
@@ -21,7 +22,7 @@ export default async function ProfilePage() {
   const [{ data: profileData }, { data: userData }] = await Promise.all([
     (supabase as any)
       .from('profiles')
-      .select('name, first_name, last_name')
+      .select('name, first_name, last_name, avatar_url')
       .eq('id', user.id)
       .maybeSingle(),
     (supabase as any)
@@ -50,7 +51,7 @@ export default async function ProfilePage() {
       fullName={fullName}
       firstName={profile?.first_name}
       lastName={profile?.last_name}
-      avatarUrl={userRecord?.avatar_url}
+      avatarUrl={profile?.avatar_url ?? userRecord?.avatar_url}
     />
   );
 }
