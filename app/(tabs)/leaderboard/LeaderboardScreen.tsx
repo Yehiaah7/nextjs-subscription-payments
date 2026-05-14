@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CalendarRange } from 'lucide-react';
+import { CalendarFilledIcon } from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
 import {
@@ -56,8 +56,8 @@ export default function LeaderboardScreen() {
 function LeaderboardEmptyState() {
   return (
     <div className="app-card flex min-h-[236px] flex-col items-center justify-center px-6 py-8 text-center">
-      <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-orange-50 shadow-[inset_0_0_0_1px_rgba(68,125,253,0.12)]">
-        <CalendarRange className="h-8 w-8 text-blue-500" strokeWidth={2.25} />
+      <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-[#51a2ff] shadow-[inset_0_0_0_1px_rgba(81,162,255,0.14)]">
+        <CalendarFilledIcon className="h-7 w-7" />
       </div>
       <h2 className="text-[16px] font-bold leading-[1.25] tracking-[-0.3px] text-[var(--lb-title-color)]">
         Solve challenges for 30 days to unlock rankings.
