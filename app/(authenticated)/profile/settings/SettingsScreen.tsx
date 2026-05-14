@@ -116,7 +116,7 @@ export default function SettingsScreen({
         <header className="flex items-center gap-3">
           <Link
             href="/profile"
-            className="grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff]"
+            className="grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff] transition-colors hover:bg-blue-50 hover:text-blue-600"
           >
             ‹
           </Link>
