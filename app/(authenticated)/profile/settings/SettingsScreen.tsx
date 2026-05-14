@@ -7,6 +7,7 @@ import { MotionButton, MotionInput } from '@/components/motion';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import FormLoadingButton from '@/components/ui/FormLoadingButton';
 import PasswordField from '@/components/ui/PasswordField';
+import { primaryCtaButton } from '@/components/ui/interactive';
 import { changePassword, updateAccountPreferences } from './actions';
 
 type ProfileValues = {
@@ -64,7 +65,9 @@ function parsePhoneFromProfile(profile: ProfileValues) {
   return {
     phone_country: fallbackCountry.code,
     phone_country_code:
-      profile.phone_country_code ?? profile.phone_dial_code ?? fallbackCountry.dialCode,
+      profile.phone_country_code ??
+      profile.phone_dial_code ??
+      fallbackCountry.dialCode,
     phone_national: national
   };
 }
@@ -232,7 +235,7 @@ export default function SettingsScreen({
                       initialValues[key as keyof typeof initialValues]
                   ) || !formValues.username.trim()
                 }
-                className="h-[43px] w-[90px] rounded-[12px] bg-[#2563eb] text-[10px] font-black uppercase tracking-[1px] text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className={primaryCtaButton}
               >
                 Save
               </FormLoadingButton>
@@ -270,10 +273,8 @@ export default function SettingsScreen({
               minLength={8}
             />
             <div className="flex justify-end pt-1">
-              <FormLoadingButton
-                className="h-[43px] rounded-[12px] bg-[#2563eb] px-10 text-[10px] font-black uppercase tracking-[1px] text-white"
-              >
-                CHANGE PASSWORD
+              <FormLoadingButton className={primaryCtaButton}>
+                Change Password
               </FormLoadingButton>
             </div>
           </form>
@@ -432,7 +433,9 @@ function Field({
           maxLength={maxLength}
           pattern={pattern}
           title={title}
-          autoComplete={name === 'currentPassword' ? 'current-password' : 'new-password'}
+          autoComplete={
+            name === 'currentPassword' ? 'current-password' : 'new-password'
+          }
           containerClassName="flex h-[43px] w-full items-center rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc] px-3"
           inputClassName="h-full w-full bg-[#f8fafc] text-[14px] font-medium text-[var(--profile-title-color)] outline-none"
           iconClassName="h-4 w-4 text-[#94a3b8]"
