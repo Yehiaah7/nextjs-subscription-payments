@@ -254,6 +254,9 @@ export default function ProfileScreen({
     y: 0
   });
   const [isPreparingEditor, setIsPreparingEditor] = useState(false);
+  const [isPhotoActionsOpen, setIsPhotoActionsOpen] = useState(false);
+  const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
+  const avatarUploadInputRef = useRef<HTMLInputElement | null>(null);
   const supabase = useMemo(() => createClient(), []);
   const currentAvatarUrl = avatar.imageUrl ?? null;
   const isAvatarActionPending =
@@ -275,6 +278,14 @@ export default function ProfileScreen({
     setEditorImage(null);
     setAvatarZoom(MIN_AVATAR_ZOOM);
     setAvatarOffset({ x: 0, y: 0 });
+  };
+
+  const openAvatarFilePicker = () => {
+    if (isAvatarActionPending) {
+      return;
+    }
+
+    avatarUploadInputRef.current?.click();
   };
 
   const handleAvatarUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -307,6 +318,7 @@ export default function ProfileScreen({
     logAvatarStage('validation passed', true);
 
     try {
+      setIsPhotoActionsOpen(false);
       setIsPreparingEditor(true);
       const editableImage = await loadEditableImage(file);
       closeAvatarEditor();
@@ -470,6 +482,7 @@ export default function ProfileScreen({
     }
 
     try {
+      setIsPhotoActionsOpen(false);
       setIsPreparingEditor(true);
       setUploadError(null);
       setUploadSuccess(null);
@@ -496,6 +509,8 @@ export default function ProfileScreen({
     }
 
     try {
+      setIsPhotoActionsOpen(false);
+      setIsRemoveConfirmOpen(false);
       setIsRemovingAvatar(true);
       setUploadError(null);
       setUploadSuccess(null);
@@ -618,15 +633,16 @@ export default function ProfileScreen({
                   <CrownFilledIcon className="h-3.5 w-3.5" />
                 </span>
 
-                <ProfilePhotoActionsMenu
-                  uploadInputId="avatar-upload"
-                  hasCurrentAvatar={Boolean(currentAvatarUrl)}
-                  isActionPending={isAvatarActionPending}
-                  onEditPhoto={handleAvatarEditCurrent}
-                  onRemovePhoto={handleAvatarRemove}
-                />
+                <div className="absolute -bottom-1 -right-1">
+                  <ProfilePhotoActionTrigger
+                    isOpen={isPhotoActionsOpen}
+                    disabled={isAvatarActionPending}
+                    onClick={() => setIsPhotoActionsOpen(true)}
+                  />
+                </div>
 
                 <input
+                  ref={avatarUploadInputRef}
                   id="avatar-upload"
                   type="file"
                   accept="image/*"
@@ -711,6 +727,30 @@ export default function ProfileScreen({
             Product Gym V2.4.0
           </p>
         </section>
+
+        {isPhotoActionsOpen ? (
+          <ProfilePhotoActionsModal
+            hasCurrentAvatar={Boolean(currentAvatarUrl)}
+            isActionPending={isAvatarActionPending}
+            onClose={() => setIsPhotoActionsOpen(false)}
+            onChangePhoto={() => {
+              setIsPhotoActionsOpen(false);
+              openAvatarFilePicker();
+            }}
+            onEditPhoto={handleAvatarEditCurrent}
+            onRemovePhoto={() => {
+              setIsPhotoActionsOpen(false);
+              setIsRemoveConfirmOpen(true);
+            }}
+          />
+        ) : null}
+        {isRemoveConfirmOpen ? (
+          <RemoveProfilePhotoConfirmModal
+            isRemoving={isRemovingAvatar}
+            onCancel={() => setIsRemoveConfirmOpen(false)}
+            onConfirm={handleAvatarRemove}
+          />
+        ) : null}
         {editorImage ? (
           <AvatarEditorModal
             image={editorImage}
@@ -741,97 +781,182 @@ export default function ProfileScreen({
   );
 }
 
-function ProfilePhotoActionsMenu({
-  uploadInputId,
+function ProfilePhotoActionsModal({
   hasCurrentAvatar,
   isActionPending,
+  onClose,
+  onChangePhoto,
   onEditPhoto,
   onRemovePhoto
 }: {
-  uploadInputId: string;
   hasCurrentAvatar: boolean;
   isActionPending: boolean;
+  onClose: () => void;
+  onChangePhoto: () => void;
   onEditPhoto: () => void;
   onRemovePhoto: () => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handlePointerDown = (event: globalThis.PointerEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
       }
     };
 
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (isActionPending) {
-      setIsOpen(false);
-    }
-  }, [isActionPending]);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
-    <div ref={menuRef} className="absolute -bottom-1 -right-1">
-      <ProfilePhotoActionTrigger
-        isOpen={isOpen}
-        disabled={isActionPending}
-        onClick={() => setIsOpen((currentIsOpen) => !currentIsOpen)}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-10">
+      <button
+        type="button"
+        className="absolute inset-0 cursor-default"
+        aria-label="Close profile photo actions"
+        onClick={onClose}
       />
-
-      {isOpen ? (
-        <div
-          role="menu"
-          aria-label="Profile photo actions"
-          className="absolute right-0 top-9 z-20 w-40 overflow-hidden rounded-[16px] border border-[#d7e3f7] bg-white p-1.5 text-left shadow-xl"
-        >
-          <label
-            htmlFor={uploadInputId}
-            role="menuitem"
-            onClick={() => setIsOpen(false)}
-            className={cn(
-              'flex h-10 cursor-pointer items-center gap-2 rounded-[12px] px-3 text-[12px] font-bold text-[#2563eb] hover:bg-[#eff6ff]',
-              isActionPending && 'pointer-events-none opacity-50'
-            )}
-          >
-            <Camera className="h-3.5 w-3.5" />
-            Change photo
-          </label>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-photo-actions-title"
+        className="relative w-full max-w-[320px] rounded-[24px] bg-white p-4 shadow-2xl"
+      >
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2
+              id="profile-photo-actions-title"
+              className="text-[18px] font-bold tracking-[-0.4px] text-[#0f172b]"
+            >
+              Profile photo
+            </h2>
+            <p className="mt-1 text-[11px] font-semibold text-slate-500">
+              Choose how you want to update your photo.
+            </p>
+          </div>
           <button
             type="button"
-            role="menuitem"
-            onClick={() => {
-              setIsOpen(false);
-              onEditPhoto();
-            }}
-            disabled={!hasCurrentAvatar || isActionPending}
-            className="flex h-10 w-full items-center gap-2 rounded-[12px] px-3 text-left text-[12px] font-bold text-[#475569] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={onClose}
+            disabled={isActionPending}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500 disabled:opacity-50"
+            aria-label="Close profile photo actions"
           >
-            <Pencil className="h-3.5 w-3.5" />
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={onChangePhoto}
+            disabled={isActionPending}
+            className="flex h-12 w-full items-center gap-3 rounded-[14px] bg-[#eff6ff] px-4 text-left text-[13px] font-bold text-[#2563eb] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Camera className="h-4 w-4" />
+            Change photo
+          </button>
+          <button
+            type="button"
+            onClick={onEditPhoto}
+            disabled={!hasCurrentAvatar || isActionPending}
+            className="flex h-12 w-full items-center gap-3 rounded-[14px] bg-slate-50 px-4 text-left text-[13px] font-bold text-[#475569] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Pencil className="h-4 w-4" />
             Edit photo
           </button>
           <button
             type="button"
-            role="menuitem"
-            onClick={() => {
-              setIsOpen(false);
-              onRemovePhoto();
-            }}
+            onClick={onRemovePhoto}
             disabled={!hasCurrentAvatar || isActionPending}
-            className="flex h-10 w-full items-center gap-2 rounded-[12px] px-3 text-left text-[12px] font-bold text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-12 w-full items-center gap-3 rounded-[14px] bg-rose-50 px-4 text-left text-[13px] font-bold text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-4 w-4" />
             Remove photo
           </button>
         </div>
-      ) : null}
+      </div>
+    </div>
+  );
+}
+
+function RemoveProfilePhotoConfirmModal({
+  isRemoving,
+  onCancel,
+  onConfirm
+}: {
+  isRemoving: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  useEffect(() => {
+    if (isRemoving) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isRemoving, onCancel]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-10">
+      <button
+        type="button"
+        className="absolute inset-0 cursor-default disabled:cursor-wait"
+        aria-label="Cancel profile photo removal"
+        onClick={onCancel}
+        disabled={isRemoving}
+      />
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="remove-profile-photo-title"
+        aria-describedby="remove-profile-photo-description"
+        className="relative w-full max-w-[320px] rounded-[24px] bg-white p-4 shadow-2xl"
+      >
+        <div className="mb-4 flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-50 text-rose-600">
+            <Trash2 className="h-5 w-5" />
+          </div>
+          <div>
+            <h2
+              id="remove-profile-photo-title"
+              className="text-[18px] font-bold tracking-[-0.4px] text-[#0f172b]"
+            >
+              Remove profile photo?
+            </h2>
+            <p
+              id="remove-profile-photo-description"
+              className="mt-1 text-[12px] font-semibold leading-5 text-slate-500"
+            >
+              Are you sure you want to remove your profile photo?
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isRemoving}
+            className="h-11 rounded-[14px] border border-slate-200 bg-white text-[13px] font-bold text-slate-600 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isRemoving}
+            className="h-11 rounded-[14px] bg-rose-600 text-[13px] font-bold text-white shadow-sm disabled:opacity-60"
+          >
+            {isRemoving ? 'Removing...' : 'Remove'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -851,7 +976,7 @@ function ProfilePhotoActionTrigger({
       onClick={onClick}
       disabled={disabled}
       aria-label="Open profile photo actions"
-      aria-haspopup="menu"
+      aria-haspopup="dialog"
       aria-expanded={isOpen}
       className="grid h-8 w-8 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[#2563eb] shadow-md transition hover:bg-[#eff6ff] disabled:cursor-not-allowed disabled:opacity-60"
     >
