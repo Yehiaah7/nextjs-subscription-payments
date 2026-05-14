@@ -7,7 +7,8 @@ import { MotionButton, MotionInput } from '@/components/motion';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import FormLoadingButton from '@/components/ui/FormLoadingButton';
 import PasswordField from '@/components/ui/PasswordField';
-import { primaryCtaButton } from '@/components/ui/interactive';
+import { compactPrimaryCtaButton } from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 import { changePassword, updateAccountPreferences } from './actions';
 
 type ProfileValues = {
@@ -235,7 +236,7 @@ export default function SettingsScreen({
                       initialValues[key as keyof typeof initialValues]
                   ) || !formValues.username.trim()
                 }
-                className={primaryCtaButton}
+                className={cn(compactPrimaryCtaButton, 'min-w-[90px]')}
               >
                 Save
               </FormLoadingButton>
@@ -273,7 +274,9 @@ export default function SettingsScreen({
               minLength={8}
             />
             <div className="flex justify-end pt-1">
-              <FormLoadingButton className={primaryCtaButton}>
+              <FormLoadingButton
+                className={cn(compactPrimaryCtaButton, 'min-w-[151px]')}
+              >
                 Change Password
               </FormLoadingButton>
             </div>

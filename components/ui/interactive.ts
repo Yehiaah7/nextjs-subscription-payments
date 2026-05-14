@@ -18,6 +18,8 @@ export const btnInteractiveNeutral = 'hover:bg-blue-50';
 
 export const primaryCtaButton = `${btnInteractive} ${btnInteractiveColored} ${focusRingInteractive} h-12 rounded-2xl bg-blue-600 px-10 text-sm font-extrabold uppercase tracking-[0.14em] text-white`;
 
+export const compactPrimaryCtaButton = `${btnInteractive} ${btnInteractiveColored} ${focusRingInteractive} h-[43px] rounded-[12px] bg-blue-600 px-5 text-center text-[10px] font-black uppercase tracking-[1px] text-white`;
+
 export const cardInteractive = cardMotion;
 
 export const inputInteractive = inputMotion;
