@@ -12,17 +12,20 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  CalendarFilledIcon,
   CheckCircleFilledIcon,
+  FireFilledIcon,
   CrownFilledIcon,
   GlobeFilledIcon,
   MedalFilledIcon,
   TrophyFilledIcon
 } from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
+import { MotionCard } from '@/components/motion';
 import MotionPage from '@/components/motion/MotionPage';
 import ProGymPassCard from '@/components/ProGymPassCard';
 import UserAvatar from '@/components/ui/UserAvatar';
+import { cardInteractive } from '@/components/ui/interactive';
+import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
 import { Camera, Minus, Plus, X } from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
@@ -446,7 +449,13 @@ export default function ProfileScreen({
             </h1>
           </header>
 
-          <section className="rounded-[var(--profile-card-radius)] border border-[var(--profile-main-stroke)] bg-[var(--profile-main-bg)] p-3">
+          <MotionCard
+            className={cn('app-card border', cardInteractive)}
+            style={{
+              backgroundColor: '#ffffff',
+              borderColor: '#dbeafe'
+            }}
+          >
             <div className="flex flex-col items-center">
               <div className="relative">
                 <UserAvatar
@@ -483,16 +492,16 @@ export default function ProfileScreen({
               <p className="mt-3 text-center text-[16px] font-bold tracking-[-0.3px] text-[#0f172b]">
                 {fullName}
               </p>
-              <p className="mt-1 text-[10px] font-black uppercase tracking-[1px] text-[var(--profile-member-color)]">
-                PRODUCT GYM MEMBER
+              <p className="mt-1 text-[10px] font-black tracking-[0.04em] text-[#2563eb]">
+                Product Gym member
               </p>
-              <p className="mt-2 text-center text-[10px] font-semibold text-slate-500">
-                {isPreparingEditor
-                  ? 'Preparing avatar editor...'
-                  : isUploading
-                    ? 'Uploading avatar...'
-                    : 'Tap camera to upload or replace your photo'}
-              </p>
+              {isPreparingEditor || isUploading ? (
+                <p className="mt-2 text-center text-[10px] font-semibold text-slate-500">
+                  {isPreparingEditor
+                    ? 'Preparing avatar editor...'
+                    : 'Uploading avatar...'}
+                </p>
+              ) : null}
               {uploadSuccess ? (
                 <p className="mt-1 text-center text-[10px] font-semibold text-emerald-600">
                   {uploadSuccess}
@@ -505,34 +514,44 @@ export default function ProfileScreen({
               ) : null}
             </div>
 
-            <div className="mt-5 grid grid-cols-3 gap-2">
+            <div className="mt-4 grid grid-cols-3 gap-2">
               <StatCard
-                icon={<TrophyFilledIcon className="h-3.5 w-3.5" />}
-                label="RANK"
+                icon={
+                  <TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />
+                }
+                label="Rank"
                 value="#12"
               />
               <StatCard
-                icon={<CheckCircleFilledIcon className="h-3.5 w-3.5" />}
-                label="SOLVED"
+                icon={
+                  <CheckCircleFilledIcon className="h-3.5 w-3.5 text-[#22c55e]" />
+                }
+                label="Solved"
                 value="42"
               />
               <StatCard
-                icon={<CalendarFilledIcon className="h-3.5 w-3.5" />}
-                label="SOLVING DAYS"
+                icon={
+                  <FireFilledIcon className="h-3.5 w-3.5 text-orange-500" />
+                }
+                label="Solving Days"
                 value="32"
               />
               <StatCard
-                icon={<MedalFilledIcon className="h-3.5 w-3.5" />}
-                label="WEEKLY TOP PERFORMER"
+                icon={
+                  <MedalFilledIcon className="h-3.5 w-3.5 text-[#2563eb]" />
+                }
+                label="Weekly Top Performer"
                 value="4X"
               />
               <StatCard
-                icon={<GlobeFilledIcon className="h-3.5 w-3.5" />}
-                label="GLOBAL STANDINGS"
+                icon={
+                  <GlobeFilledIcon className="h-3.5 w-3.5 text-[#8b5cf6]" />
+                }
+                label="Global Standings"
                 value="#98"
               />
             </div>
-          </section>
+          </MotionCard>
 
           <ProGymPassCard variant="profile" managePlansLabel="Manage Plans" />
 
@@ -762,14 +781,14 @@ function StatCard({
   value: string;
 }) {
   return (
-    <article className="rounded-[12px] bg-[#eff6ff] px-2 py-2 text-center">
-      <div className="mb-1 inline-flex items-center justify-center rounded-full bg-white p-1 text-[#2563eb]">
+    <article className="rounded-xl bg-[#eff6ff] px-2 py-2 text-center">
+      <div className="mb-1 inline-flex items-center justify-center rounded-full bg-white p-1">
         {icon}
       </div>
-      <p className="text-[8px] font-black uppercase tracking-[0.7px] text-[#64748b]">
+      <p className="text-[9px] font-black tracking-[0.04em] text-[#64748b]">
         {label}
       </p>
-      <p className="mt-1 text-[18px] font-bold leading-none text-[#0f172b]">
+      <p className="mt-1 text-[20px] font-bold leading-none text-[#0f172a]">
         {value}
       </p>
     </article>
