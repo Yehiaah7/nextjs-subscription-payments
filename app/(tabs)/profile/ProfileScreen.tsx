@@ -742,7 +742,7 @@ function AvatarEditorModal({
             type="button"
             onClick={onApply}
             disabled={isSaving}
-            className="h-11 rounded-[14px] bg-rose-600 text-[13px] font-bold text-white shadow-sm disabled:opacity-60"
+            className="h-11 rounded-[14px] bg-[#2563eb] text-[13px] font-bold text-white shadow-sm disabled:opacity-60"
           >
             {isSaving ? 'Saving...' : 'Save photo'}
           </button>
