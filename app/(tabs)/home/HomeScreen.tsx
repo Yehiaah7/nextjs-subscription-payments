@@ -226,7 +226,7 @@ export default function HomeScreen({
         >
           <div className="mb-3 flex items-center gap-3">
             <UserAvatar
-              imageUrl={avatar.imageUrl ?? userAvatarUrl}
+              imageUrl={avatar.imageUrl}
               firstName={avatar.firstName ?? userFirstName}
               lastName={avatar.lastName ?? userLastName}
               fullName={avatar.fullName ?? userName}
