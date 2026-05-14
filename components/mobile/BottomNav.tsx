@@ -44,7 +44,7 @@ export default function BottomNav({
       role="navigation"
       aria-label="Bottom navigation"
       data-testid="bottom-nav"
-      className={`pointer-events-none fixed inset-x-0 bottom-0 z-[9999] ${className}`.trim()}
+      className={`pointer-events-none fixed inset-x-0 bottom-0 z-30 ${className}`.trim()}
       {...props}
     >
       <div className="mx-auto flex w-full justify-center px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
