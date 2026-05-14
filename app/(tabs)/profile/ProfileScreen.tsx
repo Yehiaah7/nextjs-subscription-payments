@@ -260,18 +260,6 @@ export default function ProfileScreen({
         );
       }
 
-      const usersUpdateResponse = await (supabase as any)
-        .from('users')
-        .update({ avatar_url: nextAvatarUrl })
-        .eq('id', user.id);
-
-      if (usersUpdateResponse.error) {
-        console.warn(
-          'users avatar mirror update failed',
-          usersUpdateResponse.error
-        );
-      }
-
       const previousAvatarLocation = extractAvatarLocationFromPublicUrl(
         avatar.imageUrl ?? avatarUrl ?? ''
       );

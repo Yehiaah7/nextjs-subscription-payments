@@ -59,7 +59,6 @@ type ProfileRecord = {
 
 type UserRecord = {
   full_name: string | null;
-  avatar_url: string | null;
 };
 
 export async function getHomePageData(): Promise<{
@@ -87,7 +86,7 @@ export async function getHomePageData(): Promise<{
       .maybeSingle(),
     (db as any)
       .from('users')
-      .select('full_name, avatar_url')
+      .select('full_name')
       .eq('id', user.id)
       .maybeSingle()
   ]);
@@ -242,7 +241,7 @@ export async function getHomePageData(): Promise<{
     userName,
     userFirstName: profile?.first_name ?? null,
     userLastName: profile?.last_name ?? null,
-    userAvatarUrl: profile?.avatar_url ?? userRecord?.avatar_url ?? null,
+    userAvatarUrl: profile?.avatar_url ?? null,
     userEmail: user.email ?? null,
     userStats: { rank: '#12', solved: '42', solvingDays: '32' }
   };

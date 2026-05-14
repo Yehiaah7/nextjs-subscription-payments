@@ -13,7 +13,6 @@ type ProfileRecord = {
 
 type UserRecord = {
   full_name: string | null;
-  avatar_url: string | null;
 };
 
 export default async function TabsLayout({ children }: PropsWithChildren) {
@@ -28,7 +27,7 @@ export default async function TabsLayout({ children }: PropsWithChildren) {
       .maybeSingle(),
     (supabase as any)
       .from('users')
-      .select('full_name, avatar_url')
+      .select('full_name')
       .eq('id', user.id)
       .maybeSingle()
   ]);
@@ -47,7 +46,7 @@ export default async function TabsLayout({ children }: PropsWithChildren) {
           user.user_metadata?.full_name ??
           user.user_metadata?.name,
         email: user.email,
-        imageUrl: profile?.avatar_url ?? userRecord?.avatar_url
+        imageUrl: profile?.avatar_url ?? null
       }}
     >
       <MobileAppLayout showBottomNav>{children}</MobileAppLayout>
