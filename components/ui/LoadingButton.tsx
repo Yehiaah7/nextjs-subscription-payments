@@ -5,7 +5,10 @@ import { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { MotionButton } from '@/components/motion';
 import { cn } from '@/utils/cn';
 
-type LoadingButtonProps = Omit<ComponentPropsWithoutRef<typeof MotionButton>, 'children'> & {
+type LoadingButtonProps = Omit<
+  ComponentPropsWithoutRef<typeof MotionButton>,
+  'children'
+> & {
   children: ReactNode;
   loading?: boolean;
   spinnerClassName?: string;
@@ -25,17 +28,21 @@ export default function LoadingButton({
     <MotionButton
       disabled={isDisabled}
       aria-disabled={isDisabled}
-      className={cn('inline-flex items-center justify-center', className)}
+      className={cn(
+        'relative inline-flex items-center justify-center text-center',
+        className
+      )}
       {...props}
     >
-      <span>{children}</span>
-      <span className="ml-2 grid h-4 w-4 place-items-center" aria-hidden="true">
-        {loading ? (
+      <span className="w-full text-center">{children}</span>
+      {loading ? (
+        <span
+          className="absolute right-4 grid h-4 w-4 place-items-center"
+          aria-hidden="true"
+        >
           <Loader2 className={cn('h-4 w-4 animate-spin', spinnerClassName)} />
-        ) : (
-          <span className="h-4 w-4" />
-        )}
-      </span>
+        </span>
+      ) : null}
     </MotionButton>
   );
 }
