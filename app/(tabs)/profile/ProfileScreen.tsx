@@ -821,17 +821,14 @@ function ProfilePhotoActionsModal({
         aria-labelledby="profile-photo-actions-title"
         className="relative w-full max-w-[320px] rounded-[24px] bg-white p-5 shadow-2xl"
       >
-        <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="mb-5 flex items-center justify-between gap-3">
           <div>
             <h2
               id="profile-photo-actions-title"
-              className="text-[18px] font-bold tracking-[-0.4px] text-[#0f172b]"
+              className="text-[18px] font-bold leading-6 tracking-[-0.4px] text-[#0f172b]"
             >
               Profile photo
             </h2>
-            <p className="mt-1.5 text-[11px] font-semibold leading-4 text-slate-500">
-              Choose how you want to update your photo.
-            </p>
           </div>
           <button
             type="button"
