@@ -1,6 +1,14 @@
 'use client';
 
-import { ChangeEvent, ReactNode, useMemo, useState } from 'react';
+import {
+  ChangeEvent,
+  PointerEvent,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -16,7 +24,7 @@ import MotionPage from '@/components/motion/MotionPage';
 import ProGymPassCard from '@/components/ProGymPassCard';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { createClient } from '@/utils/supabase/client';
-import { Camera } from 'lucide-react';
+import { Camera, Minus, Plus, X } from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 
 type ProfileScreenProps = {
@@ -36,6 +44,21 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/gif'
 ]);
 const AVATAR_SUCCESS_MESSAGE = 'Profile photo updated successfully';
+const AVATAR_EDITOR_SIZE = 240;
+const CROPPED_AVATAR_SIZE = 512;
+const MIN_AVATAR_ZOOM = 1;
+const MAX_AVATAR_ZOOM = 4;
+
+type AvatarEditorImage = {
+  previewUrl: string;
+  width: number;
+  height: number;
+};
+
+type AvatarOffset = {
+  x: number;
+  y: number;
+};
 
 type AvatarStage =
   | 'file validation'
@@ -66,43 +89,102 @@ const logAvatarStage = (label: string, value: unknown) => {
   console.log(label, value);
 };
 
-async function optimizeImage(file: File): Promise<Blob> {
-  const imageUrl = URL.createObjectURL(file);
+async function loadEditableImage(file: File): Promise<AvatarEditorImage> {
+  const previewUrl = URL.createObjectURL(file);
 
-  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+  try {
+    const dimensions = await new Promise<{ width: number; height: number }>(
+      (resolve, reject) => {
+        const img = new Image();
+        img.onload = () =>
+          resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        img.onerror = () => reject(new Error('Could not load image for edit.'));
+        img.src = previewUrl;
+      }
+    );
+
+    return { previewUrl, ...dimensions };
+  } catch (error) {
+    URL.revokeObjectURL(previewUrl);
+    throw error;
+  }
+}
+
+function getAvatarCoverScale(image: AvatarEditorImage, frameSize: number) {
+  return Math.max(frameSize / image.width, frameSize / image.height);
+}
+
+function clampAvatarOffset(
+  image: AvatarEditorImage,
+  zoom: number,
+  offset: AvatarOffset,
+  frameSize = AVATAR_EDITOR_SIZE
+): AvatarOffset {
+  const coverScale = getAvatarCoverScale(image, frameSize);
+  const displayWidth = image.width * coverScale * zoom;
+  const displayHeight = image.height * coverScale * zoom;
+  const maxX = Math.max(0, (displayWidth - frameSize) / 2);
+  const maxY = Math.max(0, (displayHeight - frameSize) / 2);
+
+  return {
+    x: Math.min(maxX, Math.max(-maxX, offset.x)),
+    y: Math.min(maxY, Math.max(-maxY, offset.y))
+  };
+}
+
+async function generateCroppedAvatarBlob({
+  image,
+  zoom,
+  offset
+}: {
+  image: AvatarEditorImage;
+  zoom: number;
+  offset: AvatarOffset;
+}): Promise<Blob> {
+  const loadedImage = await new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('Could not load image for upload.'));
-    img.src = imageUrl;
+    img.onerror = () => reject(new Error('Could not load edited avatar.'));
+    img.src = image.previewUrl;
   });
 
   const canvas = document.createElement('canvas');
-  const maxSize = 512;
-  const scale = Math.min(maxSize / image.width, maxSize / image.height, 1);
-  canvas.width = Math.round(image.width * scale);
-  canvas.height = Math.round(image.height * scale);
+  canvas.width = CROPPED_AVATAR_SIZE;
+  canvas.height = CROPPED_AVATAR_SIZE;
 
   const context = canvas.getContext('2d');
   if (!context) {
-    URL.revokeObjectURL(imageUrl);
-    throw new Error('Could not process image.');
+    throw new Error('Could not process edited avatar.');
   }
 
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  URL.revokeObjectURL(imageUrl);
+  context.fillStyle = '#ffffff';
+  context.fillRect(0, 0, CROPPED_AVATAR_SIZE, CROPPED_AVATAR_SIZE);
+
+  const coverScale = getAvatarCoverScale(image, AVATAR_EDITOR_SIZE);
+  const outputScale = CROPPED_AVATAR_SIZE / AVATAR_EDITOR_SIZE;
+  const drawWidth = image.width * coverScale * zoom * outputScale;
+  const drawHeight = image.height * coverScale * zoom * outputScale;
+  const drawX =
+    CROPPED_AVATAR_SIZE / 2 + offset.x * outputScale - drawWidth / 2;
+  const drawY =
+    CROPPED_AVATAR_SIZE / 2 + offset.y * outputScale - drawHeight / 2;
+
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
+  context.drawImage(loadedImage, drawX, drawY, drawWidth, drawHeight);
 
   return await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error('Could not process image.'));
+          reject(new Error('Could not process edited avatar.'));
           return;
         }
 
         resolve(blob);
       },
       'image/jpeg',
-      0.85
+      0.9
     );
   });
 }
@@ -140,7 +222,34 @@ export default function ProfileScreen({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [editorImage, setEditorImage] = useState<AvatarEditorImage | null>(
+    null
+  );
+  const [avatarZoom, setAvatarZoom] = useState(MIN_AVATAR_ZOOM);
+  const [avatarOffset, setAvatarOffset] = useState<AvatarOffset>({
+    x: 0,
+    y: 0
+  });
+  const [isPreparingEditor, setIsPreparingEditor] = useState(false);
   const supabase = useMemo(() => createClient(), []);
+
+  useEffect(() => {
+    return () => {
+      if (editorImage) {
+        URL.revokeObjectURL(editorImage.previewUrl);
+      }
+    };
+  }, [editorImage]);
+
+  const closeAvatarEditor = () => {
+    if (editorImage) {
+      URL.revokeObjectURL(editorImage.previewUrl);
+    }
+
+    setEditorImage(null);
+    setAvatarZoom(MIN_AVATAR_ZOOM);
+    setAvatarOffset({ x: 0, y: 0 });
+  };
 
   const handleAvatarUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -171,17 +280,44 @@ export default function ProfileScreen({
 
     logAvatarStage('validation passed', true);
 
+    try {
+      setIsPreparingEditor(true);
+      const editableImage = await loadEditableImage(file);
+      closeAvatarEditor();
+      setEditorImage(editableImage);
+      setAvatarZoom(MIN_AVATAR_ZOOM);
+      setAvatarOffset({ x: 0, y: 0 });
+    } catch (error) {
+      setUploadError('invalid file type');
+      console.error('avatar edit preparation failure', error);
+    } finally {
+      setIsPreparingEditor(false);
+    }
+  };
+
+  const handleAvatarApply = async () => {
+    if (!editorImage) {
+      return;
+    }
+
     let nextAvatarPath: string | null = null;
 
     try {
       setIsUploading(true);
-      const optimizedAvatarBlob = await optimizeImage(file);
+      setUploadError(null);
+      setUploadSuccess(null);
 
-      if (optimizedAvatarBlob.size > MAX_UPLOAD_BYTES) {
+      const croppedAvatarBlob = await generateCroppedAvatarBlob({
+        image: editorImage,
+        zoom: avatarZoom,
+        offset: clampAvatarOffset(editorImage, avatarZoom, avatarOffset)
+      });
+
+      if (croppedAvatarBlob.size > MAX_UPLOAD_BYTES) {
         throw new AvatarStageError(
           'file validation',
           'file too large',
-          'Optimized avatar exceeded the 4MB upload limit.'
+          'Edited avatar exceeded the 4MB upload limit.'
         );
       }
       const {
@@ -203,7 +339,7 @@ export default function ProfileScreen({
       });
       const uploadResponse = await supabase.storage
         .from(AVATAR_BUCKET)
-        .upload(nextAvatarPath, optimizedAvatarBlob, {
+        .upload(nextAvatarPath, croppedAvatarBlob, {
           cacheControl: '31536000',
           contentType: 'image/jpeg',
           upsert: false
@@ -273,6 +409,7 @@ export default function ProfileScreen({
           .remove([previousAvatarLocation.path]);
       }
 
+      closeAvatarEditor();
       setAvatarImageUrl(nextAvatarUrl);
       setUploadSuccess(AVATAR_SUCCESS_MESSAGE);
       router.refresh();
@@ -339,7 +476,7 @@ export default function ProfileScreen({
                   accept="image/*"
                   className="sr-only"
                   onChange={handleAvatarUpload}
-                  disabled={isUploading}
+                  disabled={isUploading || isPreparingEditor}
                 />
               </div>
 
@@ -350,9 +487,11 @@ export default function ProfileScreen({
                 PRODUCT GYM MEMBER
               </p>
               <p className="mt-2 text-center text-[10px] font-semibold text-slate-500">
-                {isUploading
-                  ? 'Uploading avatar...'
-                  : 'Tap camera to upload or replace your photo'}
+                {isPreparingEditor
+                  ? 'Preparing avatar editor...'
+                  : isUploading
+                    ? 'Uploading avatar...'
+                    : 'Tap camera to upload or replace your photo'}
               </p>
               {uploadSuccess ? (
                 <p className="mt-1 text-center text-[10px] font-semibold text-emerald-600">
@@ -418,8 +557,198 @@ export default function ProfileScreen({
             Product Gym V2.4.0
           </p>
         </section>
+        {editorImage ? (
+          <AvatarEditorModal
+            image={editorImage}
+            zoom={avatarZoom}
+            offset={avatarOffset}
+            isSaving={isUploading}
+            onCancel={closeAvatarEditor}
+            onApply={handleAvatarApply}
+            onZoomChange={(nextZoom) => {
+              const clampedZoom = Math.min(
+                MAX_AVATAR_ZOOM,
+                Math.max(MIN_AVATAR_ZOOM, nextZoom)
+              );
+              setAvatarZoom(clampedZoom);
+              setAvatarOffset((currentOffset) =>
+                clampAvatarOffset(editorImage, clampedZoom, currentOffset)
+              );
+            }}
+            onOffsetChange={(nextOffset) =>
+              setAvatarOffset(
+                clampAvatarOffset(editorImage, avatarZoom, nextOffset)
+              )
+            }
+          />
+        ) : null}
       </MotionPage>
     </MobileScreen>
+  );
+}
+
+function AvatarEditorModal({
+  image,
+  zoom,
+  offset,
+  isSaving,
+  onCancel,
+  onApply,
+  onZoomChange,
+  onOffsetChange
+}: {
+  image: AvatarEditorImage;
+  zoom: number;
+  offset: AvatarOffset;
+  isSaving: boolean;
+  onCancel: () => void;
+  onApply: () => void;
+  onZoomChange: (zoom: number) => void;
+  onOffsetChange: (offset: AvatarOffset) => void;
+}) {
+  const dragStartRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    offset: AvatarOffset;
+  } | null>(null);
+  const coverScale = getAvatarCoverScale(image, AVATAR_EDITOR_SIZE);
+  const displayWidth = image.width * coverScale * zoom;
+  const displayHeight = image.height * coverScale * zoom;
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (isSaving) {
+      return;
+    }
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragStartRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      offset
+    };
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const dragStart = dragStartRef.current;
+    if (!dragStart || dragStart.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+    onOffsetChange({
+      x: dragStart.offset.x + event.clientX - dragStart.startX,
+      y: dragStart.offset.y + event.clientY - dragStart.startY
+    });
+  };
+
+  const handlePointerEnd = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragStartRef.current?.pointerId === event.pointerId) {
+      dragStartRef.current = null;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 px-4 pb-4 pt-10 sm:items-center">
+      <div
+        className="w-full max-w-[361px] rounded-[24px] bg-white p-4 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="avatar-editor-title"
+      >
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2
+              id="avatar-editor-title"
+              className="text-[18px] font-bold tracking-[-0.4px] text-[#0f172b]"
+            >
+              Adjust profile photo
+            </h2>
+            <p className="mt-1 text-[11px] font-semibold text-slate-500">
+              Drag to position your photo and zoom until it fits the circular
+              avatar.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSaving}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500 disabled:opacity-50"
+            aria-label="Cancel avatar edit"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <div
+            className="relative overflow-hidden rounded-full bg-slate-100 shadow-inner ring-4 ring-white outline outline-1 outline-slate-200 touch-none cursor-grab active:cursor-grabbing"
+            style={{ width: AVATAR_EDITOR_SIZE, height: AVATAR_EDITOR_SIZE }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerEnd}
+            onPointerCancel={handlePointerEnd}
+          >
+            <img
+              src={image.previewUrl}
+              alt="Selected avatar preview"
+              draggable={false}
+              className="pointer-events-none absolute left-1/2 top-1/2 max-w-none select-none"
+              style={{
+                width: displayWidth,
+                height: displayHeight,
+                transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))`
+              }}
+            />
+          </div>
+          <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.7px] text-slate-400">
+            Final circular preview
+          </p>
+        </div>
+
+        <div className="mt-5 rounded-[16px] bg-slate-50 p-3">
+          <div className="mb-2 flex items-center justify-between text-[11px] font-bold text-slate-600">
+            <span>Zoom</span>
+            <span>{Math.round(zoom * 100)}%</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Minus className="h-4 w-4 text-slate-400" />
+            <input
+              type="range"
+              min={MIN_AVATAR_ZOOM}
+              max={MAX_AVATAR_ZOOM}
+              step="0.01"
+              value={zoom}
+              onChange={(event) => onZoomChange(Number(event.target.value))}
+              disabled={isSaving}
+              className="h-2 flex-1 accent-rose-600"
+              aria-label="Zoom profile photo"
+            />
+            <Plus className="h-4 w-4 text-slate-400" />
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSaving}
+            className="h-11 rounded-[14px] border border-slate-200 bg-white text-[13px] font-bold text-slate-600 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onApply}
+            disabled={isSaving}
+            className="h-11 rounded-[14px] bg-rose-600 text-[13px] font-bold text-white shadow-sm disabled:opacity-60"
+          >
+            {isSaving ? 'Saving...' : 'Save photo'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
