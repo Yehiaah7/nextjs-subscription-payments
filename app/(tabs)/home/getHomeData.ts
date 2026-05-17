@@ -142,21 +142,9 @@ export async function getHomePageData(): Promise<{
   const attempts = (attemptsData ?? []) as AttemptRow[];
 
   const canonicalAttemptByQuiz = buildCanonicalAttemptByQuizId(attempts);
-  const latestAttemptByQuiz = attempts.reduce(
-    (acc: Record<string, AttemptRow>, attempt) => {
-      if (!acc[attempt.quiz_id]) {
-        acc[attempt.quiz_id] = attempt;
-      }
-      return acc;
-    },
-    {}
-  );
 
   const attemptIdsToLoadAnswers = Array.from(
-    new Set([
-      ...Object.values(canonicalAttemptByQuiz).map((attempt) => attempt?.id),
-      ...Object.values(latestAttemptByQuiz).map((attempt) => attempt?.id)
-    ])
+    new Set(Object.values(canonicalAttemptByQuiz).map((attempt) => attempt.id))
   ).filter(Boolean) as string[];
 
   const { data: answersData } = attemptIdsToLoadAnswers.length

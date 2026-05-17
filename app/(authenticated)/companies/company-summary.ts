@@ -37,12 +37,6 @@ export type QuizAttemptProgress = {
   status: QuizProgressStatus;
 };
 
-const getAttemptRank = (attempt: AttemptLike) => {
-  if (attempt.submitted_at && attempt.passed === true) return 3;
-  if (!attempt.submitted_at) return 2;
-  return 1;
-};
-
 const getAttemptStartedAtMs = (attempt: AttemptLike) =>
   attempt.started_at ? new Date(attempt.started_at).getTime() : 0;
 
@@ -52,9 +46,9 @@ const shouldUseAttemptForCards = (
 ) => {
   if (!current) return true;
 
-  const currentRank = getAttemptRank(current);
-  const candidateRank = getAttemptRank(candidate);
-  if (candidateRank !== currentRank) return candidateRank > currentRank;
+  const currentIsOpen = !current.submitted_at;
+  const candidateIsOpen = !candidate.submitted_at;
+  if (candidateIsOpen !== currentIsOpen) return candidateIsOpen;
 
   return getAttemptStartedAtMs(candidate) > getAttemptStartedAtMs(current);
 };
@@ -153,18 +147,10 @@ export const calculateQuizAttemptProgress = ({
 }): QuizAttemptProgress => {
   const answeredCount = Math.min(answeredQuestionIds.size, totalSteps);
   const hasAnsweredEveryStep = totalSteps > 0 && answeredCount === totalSteps;
-  const savedScore =
-    typeof attempt?.score === 'number'
-      ? Math.max(0, Math.min(100, attempt.score))
-      : null;
-  const score =
-    savedScore ??
-    (totalPoints ? Math.round((awardedPoints / totalPoints) * 100) : 0);
-  const isCompleted =
-    Boolean(attempt?.submitted_at) &&
-    hasAnsweredEveryStep &&
-    (attempt?.passed === true ||
-      (attempt?.passed == null && score >= passScore));
+  const score = totalPoints
+    ? Math.round((awardedPoints / totalPoints) * 100)
+    : 0;
+  const isCompleted = hasAnsweredEveryStep && score >= passScore;
   const progressPercent = totalSteps
     ? Math.round((answeredCount / totalSteps) * 100)
     : 0;
