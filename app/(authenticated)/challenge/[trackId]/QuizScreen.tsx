@@ -690,7 +690,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               onClick={goToNextChallenge}
               disabled={!nextChallengeId}
               className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#16a34a] bg-[#22c55e] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:opacity-50',
+                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-success-button bg-success-button px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:opacity-50',
                 btnInteractive,
                 btnInteractiveColored,
                 focusRingInteractive
@@ -890,7 +890,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               className={cn(
                 'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
                 isLastStep
-                  ? 'border-[#16a34a] bg-[#22c55e]'
+                  ? 'border-success-button bg-success-button'
                   : 'border-[#1447e6] bg-[#155dfc]',
                 btnInteractive,
                 btnInteractiveColored,

@@ -192,7 +192,7 @@ export default function HomeScreen({
               <div className="flex shrink-0 items-center gap-1.5">
                 <MotionButton
                   className={cn(
-                    'rounded-pill whitespace-nowrap bg-emerald-500 px-2.5 py-1 t-label text-white hover:bg-emerald-600',
+                    'rounded-pill whitespace-nowrap bg-success-button px-2.5 py-1 t-label text-white',
                     btnInteractive,
                     btnInteractiveColored,
                     focusRingInteractive
