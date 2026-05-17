@@ -69,6 +69,7 @@ export async function getHomePageData(): Promise<{
   companyTracks: HomeTrack[];
   skillPathCategories: SkillPathCategory[];
   skillPathChallenges: SkillPathChallenge[];
+  userId: string;
   userName: string;
   userFirstName: string | null;
   userLastName: string | null;
@@ -218,6 +219,7 @@ export async function getHomePageData(): Promise<{
 
   return {
     companyTracks,
+    userId: user.id,
     skillPathCategories: [] as SkillPathCategory[],
     skillPathChallenges: [] as SkillPathChallenge[],
     userName,
