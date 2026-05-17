@@ -662,8 +662,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           </p>
           <div className="relative flex items-center justify-center py-1">
             <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white">
-              <div className="grid h-12 w-12 place-items-center rounded-full bg-[#155dfc] text-white">
-                <CheckCircleFilledIcon className="h-7 w-7" />
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-white">
+                <CheckCircleFilledIcon className="h-7 w-7 text-[#22c55e]" />
               </div>
             </div>
           </div>
@@ -690,7 +690,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               onClick={goToNextChallenge}
               disabled={!nextChallengeId}
               className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:opacity-50',
+                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#16a34a] bg-[#22c55e] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:opacity-50',
                 btnInteractive,
                 btnInteractiveColored,
                 focusRingInteractive
