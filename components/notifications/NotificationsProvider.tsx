@@ -10,6 +10,7 @@ import {
   useState
 } from 'react';
 import {
+  deleteNotification,
   ensureGeneratedNotifications,
   markAllNotificationsRead,
   readNotifications,
@@ -42,6 +43,7 @@ type NotificationsContextValue = {
   notifications: ProductGymNotification[];
   unreadCount: number;
   markAllAsRead: () => void;
+  deleteNotificationById: (notificationId: string) => void;
   refreshNotifications: () => void;
 };
 
@@ -82,15 +84,23 @@ export function NotificationsProvider({
     setNotifications(markAllNotificationsRead(userId));
   }, [userId]);
 
+  const deleteNotificationById = useCallback(
+    (notificationId: string) => {
+      setNotifications(deleteNotification(userId, notificationId));
+    },
+    [userId]
+  );
+
   const value = useMemo<NotificationsContextValue>(
     () => ({
       notifications,
       unreadCount: notifications.filter((notification) => !notification.isRead)
         .length,
       markAllAsRead,
+      deleteNotificationById,
       refreshNotifications
     }),
-    [markAllAsRead, notifications, refreshNotifications]
+    [deleteNotificationById, markAllAsRead, notifications, refreshNotifications]
   );
 
   return (

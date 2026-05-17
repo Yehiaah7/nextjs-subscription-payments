@@ -122,6 +122,16 @@ export const markAllNotificationsRead = (userId: string) => {
   return next;
 };
 
+export const deleteNotification = (userId: string, notificationId: string) => {
+  const notifications = getNotifications(userId);
+  const next = notifications.filter(
+    (notification) => notification.id !== notificationId
+  );
+
+  saveNotifications(userId, next);
+  return next;
+};
+
 export const ensureWelcomeNotification = (userId: string) => {
   const notifications = getNotifications(userId);
   if (notifications.some((notification) => notification.type === 'welcome')) {
