@@ -56,6 +56,24 @@ type AttemptState = {
   pointsAwarded: number;
 };
 
+type AnswerPayload = {
+  attempt_id: string;
+  question_id: string;
+  option_id: string;
+  points_awarded: number;
+  text_answer: string;
+};
+
+type SaveAnswerResult = {
+  data: unknown;
+  error: {
+    message?: string;
+    code?: string;
+    details?: string;
+    hint?: string;
+  } | null;
+};
+
 const hashStringToSeed = (value: string) => {
   let hash = 2166136261;
   for (let index = 0; index < value.length; index += 1) {
@@ -101,6 +119,33 @@ const emptyAttemptState: AttemptState = {
   isSolved: false,
   wrongAttemptsCount: 0,
   pointsAwarded: 0
+};
+
+const saveAnswer = async (
+  supabase: any,
+  answerPayload: AnswerPayload
+): Promise<SaveAnswerResult> => {
+  const { data: updatedAnswer, error: updateError } = await supabase
+    .from('answers')
+    .update(answerPayload)
+    .eq('attempt_id', answerPayload.attempt_id)
+    .eq('question_id', answerPayload.question_id)
+    .select('attempt_id,question_id,option_id,points_awarded,text_answer');
+
+  if (updateError) {
+    return { data: updatedAnswer, error: updateError };
+  }
+
+  if (updatedAnswer?.length) {
+    return { data: updatedAnswer, error: null };
+  }
+
+  const { data: insertedAnswer, error: insertError } = await supabase
+    .from('answers')
+    .insert(answerPayload)
+    .select('attempt_id,question_id,option_id,points_awarded,text_answer');
+
+  return { data: insertedAnswer, error: insertError };
 };
 
 export default function QuizScreen({ challengeId }: { challengeId: string }) {
@@ -362,10 +407,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const onSelectOption = async (question: Question, optionId: string) => {
     if (!attemptId) return;
 
-    const previousState = attemptStates[question.id] ?? emptyAttemptState;
     const option = question.options.find((item) => item.id === optionId);
     if (!option) return;
 
+    const previousState = attemptStates[question.id] ?? emptyAttemptState;
     const hasBeenSolved =
       previousState.isSolved && Boolean(previousState.solvedOptionId);
     const solvedOptionId = option.is_correct
@@ -387,11 +432,12 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       wrongAttemptsCount,
       pointsAwarded
     };
-    const nextStates = {
-      ...attemptStates,
+
+    setAttemptStates((current) => ({
+      ...current,
       [question.id]: nextStateForQuestion
-    };
-    setAttemptStates(nextStates);
+    }));
+
     if (!option.is_correct) {
       setWrongAnimatingOptionId(option.id);
       window.setTimeout(() => {
@@ -401,7 +447,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }, 220);
     }
 
-    const answerPayload = {
+    const answerPayload: AnswerPayload = {
       attempt_id: attemptId,
       question_id: question.id,
       option_id: option.id,
@@ -413,34 +459,28 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       })
     };
 
-    console.log('[QuizTrace] answers upsert payload', answerPayload);
+    console.log('[QuizTrace] answers save payload', answerPayload);
 
     setSavingAnswerQuestionIds((current) => {
       const next = new Set(current);
       next.add(question.id);
       return next;
     });
+
     const previousSave = pendingSaveRef.current ?? Promise.resolve();
     const savePromise = previousSave
       .catch(() => undefined)
-      .then(() =>
-        supabase
-          .from('answers')
-          .upsert(answerPayload, { onConflict: 'attempt_id,question_id' })
-          .select('attempt_id,question_id,option_id,points_awarded,text_answer')
-      );
+      .then(() => saveAnswer(supabase, answerPayload));
+
     pendingSaveRef.current = savePromise;
     const saveResult = await savePromise;
+
     if (saveResult.error) {
       console.error('[QuizTrace] answer save failed', {
         attemptId,
         questionId: question.id,
         error: saveResult.error
       });
-      setAttemptStates((current) => ({
-        ...current,
-        [question.id]: previousState
-      }));
       setSavingAnswerQuestionIds((current) => {
         const next = new Set(current);
         next.delete(question.id);
@@ -451,6 +491,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }
       return;
     }
+
     const { count: savedCount } = await supabase
       .from('answers')
       .select('question_id', { count: 'exact', head: true })
@@ -460,20 +501,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       : persistedAnsweredQuestionIds.size + 1;
     const inQuizProgressValue =
       (nextAnsweredCount / Math.max(quiz?.questions.length ?? 1, 1)) * 100;
-    const rawSaveError = saveResult.error
-      ? {
-          message: saveResult.error.message,
-          code: saveResult.error.code ?? null,
-          details: saveResult.error.details ?? null,
-          hint: saveResult.error.hint ?? null,
-          raw: JSON.stringify(saveResult.error)
-        }
-      : null;
 
     console.log('[QuizTrace] answer saved', {
       attemptId,
       questionId: question.id,
-      saveResultError: rawSaveError,
+      saveResultError: null,
       saveResultData: saveResult.data ?? null,
       savedAnswersCountForAttempt: savedCount ?? null,
       inQuizProgressValue
