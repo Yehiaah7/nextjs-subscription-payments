@@ -318,7 +318,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       0
     );
     const finalScore = Math.round((awarded / Math.max(totalPossible, 1)) * 100);
-    const passed = finalScore >= (quiz.pass_score ?? 60);
+    const passed = true;
 
     await supabase
       .from('attempts')
@@ -438,18 +438,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     if (pendingSaveRef.current === savePromise) {
       pendingSaveRef.current = null;
     }
-
-    const answeredFinalRequiredQuestion =
-      loadedQuiz.questions[loadedQuiz.questions.length - 1]?.id === question.id;
-    const answeredEveryRequiredQuestion =
-      Boolean(loadedQuiz.questions.length) &&
-      loadedQuiz.questions.every((item) =>
-        nextPersistedQuestionIds.has(item.id)
-      );
-
-    if (answeredFinalRequiredQuestion && answeredEveryRequiredQuestion) {
-      await finalizeAttempt(nextPersistedQuestionIds);
-    }
   };
 
   if (loading || !quiz || !currentQuestion) {
@@ -463,8 +451,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
   const answeredCount = persistedAnsweredQuestionIds.size;
   const isLastStep = activeIndex === quiz.questions.length - 1;
-  const canMoveNext = Boolean(currentState.lastSelectedOptionId);
-  const allQuestionsAnswered = answeredCount === quiz.questions.length;
+  const currentStepHasAnswer = Boolean(
+    currentState.lastSelectedOptionId ||
+      persistedAnsweredQuestionIds.has(currentQuestion.id)
+  );
+  const canMoveNext = currentStepHasAnswer;
   const showCorrectFeedback =
     currentState.isSolved &&
     currentState.lastSelectedOptionId === currentState.solvedOptionId;
@@ -686,7 +677,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               onClick={() => {
                 if (!canMoveNext || finishing) return;
                 if (isLastStep) {
-                  if (!allQuestionsAnswered) return;
                   finalizeAttempt();
                   return;
                 }
@@ -694,11 +684,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                   Math.min(quiz.questions.length - 1, value + 1)
                 );
               }}
-              disabled={
-                !canMoveNext ||
-                finishing ||
-                (isLastStep && !allQuestionsAnswered)
-              }
+              disabled={!canMoveNext || finishing}
               className={cn(
                 'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
                 btnInteractive,
