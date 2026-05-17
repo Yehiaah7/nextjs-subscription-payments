@@ -22,11 +22,13 @@ import { MotionCard } from '@/components/motion';
 import MotionPage from '@/components/motion/MotionPage';
 import ProGymPassCard from '@/components/ProGymPassCard';
 import UserAvatar from '@/components/ui/UserAvatar';
+import UserStatTile from '@/components/ui/UserStatTile';
 import { cardInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
 import { Camera, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
+import type { UserProfileStats } from '@/types/user-profile-stats';
 
 type ProfileScreenProps = {
   email: string;
@@ -34,6 +36,7 @@ type ProfileScreenProps = {
   firstName?: string | null;
   lastName?: string | null;
   avatarUrl?: string | null;
+  userStats: UserProfileStats;
 };
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -237,7 +240,8 @@ export default function ProfileScreen({
   fullName,
   firstName,
   lastName,
-  avatarUrl
+  avatarUrl,
+  userStats
 }: ProfileScreenProps) {
   const router = useRouter();
   const { avatar, setAvatarImageUrl } = useUserAvatar();
@@ -680,26 +684,26 @@ export default function ProfileScreen({
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-2">
-              <StatCard
+              <UserStatTile
                 icon={
                   <TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />
                 }
                 label="Rank"
-                value="#12"
+                stat={userStats.rank}
               />
-              <StatCard
+              <UserStatTile
                 icon={
                   <CheckCircleFilledIcon className="h-3.5 w-3.5 text-[#22c55e]" />
                 }
                 label="Solved"
-                value="42"
+                stat={userStats.solved}
               />
-              <StatCard
+              <UserStatTile
                 icon={
                   <FireFilledIcon className="h-3.5 w-3.5 text-orange-500" />
                 }
                 label="Solving Days"
-                value="32"
+                stat={userStats.solvingDays}
               />
             </div>
           </MotionCard>
@@ -1147,29 +1151,5 @@ function AvatarEditorModal({
         </div>
       </div>
     </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <article className="rounded-xl bg-[#eff6ff] px-2 py-2 text-center">
-      <div className="mb-1 inline-flex items-center justify-center rounded-full bg-white p-1">
-        {icon}
-      </div>
-      <p className="text-[9px] font-black tracking-[0.04em] text-[#64748b]">
-        {label}
-      </p>
-      <p className="mt-1 text-[20px] font-bold leading-none text-[#0f172a]">
-        {value}
-      </p>
-    </article>
   );
 }

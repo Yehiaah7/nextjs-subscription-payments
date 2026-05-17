@@ -2,6 +2,7 @@ import { requireUser } from '@/utils/auth/require-user';
 import { createClient } from '@/utils/supabase/server';
 import ProfileScreen from './ProfileScreen';
 import { getUserDisplayName } from '@/utils/user-avatar';
+import { getUserProfileStats } from '@/lib/user-profile-stats';
 
 type ProfileRecord = {
   name: string | null;
@@ -33,6 +34,8 @@ export default async function ProfilePage() {
 
   const profile = (profileData ?? null) as ProfileRecord | null;
   const userRecord = (userData ?? null) as UserRecord | null;
+  const userStats = await getUserProfileStats(user.id);
+
   const fullName = getUserDisplayName({
     firstName: profile?.first_name,
     lastName: profile?.last_name,
@@ -51,6 +54,7 @@ export default async function ProfilePage() {
       firstName={profile?.first_name}
       lastName={profile?.last_name}
       avatarUrl={profile?.avatar_url ?? null}
+      userStats={userStats}
     />
   );
 }

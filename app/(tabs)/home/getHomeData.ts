@@ -11,6 +11,8 @@ import type {
   SkillPathChallenge
 } from './HomeScreen';
 import { getUserDisplayName } from '@/utils/user-avatar';
+import { getUserProfileStats } from '@/lib/user-profile-stats';
+import type { UserProfileStats } from '@/types/user-profile-stats';
 
 type Seniority = 'junior' | 'mid' | 'senior';
 
@@ -72,11 +74,7 @@ export async function getHomePageData(): Promise<{
   userLastName: string | null;
   userAvatarUrl: string | null;
   userEmail: string | null;
-  userStats: {
-    rank: string;
-    solved: string;
-    solvingDays: string;
-  };
+  userStats: UserProfileStats;
 }> {
   const user = await requireUser();
   const db = createClient();
@@ -216,6 +214,8 @@ export async function getHomePageData(): Promise<{
     email: user.email
   });
 
+  const userStats = await getUserProfileStats(user.id);
+
   return {
     companyTracks,
     skillPathCategories: [] as SkillPathCategory[],
@@ -225,6 +225,6 @@ export async function getHomePageData(): Promise<{
     userLastName: profile?.last_name ?? null,
     userAvatarUrl: profile?.avatar_url ?? null,
     userEmail: user.email ?? null,
-    userStats: { rank: '#12', solved: '42', solvingDays: '32' }
+    userStats
   };
 }
