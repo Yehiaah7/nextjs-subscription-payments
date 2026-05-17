@@ -128,7 +128,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   >({});
   const [persistedAnsweredQuestionIds, setPersistedAnsweredQuestionIds] =
     useState<Set<string>>(new Set());
+  const [savingAnswerQuestionIds, setSavingAnswerQuestionIds] = useState<
+    Set<string>
+  >(new Set());
   const pendingSaveRef = useRef<Promise<unknown> | null>(null);
+  const loadQuizStartedRef = useRef(false);
   const [wrongAnimatingOptionId, setWrongAnimatingOptionId] = useState<
     string | null
   >(null);
@@ -137,6 +141,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const currentQuestion = quiz?.questions[activeIndex] ?? null;
 
   useEffect(() => {
+    if (loadQuizStartedRef.current) return;
+    loadQuizStartedRef.current = true;
+
     const loadQuiz = async () => {
       const {
         data: { user }
@@ -189,10 +196,40 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         .order('started_at', { ascending: false });
 
       const retryRequested = searchParams.get('retry') === '1';
+      const existingAttempts = attemptsData ?? [];
+      const existingAttemptIds = existingAttempts.map((attempt: any) =>
+        String(attempt.id)
+      );
+      const { data: existingAnswersData } = existingAttemptIds.length
+        ? await supabase
+            .from('answers')
+            .select(
+              'attempt_id,question_id,option_id,points_awarded,text_answer,options(is_correct)'
+            )
+            .in('attempt_id', existingAttemptIds)
+        : { data: [] };
+      const answersByAttemptId = new Map<string, any[]>();
+      for (const answer of existingAnswersData ?? []) {
+        const answerAttemptId = String(answer.attempt_id);
+        answersByAttemptId.set(answerAttemptId, [
+          ...(answersByAttemptId.get(answerAttemptId) ?? []),
+          answer
+        ]);
+      }
+      const findAttemptWithSavedAnswers = (attempts: any[]) =>
+        attempts.find(
+          (attempt: any) =>
+            (answersByAttemptId.get(String(attempt.id))?.length ?? 0) > 0
+        );
+      const openAttempts = existingAttempts.filter(
+        (attempt: any) => !attempt.submitted_at
+      );
       let effectiveAttempt = retryRequested
         ? null
-        : ((attemptsData ?? []).find((attempt: any) => !attempt.submitted_at) ??
-          attemptsData?.[0] ??
+        : (findAttemptWithSavedAnswers(openAttempts) ??
+          findAttemptWithSavedAnswers(existingAttempts) ??
+          openAttempts[0] ??
+          existingAttempts[0] ??
           null);
       if (!effectiveAttempt) {
         const { data: newAttempt } = await supabase
@@ -211,12 +248,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         totalQuestions: normalizedQuiz.questions.length
       });
 
-      const { data: answersData } = await supabase
-        .from('answers')
-        .select(
-          'question_id,option_id,points_awarded,text_answer,options(is_correct)'
-        )
-        .eq('attempt_id', effectiveAttempt.id);
+      const answersData =
+        answersByAttemptId.get(String(effectiveAttempt.id)) ?? [];
 
       const nextStates: Record<string, AttemptState> = {};
       for (const answer of answersData ?? []) {
@@ -382,12 +415,42 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
     console.log('[QuizTrace] answers upsert payload', answerPayload);
 
-    const savePromise = supabase
-      .from('answers')
-      .upsert(answerPayload, { onConflict: 'attempt_id,question_id' })
-      .select('attempt_id,question_id,option_id,points_awarded,text_answer');
+    setSavingAnswerQuestionIds((current) => {
+      const next = new Set(current);
+      next.add(question.id);
+      return next;
+    });
+    const previousSave = pendingSaveRef.current ?? Promise.resolve();
+    const savePromise = previousSave
+      .catch(() => undefined)
+      .then(() =>
+        supabase
+          .from('answers')
+          .upsert(answerPayload, { onConflict: 'attempt_id,question_id' })
+          .select('attempt_id,question_id,option_id,points_awarded,text_answer')
+      );
     pendingSaveRef.current = savePromise;
     const saveResult = await savePromise;
+    if (saveResult.error) {
+      console.error('[QuizTrace] answer save failed', {
+        attemptId,
+        questionId: question.id,
+        error: saveResult.error
+      });
+      setAttemptStates((current) => ({
+        ...current,
+        [question.id]: previousState
+      }));
+      setSavingAnswerQuestionIds((current) => {
+        const next = new Set(current);
+        next.delete(question.id);
+        return next;
+      });
+      if (pendingSaveRef.current === savePromise) {
+        pendingSaveRef.current = null;
+      }
+      return;
+    }
     const { count: savedCount } = await supabase
       .from('answers')
       .select('question_id', { count: 'exact', head: true })
@@ -424,6 +487,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       next.add(question.id);
       return next;
     });
+    setSavingAnswerQuestionIds((current) => {
+      const next = new Set(current);
+      next.delete(question.id);
+      return next;
+    });
     if (pendingSaveRef.current === savePromise) {
       pendingSaveRef.current = null;
     }
@@ -440,7 +508,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
   const answeredCount = persistedAnsweredQuestionIds.size;
   const isLastStep = activeIndex === quiz.questions.length - 1;
-  const canMoveNext = Boolean(currentState.lastSelectedOptionId);
+  const isSavingCurrentAnswer = savingAnswerQuestionIds.has(currentQuestion.id);
+  const canMoveNext =
+    Boolean(currentState.lastSelectedOptionId) && !isSavingCurrentAnswer;
   const selectedQuestionIds = new Set(persistedAnsweredQuestionIds);
   for (const [questionId, state] of Object.entries(attemptStates)) {
     if (state.lastSelectedOptionId) {
