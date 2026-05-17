@@ -11,7 +11,6 @@ export type ProductGymNotification = {
   title: string;
   body: string;
   createdAt: string;
-  isRead: boolean;
   metadata?: Record<string, string | number | boolean | null>;
 };
 

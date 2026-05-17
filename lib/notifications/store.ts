@@ -38,8 +38,7 @@ const parseNotifications = (value: string | null): ProductGymNotification[] => {
         typeof item?.type === 'string' &&
         typeof item?.title === 'string' &&
         typeof item?.body === 'string' &&
-        typeof item?.createdAt === 'string' &&
-        typeof item?.isRead === 'boolean'
+        typeof item?.createdAt === 'string'
     );
   } catch {
     return [];
@@ -84,10 +83,9 @@ const isOlderThan = (createdAt: string, intervalMs: number) =>
 
 const addNotification = (
   userId: string,
-  notification: Omit<ProductGymNotification, 'id' | 'createdAt' | 'isRead'> & {
+  notification: Omit<ProductGymNotification, 'id' | 'createdAt'> & {
     id?: string;
     createdAt?: string;
-    isRead?: boolean;
   }
 ) => {
   const notifications = getNotifications(userId);
@@ -97,7 +95,6 @@ const addNotification = (
     title: notification.title,
     body: notification.body,
     createdAt: notification.createdAt ?? nowIso(),
-    isRead: notification.isRead ?? false,
     metadata: notification.metadata
   };
 
@@ -106,21 +103,6 @@ const addNotification = (
 };
 
 export const readNotifications = getNotifications;
-
-export const getUnreadNotificationCount = (userId: string) =>
-  getNotifications(userId).filter((notification) => !notification.isRead)
-    .length;
-
-export const markAllNotificationsRead = (userId: string) => {
-  const notifications = getNotifications(userId);
-  const next = notifications.map((notification) => ({
-    ...notification,
-    isRead: true
-  }));
-
-  saveNotifications(userId, next);
-  return next;
-};
 
 export const deleteNotification = (userId: string, notificationId: string) => {
   const notifications = getNotifications(userId);
@@ -280,7 +262,6 @@ export const addPartialChallengeProgressNotification = ({
     title: 'Challenge in progress',
     body: `You’ve completed ${safeProgress}% of this challenge. You’re close — come back and finish it.`,
     createdAt: nowIso(),
-    isRead: false,
     metadata: { challengeId, progress: safeProgress }
   };
 

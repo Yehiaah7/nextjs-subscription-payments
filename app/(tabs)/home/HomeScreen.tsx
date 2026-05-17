@@ -90,7 +90,7 @@ export default function HomeScreen({
   userStats: UserProfileStats;
 }) {
   const { avatar } = useUserAvatar();
-  const { unreadCount, refreshNotifications } = useNotifications();
+  const { refreshNotifications } = useNotifications();
   const [tab, setTab] = useState<MainTab>('companies');
   const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
   const [selectedSeniority, setSelectedSeniority] =
@@ -164,7 +164,7 @@ export default function HomeScreen({
       <section className="text-text">
         <header className="mb-4 flex items-start justify-between gap-3">
           <h1 className="t-title">Product Gym Floor</h1>
-          <NotificationsBellButton unreadCount={unreadCount} />
+          <NotificationsBellButton />
         </header>
 
         {showFreeTrialCard ? (

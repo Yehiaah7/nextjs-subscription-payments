@@ -7,12 +7,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react';
 import {
   deleteNotification,
   ensureGeneratedNotifications,
-  markAllNotificationsRead,
   readNotifications,
   subscribeToNotificationChanges
 } from '@/lib/notifications/store';
@@ -22,6 +22,9 @@ import type {
 } from '@/lib/notifications/types';
 
 const EMPTY_COMPANIES: CompanyProgressNotificationSource[] = [];
+
+const notificationHighlightKey = (notification: ProductGymNotification) =>
+  `${notification.id}:${notification.createdAt}`;
 
 const areNotificationsEqual = (
   left: ProductGymNotification[],
@@ -34,15 +37,14 @@ const areNotificationsEqual = (
     return (
       next &&
       notification.id === next.id &&
-      notification.createdAt === next.createdAt &&
-      notification.isRead === next.isRead
+      notification.createdAt === next.createdAt
     );
   });
 
 type NotificationsContextValue = {
   notifications: ProductGymNotification[];
-  unreadCount: number;
-  markAllAsRead: () => void;
+  highlightedNotificationIds: Set<string>;
+  clearHighlightedNotifications: (notificationIds: string[]) => void;
   deleteNotificationById: (notificationId: string) => void;
   refreshNotifications: () => void;
 };
@@ -62,6 +64,14 @@ export function NotificationsProvider({
   const [notifications, setNotifications] = useState<ProductGymNotification[]>(
     []
   );
+  const [clearedHighlightKeys, setClearedHighlightKeys] = useState<Set<string>>(
+    () => new Set()
+  );
+  const notificationsRef = useRef<ProductGymNotification[]>([]);
+
+  useEffect(() => {
+    notificationsRef.current = notifications;
+  }, [notifications]);
 
   const refreshNotifications = useCallback(() => {
     const nextNotifications = readNotifications(userId);
@@ -80,27 +90,71 @@ export function NotificationsProvider({
     return subscribeToNotificationChanges(userId, refreshNotifications);
   }, [companies, refreshNotifications, userId]);
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications(markAllNotificationsRead(userId));
+  useEffect(() => {
+    setClearedHighlightKeys(new Set());
   }, [userId]);
+
+  const clearHighlightedNotifications = useCallback(
+    (notificationIds: string[]) => {
+      if (notificationIds.length === 0) return;
+
+      setClearedHighlightKeys((currentKeys) => {
+        const nextKeys = new Set(currentKeys);
+        notificationsRef.current
+          .filter((notification) => notificationIds.includes(notification.id))
+          .forEach((notification) =>
+            nextKeys.add(notificationHighlightKey(notification))
+          );
+        return nextKeys;
+      });
+    },
+    []
+  );
 
   const deleteNotificationById = useCallback(
     (notificationId: string) => {
       setNotifications(deleteNotification(userId, notificationId));
+      setClearedHighlightKeys((currentKeys) => {
+        const nextKeys = new Set(currentKeys);
+        notifications
+          .filter((notification) => notification.id === notificationId)
+          .forEach((notification) =>
+            nextKeys.delete(notificationHighlightKey(notification))
+          );
+        return nextKeys;
+      });
     },
-    [userId]
+    [notifications, userId]
+  );
+
+  const highlightedNotificationIds = useMemo(
+    () =>
+      new Set(
+        notifications
+          .filter(
+            (notification) =>
+              !clearedHighlightKeys.has(notificationHighlightKey(notification))
+          )
+          .map((notification) => notification.id)
+      ),
+    [clearedHighlightKeys, notifications]
   );
 
   const value = useMemo<NotificationsContextValue>(
     () => ({
       notifications,
-      unreadCount: notifications.filter((notification) => !notification.isRead)
-        .length,
-      markAllAsRead,
+      highlightedNotificationIds,
+      clearHighlightedNotifications,
       deleteNotificationById,
       refreshNotifications
     }),
-    [deleteNotificationById, markAllAsRead, notifications, refreshNotifications]
+    [
+      clearHighlightedNotifications,
+      deleteNotificationById,
+      highlightedNotificationIds,
+      notifications,
+      refreshNotifications
+    ]
   );
 
   return (
