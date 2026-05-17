@@ -9,6 +9,7 @@ import {
 } from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
+import { toast } from '@/components/ui/Toasts/use-toast';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
 import {
   btnInteractive,
@@ -90,6 +91,9 @@ export default function NotificationsScreen() {
 
     deleteNotificationById(notificationToDelete.id);
     setNotificationToDelete(null);
+    toast({
+      title: 'Notification deleted successfully'
+    });
   };
 
   return (
@@ -124,9 +128,7 @@ export default function NotificationsScreen() {
                 <article
                   key={notification.id}
                   className={cn(
-                    'group flex min-h-[94px] w-full items-start gap-3 border-b border-[#eef2f7] bg-white p-4 transition-[box-shadow,color] last:border-b-0 hover:shadow-[inset_3px_0_0_#2563eb]',
-                    notification.isHighlighted &&
-                      'shadow-[inset_3px_0_0_#2563eb]'
+                    'group flex min-h-[94px] w-full items-start gap-3 border-b border-[#eef2f7] bg-white p-4 transition-colors last:border-b-0'
                   )}
                 >
                   <div className="min-w-0 flex-1">
