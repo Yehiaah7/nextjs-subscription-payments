@@ -19,6 +19,7 @@ export default function NotificationsBellButton({
   const router = useRouter();
 
   const openNotificationsPage = useCallback(() => {
+    console.log('[proof] notifications bell clicked');
     router.push('/notifications');
   }, [router]);
 

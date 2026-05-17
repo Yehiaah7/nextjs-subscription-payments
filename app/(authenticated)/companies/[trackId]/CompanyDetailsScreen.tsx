@@ -203,6 +203,12 @@ export default function CompanyDetailsScreen({
                 <MotionCard>
                   <Link
                     href={`/challenge/${challenge.id}?company=${companyId}${challenge.attemptId ? `&attempt=${challenge.attemptId}` : ''}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
+                    onClick={() =>
+                      console.log('[proof] challenge card clicked', {
+                        challengeId: challenge.id,
+                        companyId
+                      })
+                    }
                     className={cn(
                       'app-card block cursor-pointer',
                       cardInteractive,

@@ -20,6 +20,24 @@ import type {
   ProductGymNotification
 } from '@/lib/notifications/types';
 
+const EMPTY_COMPANIES: CompanyProgressNotificationSource[] = [];
+
+const areNotificationsEqual = (
+  left: ProductGymNotification[],
+  right: ProductGymNotification[]
+) =>
+  left.length === right.length &&
+  left.every((notification, index) => {
+    const next = right[index];
+
+    return (
+      next &&
+      notification.id === next.id &&
+      notification.createdAt === next.createdAt &&
+      notification.isRead === next.isRead
+    );
+  });
+
 type NotificationsContextValue = {
   notifications: ProductGymNotification[];
   unreadCount: number;
@@ -33,7 +51,7 @@ const NotificationsContext = createContext<NotificationsContextValue | null>(
 
 export function NotificationsProvider({
   userId,
-  companies = [],
+  companies = EMPTY_COMPANIES,
   children
 }: PropsWithChildren<{
   userId: string;
@@ -44,7 +62,13 @@ export function NotificationsProvider({
   );
 
   const refreshNotifications = useCallback(() => {
-    setNotifications(readNotifications(userId));
+    const nextNotifications = readNotifications(userId);
+
+    setNotifications((currentNotifications) =>
+      areNotificationsEqual(currentNotifications, nextNotifications)
+        ? currentNotifications
+        : nextNotifications
+    );
   }, [userId]);
 
   useEffect(() => {
