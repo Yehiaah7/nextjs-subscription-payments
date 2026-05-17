@@ -888,14 +888,22 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                 (isLastStep && !allQuestionsSelected)
               }
               className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
+                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
+                isLastStep
+                  ? 'border-[#16a34a] bg-[#22c55e]'
+                  : 'border-[#1447e6] bg-[#155dfc]',
                 btnInteractive,
                 btnInteractiveColored,
                 focusRingInteractive
               )}
             >
-              {isLastStep ? 'Finish' : 'Next'}{' '}
-              <ChevronRightFilledIcon className="h-4 w-4" />
+              {isLastStep ? (
+                'Finish'
+              ) : (
+                <>
+                  Next <ChevronRightFilledIcon className="h-4 w-4" />
+                </>
+              )}
             </MotionButton>
           </div>
           <MotionButton
