@@ -24,6 +24,10 @@ import { useReducedMotionPref } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
 import { markCompanyChallengeListStale } from '../../companies/challenge-refresh';
+import {
+  buildCanonicalAttemptByQuizId,
+  calculateQuizAttemptProgress
+} from '../../companies/company-summary';
 
 type Question = {
   id: string;
@@ -202,7 +206,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     Set<string>
   >(new Set());
   const pendingSaveRef = useRef<Promise<unknown> | null>(null);
-  const loadQuizStartedRef = useRef(false);
+  const loadQuizKeyRef = useRef<string | null>(null);
   const [wrongAnimatingOptionId, setWrongAnimatingOptionId] = useState<
     string | null
   >(null);
@@ -211,8 +215,24 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const currentQuestion = quiz?.questions[activeIndex] ?? null;
 
   useEffect(() => {
-    if (loadQuizStartedRef.current) return;
-    loadQuizStartedRef.current = true;
+    const retryRequested = searchParams.get('retry') === '1';
+    const requestedAttemptId = searchParams.get('attempt');
+    const loadQuizKey = `${challengeId}:${retryRequested ? 'retry' : (requestedAttemptId ?? 'resume')}`;
+    if (loadQuizKeyRef.current === loadQuizKey) return;
+    loadQuizKeyRef.current = loadQuizKey;
+
+    setQuiz(null);
+    setAttemptId(null);
+    setActiveIndex(0);
+    setLoading(true);
+    setFinishing(false);
+    setResult(null);
+    setNextChallengeId(null);
+    setAttemptStates({});
+    setPersistedAnsweredQuestionIds(new Set());
+    setSavingAnswerQuestionIds(new Set());
+    pendingSaveRef.current = null;
+    setWrongAnimatingOptionId(null);
 
     const loadQuiz = async () => {
       const {
@@ -260,12 +280,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
       const { data: attemptsData } = await supabase
         .from('attempts')
-        .select('id,submitted_at,passed,score,started_at')
+        .select('id,quiz_id,submitted_at,passed,score,started_at')
         .eq('quiz_id', challengeId)
         .eq('user_id', user.id)
         .order('started_at', { ascending: false });
 
-      const retryRequested = searchParams.get('retry') === '1';
       const existingAttempts = attemptsData ?? [];
       const existingAttemptIds = existingAttempts.map((attempt: any) =>
         String(attempt.id)
@@ -286,44 +305,67 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           answer
         ]);
       }
-      const findAttemptWithSavedAnswers = (attempts: any[]) =>
-        attempts.find(
-          (attempt: any) =>
-            (answersByAttemptId.get(String(attempt.id))?.length ?? 0) > 0
-        );
-      const openAttempts = existingAttempts.filter(
-        (attempt: any) => !attempt.submitted_at
-      );
+      const canonicalAttemptByQuizId =
+        buildCanonicalAttemptByQuizId(existingAttempts);
+      const requestedAttempt = requestedAttemptId
+        ? existingAttempts.find(
+            (attempt: any) => String(attempt.id) === requestedAttemptId
+          )
+        : null;
       let effectiveAttempt = retryRequested
         ? null
-        : (findAttemptWithSavedAnswers(openAttempts) ??
-          findAttemptWithSavedAnswers(existingAttempts) ??
-          openAttempts[0] ??
-          existingAttempts[0] ??
-          null);
+        : (requestedAttempt ?? canonicalAttemptByQuizId[challengeId] ?? null);
       if (!effectiveAttempt) {
         const { data: newAttempt } = await supabase
           .from('attempts')
           .insert({ quiz_id: challengeId, user_id: user.id })
-          .select('id,submitted_at,passed,score,started_at')
+          .select('id,quiz_id,submitted_at,passed,score,started_at')
           .single();
         effectiveAttempt = newAttempt;
       }
 
       if (!effectiveAttempt) return;
       setAttemptId(effectiveAttempt.id);
-      console.log('[QuizTrace] load attempt + resume seed', {
-        challengeId,
-        attemptId: effectiveAttempt.id,
-        totalQuestions: normalizedQuiz.questions.length
-      });
-
       const answersData =
         answersByAttemptId.get(String(effectiveAttempt.id)) ?? [];
       const persistedAnsweredIds = getSavedAnsweredQuestionIds(
         answersData ?? [],
         normalizedQuiz.questions
       );
+      const totalPoints = normalizedQuiz.questions.reduce(
+        (sum, question) => sum + question.points,
+        0
+      );
+      const awardedPoints = (answersData ?? []).reduce(
+        (sum: number, answer: any) =>
+          persistedAnsweredIds.has(answer.question_id)
+            ? sum + (answer.points_awarded ?? 0)
+            : sum,
+        0
+      );
+      const innerProgress = calculateQuizAttemptProgress({
+        attempt: effectiveAttempt,
+        answeredQuestionIds: persistedAnsweredIds,
+        totalSteps: normalizedQuiz.questions.length,
+        awardedPoints,
+        totalPoints,
+        passScore: normalizedQuiz.pass_score ?? 60
+      });
+
+      console.log('[QuizTrace] load attempt + resume seed', {
+        challengeId,
+        attemptId: effectiveAttempt.id,
+        answeredCount: innerProgress.answeredCount,
+        totalSteps: innerProgress.totalSteps,
+        score: innerProgress.score,
+        isCompleted: innerProgress.isCompleted,
+        innerQuizSolvedState: innerProgress.status,
+        requestedAttemptId,
+        selectedAttemptSource: requestedAttempt
+          ? 'outerCardAttemptQuery'
+          : 'canonicalAttemptByQuizId',
+        totalQuestions: normalizedQuiz.questions.length
+      });
 
       const nextStates: Record<string, AttemptState> = {};
       for (const answer of answersData ?? []) {
@@ -379,7 +421,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     };
 
     loadQuiz().finally(() => setLoading(false));
-  }, [challengeId, supabase]);
+  }, [challengeId, searchParams, supabase]);
 
   const finalizeAttempt = async () => {
     if (!attemptId || !quiz) return;

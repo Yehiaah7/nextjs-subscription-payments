@@ -58,6 +58,9 @@ type ChallengeCardDebugValues = {
   isCompleted: boolean;
   solvedBadgeValue: string;
   tabClassification: string;
+  outerCardBadge: string;
+  outerCardStatus: string;
+  challengeTitle: string;
 };
 
 const logChallengeCardDebugValues = (values: ChallengeCardDebugValues[]) => {
@@ -241,7 +244,10 @@ export default async function CompanyDetailsPage({
       score: progress.score,
       isCompleted: progress.isCompleted,
       solvedBadgeValue: progress.solvedBadgeValue,
-      tabClassification: progress.tabClassification
+      tabClassification: progress.tabClassification,
+      outerCardBadge: progress.solvedBadgeValue,
+      outerCardStatus: progress.status,
+      challengeTitle: quiz.title
     };
     challengeCardDebugValues.push(challengeCardDebugValue);
 
@@ -271,6 +277,13 @@ export default async function CompanyDetailsPage({
   });
 
   logChallengeCardDebugValues(challengeCardDebugValues);
+
+  if (company.title.toLowerCase() === 'amazon') {
+    console.log(
+      '[ChallengeCardRawValues] first Amazon challenge card render source',
+      challengeCardDebugValues[0] ?? null
+    );
+  }
 
   const companySummary = buildCompanySummary({
     id: company.id,
