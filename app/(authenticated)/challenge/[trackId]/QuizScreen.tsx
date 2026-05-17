@@ -122,6 +122,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     awarded: number;
     total: number;
   } | null>(null);
+  const [nextChallengeId, setNextChallengeId] = useState<string | null>(null);
   const [attemptStates, setAttemptStates] = useState<
     Record<string, AttemptState>
   >({});
@@ -161,6 +162,23 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       setQuiz(normalizedQuiz);
       if (!companyId && normalizedQuiz.modules?.track_id) {
         setCompanyId(normalizedQuiz.modules.track_id);
+      }
+
+      const trackId = normalizedQuiz.modules?.track_id ?? companyId;
+      if (trackId) {
+        const { data: trackQuizzesData } = await supabase
+          .from('quizzes')
+          .select('id,title,modules!inner(track_id)')
+          .eq('modules.track_id', trackId)
+          .order('title', { ascending: true });
+        const trackQuizzes = (trackQuizzesData ?? []) as {
+          id: string;
+          title: string;
+        }[];
+        const currentQuizIndex = trackQuizzes.findIndex(
+          (item) => item.id === challengeId
+        );
+        setNextChallengeId(trackQuizzes[currentQuizIndex + 1]?.id ?? null);
       }
 
       const { data: attemptsData } = await supabase
@@ -293,14 +311,12 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       0
     );
     const finalScore = Math.round((awarded / Math.max(totalPossible, 1)) * 100);
-    const passed = finalScore >= (quiz.pass_score ?? 60);
-
     await supabase
       .from('attempts')
       .update({
         submitted_at: new Date().toISOString(),
         score: finalScore,
-        passed
+        passed: true
       })
       .eq('id', attemptId);
 
@@ -425,7 +441,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const answeredCount = persistedAnsweredQuestionIds.size;
   const isLastStep = activeIndex === quiz.questions.length - 1;
   const canMoveNext = Boolean(currentState.lastSelectedOptionId);
-  const allQuestionsAnswered = answeredCount === quiz.questions.length;
+  const selectedQuestionIds = new Set(persistedAnsweredQuestionIds);
+  for (const [questionId, state] of Object.entries(attemptStates)) {
+    if (state.lastSelectedOptionId) {
+      selectedQuestionIds.add(questionId);
+    }
+  }
+  const allQuestionsSelected =
+    selectedQuestionIds.size === quiz.questions.length;
   const showCorrectFeedback =
     currentState.isSolved &&
     currentState.lastSelectedOptionId === currentState.solvedOptionId;
@@ -453,6 +476,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     router.push(returnToTrackHref);
   };
 
+  const goToNextChallenge = () => {
+    if (!nextChallengeId) return;
+    markCompanyChallengeListStale(companyId);
+    router.push(
+      `/challenge/${nextChallengeId}${companyId ? `?company=${companyId}` : ''}`
+    );
+  };
+
   if (result) {
     return (
       <MotionPage>
@@ -468,23 +499,50 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             </div>
           </div>
           <h1 className="animate-completion-pop text-base font-bold leading-6 text-[#0f172b]">
-            Your score: {result.scorePercent}%
+            You completed this challenge
           </h1>
           <p className="animate-completion-pop text-sm text-[#45556c]">
-            Points earned: {result.awarded}/{result.total}
+            Your final answer was saved, the challenge is now finished, and your
+            progress has been updated. You can continue to the next challenge if
+            you want.
           </p>
-          <MotionButton
-            type="button"
-            onClick={goBackToTrack}
-            className={cn(
-              'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white',
-              btnInteractive,
-              btnInteractiveColored,
-              focusRingInteractive
-            )}
-          >
-            Back to Company
-          </MotionButton>
+          <div className="animate-completion-pop rounded-2xl bg-surface-soft p-3 text-sm text-[#45556c]">
+            <p className="font-bold text-[#0f172b]">
+              Score: {result.scorePercent}%
+            </p>
+            <p>
+              Points earned: {result.awarded}/{result.total}
+            </p>
+            <p>Progress: 100% complete</p>
+          </div>
+          <div className="grid gap-2">
+            <MotionButton
+              type="button"
+              onClick={goToNextChallenge}
+              disabled={!nextChallengeId}
+              className={cn(
+                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:opacity-50',
+                btnInteractive,
+                btnInteractiveColored,
+                focusRingInteractive
+              )}
+            >
+              Go to next challenge
+              <ChevronRightFilledIcon className="h-4 w-4" />
+            </MotionButton>
+            <MotionButton
+              type="button"
+              onClick={goBackToTrack}
+              className={cn(
+                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                btnInteractive,
+                btnInteractiveNeutral,
+                focusRingInteractive
+              )}
+            >
+              Back to challenges
+            </MotionButton>
+          </div>
         </section>
       </MotionPage>
     );
@@ -647,7 +705,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               onClick={() => {
                 if (!canMoveNext || finishing) return;
                 if (isLastStep) {
-                  if (!allQuestionsAnswered) return;
+                  if (!allQuestionsSelected) return;
                   finalizeAttempt();
                   return;
                 }
@@ -658,7 +716,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               disabled={
                 !canMoveNext ||
                 finishing ||
-                (isLastStep && !allQuestionsAnswered)
+                (isLastStep && !allQuestionsSelected)
               }
               className={cn(
                 'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
