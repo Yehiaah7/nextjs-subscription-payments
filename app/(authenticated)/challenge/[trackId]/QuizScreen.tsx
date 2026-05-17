@@ -48,14 +48,6 @@ type Quiz = {
   questions: Question[];
 };
 
-type AttemptRow = {
-  id: string;
-  submitted_at: string | null;
-  passed: boolean | null;
-  score: number | null;
-  started_at: string;
-};
-
 type AttemptState = {
   solvedOptionId: string | null;
   lastSelectedOptionId: string | null;
@@ -111,22 +103,6 @@ const emptyAttemptState: AttemptState = {
   pointsAwarded: 0
 };
 
-const getAttemptStartedAtMs = (attempt: AttemptRow) =>
-  attempt.started_at ? new Date(attempt.started_at).getTime() : 0;
-
-const selectAttemptToResume = (attempts: AttemptRow[]) =>
-  [...attempts].sort((a, b) => {
-    const aIsSolved = Boolean(a.submitted_at && a.passed);
-    const bIsSolved = Boolean(b.submitted_at && b.passed);
-    if (aIsSolved !== bIsSolved) return aIsSolved ? -1 : 1;
-
-    const aIsOpen = !a.submitted_at;
-    const bIsOpen = !b.submitted_at;
-    if (aIsOpen !== bIsOpen) return aIsOpen ? -1 : 1;
-
-    return getAttemptStartedAtMs(b) - getAttemptStartedAtMs(a);
-  })[0] ?? null;
-
 export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const supabase = useMemo(() => createClient() as any, []);
   const router = useRouter();
@@ -151,9 +127,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   >({});
   const [persistedAnsweredQuestionIds, setPersistedAnsweredQuestionIds] =
     useState<Set<string>>(new Set());
-  const [persistedAnswerOptionIds, setPersistedAnswerOptionIds] = useState<
-    Record<string, string>
-  >({});
   const pendingSaveRef = useRef<Promise<unknown> | null>(null);
   const [wrongAnimatingOptionId, setWrongAnimatingOptionId] = useState<
     string | null
@@ -198,10 +171,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         .order('started_at', { ascending: false });
 
       const retryRequested = searchParams.get('retry') === '1';
-      const attempts = (attemptsData ?? []) as AttemptRow[];
       let effectiveAttempt = retryRequested
         ? null
-        : selectAttemptToResume(attempts);
+        : ((attemptsData ?? []).find((attempt: any) => !attempt.submitted_at) ??
+          attemptsData?.[0] ??
+          null);
       if (!effectiveAttempt) {
         const { data: newAttempt } = await supabase
           .from('attempts')
@@ -259,17 +233,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       setPersistedAnsweredQuestionIds(
         new Set((answersData ?? []).map((answer: any) => answer.question_id))
       );
-      setPersistedAnswerOptionIds(
-        (answersData ?? []).reduce(
-          (acc: Record<string, string>, answer: any) => {
-            if (answer.option_id) {
-              acc[answer.question_id] = answer.option_id;
-            }
-            return acc;
-          },
-          {}
-        )
-      );
 
       const firstPending = normalizedQuiz.questions.findIndex(
         (question) => !nextStates[question.id]?.lastSelectedOptionId
@@ -294,8 +257,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     loadQuiz().finally(() => setLoading(false));
   }, [challengeId, supabase]);
 
-  const finalizeAttempt = async (completedQuestionIds?: Set<string>) => {
-    if (!attemptId || !quiz || finishing) return;
+  const finalizeAttempt = async () => {
+    if (!attemptId || !quiz) return;
 
     setFinishing(true);
     if (pendingSaveRef.current) {
@@ -304,9 +267,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     const requiredQuestionIds = new Set(quiz.questions.map((item) => item.id));
     const { data: savedAnswersData } = await supabase
       .from('answers')
-      .select(
-        'question_id,option_id,points_awarded,text_answer,options(is_correct)'
-      )
+      .select('question_id,points_awarded')
       .eq('attempt_id', attemptId);
     const savedAnswers = (savedAnswersData ?? []).filter((answer: any) =>
       requiredQuestionIds.has(answer.question_id)
@@ -314,35 +275,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     const savedQuestionIds = new Set<string>(
       savedAnswers.map((answer: any) => answer.question_id as string)
     );
-    const savedSolvedQuestionIds = new Set<string>();
-    for (const answer of savedAnswers) {
-      let parsedMeta: { solvedOptionId?: string } = {};
-      if (answer.text_answer) {
-        try {
-          parsedMeta = JSON.parse(answer.text_answer);
-        } catch {
-          parsedMeta = {};
-        }
-      }
-      if (answer.options?.is_correct || parsedMeta.solvedOptionId) {
-        savedSolvedQuestionIds.add(answer.question_id);
-      }
-    }
-    const completedIds = completedQuestionIds ?? savedSolvedQuestionIds;
     const hasSavedAllRequiredSteps =
-      savedQuestionIds.size === quiz.questions.length &&
-      quiz.questions.every((question) => completedIds.has(question.id));
+      savedQuestionIds.size === quiz.questions.length;
 
     if (!hasSavedAllRequiredSteps) {
       setPersistedAnsweredQuestionIds(savedQuestionIds);
-      setPersistedAnswerOptionIds(
-        savedAnswers.reduce((acc: Record<string, string>, answer: any) => {
-          if (answer.option_id) {
-            acc[answer.question_id] = answer.option_id;
-          }
-          return acc;
-        }, {})
-      );
       setFinishing(false);
       return;
     }
@@ -356,7 +293,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       0
     );
     const finalScore = Math.round((awarded / Math.max(totalPossible, 1)) * 100);
-    const passed = true;
+    const passed = finalScore >= (quiz.pass_score ?? 60);
 
     await supabase
       .from('attempts')
@@ -367,19 +304,15 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       })
       .eq('id', attemptId);
 
-    setPersistedAnsweredQuestionIds(
-      new Set(quiz.questions.map((question) => question.id))
-    );
+    setPersistedAnsweredQuestionIds(savedQuestionIds);
     markCompanyChallengeListStale(companyId);
-    router.refresh();
     setResult({ scorePercent: finalScore, awarded, total: totalPossible });
     setFinishing(false);
   };
 
   const onSelectOption = async (question: Question, optionId: string) => {
-    if (!attemptId || !quiz) return;
+    if (!attemptId) return;
 
-    const loadedQuiz = quiz;
     const previousState = attemptStates[question.id] ?? emptyAttemptState;
     const option = question.options.find((item) => item.id === optionId);
     if (!option) return;
@@ -439,13 +372,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       .select('attempt_id,question_id,option_id,points_awarded,text_answer');
     pendingSaveRef.current = savePromise;
     const saveResult = await savePromise;
-    if (pendingSaveRef.current === savePromise) {
-      pendingSaveRef.current = null;
-    }
-    if (saveResult.error) {
-      console.error('[QuizTrace] answer save failed', saveResult.error);
-      return;
-    }
     const { count: savedCount } = await supabase
       .from('answers')
       .select('question_id', { count: 'exact', head: true })
@@ -454,7 +380,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       ? persistedAnsweredQuestionIds.size
       : persistedAnsweredQuestionIds.size + 1;
     const inQuizProgressValue =
-      (nextAnsweredCount / Math.max(loadedQuiz.questions.length, 1)) * 100;
+      (nextAnsweredCount / Math.max(quiz?.questions.length ?? 1, 1)) * 100;
     const rawSaveError = saveResult.error
       ? {
           message: saveResult.error.message,
@@ -477,13 +403,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       `[RuntimeProof] quiz attempt id=${attemptId} saved answers count=${savedCount ?? 'null'} in-quiz progress=${inQuizProgressValue}% after question=${nextAnsweredCount}`
     );
     markCompanyChallengeListStale(companyId);
-    const nextPersistedQuestionIds = new Set(persistedAnsweredQuestionIds);
-    nextPersistedQuestionIds.add(question.id);
-    setPersistedAnsweredQuestionIds(nextPersistedQuestionIds);
-    setPersistedAnswerOptionIds((current) => ({
-      ...current,
-      [question.id]: option.id
-    }));
+    setPersistedAnsweredQuestionIds((current) => {
+      const next = new Set(current);
+      next.add(question.id);
+      return next;
+    });
+    if (pendingSaveRef.current === savePromise) {
+      pendingSaveRef.current = null;
+    }
   };
 
   if (loading || !quiz || !currentQuestion) {
@@ -497,23 +424,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
   const answeredCount = persistedAnsweredQuestionIds.size;
   const isLastStep = activeIndex === quiz.questions.length - 1;
-  const selectedOptionId =
-    currentState.lastSelectedOptionId ??
-    persistedAnswerOptionIds[currentQuestion.id] ??
-    null;
-  const savedOptionId = persistedAnswerOptionIds[currentQuestion.id] ?? null;
-  const currentStepHasSavedSolvedAnswer = Boolean(
-    currentState.isSolved &&
-    selectedOptionId &&
-    selectedOptionId === currentState.solvedOptionId &&
-    savedOptionId === selectedOptionId
-  );
-  const currentStepHasAnswer = Boolean(
-    selectedOptionId || persistedAnsweredQuestionIds.has(currentQuestion.id)
-  );
-  const canMoveNext = isLastStep
-    ? currentStepHasSavedSolvedAnswer
-    : currentStepHasAnswer;
+  const canMoveNext = Boolean(currentState.lastSelectedOptionId);
+  const allQuestionsAnswered = answeredCount === quiz.questions.length;
   const showCorrectFeedback =
     currentState.isSolved &&
     currentState.lastSelectedOptionId === currentState.solvedOptionId;
@@ -735,6 +647,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               onClick={() => {
                 if (!canMoveNext || finishing) return;
                 if (isLastStep) {
+                  if (!allQuestionsAnswered) return;
                   finalizeAttempt();
                   return;
                 }
@@ -742,7 +655,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                   Math.min(quiz.questions.length - 1, value + 1)
                 );
               }}
-              disabled={!canMoveNext || finishing}
+              disabled={
+                !canMoveNext ||
+                finishing ||
+                (isLastStep && !allQuestionsAnswered)
+              }
               className={cn(
                 'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
                 btnInteractive,
