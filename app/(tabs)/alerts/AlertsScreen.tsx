@@ -35,31 +35,38 @@ const formatNotificationTime = (createdAt: string) => {
 };
 
 export default function AlertsScreen() {
-  const { notifications, markAllAsRead } = useNotifications();
-  const unreadOnOpenIds = useRef<Set<string>>();
-
-  if (!unreadOnOpenIds.current && notifications.length > 0) {
-    unreadOnOpenIds.current = new Set(
-      notifications
-        .filter((notification) => !notification.isRead)
-        .map((notification) => notification.id)
-    );
-  }
+  const {
+    notifications,
+    highlightedNotificationIds,
+    clearHighlightedNotifications
+  } = useNotifications();
+  const highlightedIdsViewedOnOpen = useRef<string[]>([]);
 
   useEffect(() => {
-    if (notifications.some((notification) => !notification.isRead)) {
-      markAllAsRead();
-    }
-  }, [markAllAsRead, notifications]);
+    const nextHighlightedIds = notifications
+      .filter((notification) => highlightedNotificationIds.has(notification.id))
+      .map((notification) => notification.id);
+
+    highlightedIdsViewedOnOpen.current = Array.from(
+      new Set([...highlightedIdsViewedOnOpen.current, ...nextHighlightedIds])
+    );
+  }, [highlightedNotificationIds, notifications]);
+
+  useEffect(
+    () => () => {
+      clearHighlightedNotifications(highlightedIdsViewedOnOpen.current);
+    },
+    [clearHighlightedNotifications]
+  );
 
   const formattedNotifications = useMemo(
     () =>
       notifications.map((notification) => ({
         ...notification,
         time: formatNotificationTime(notification.createdAt),
-        wasUnreadOnOpen: unreadOnOpenIds.current?.has(notification.id) ?? false
+        isHighlighted: highlightedNotificationIds.has(notification.id)
       })),
-    [notifications]
+    [highlightedNotificationIds, notifications]
   );
 
   return (
@@ -83,50 +90,34 @@ export default function AlertsScreen() {
                 Notifications
               </h1>
               <p className="text-[11px] font-semibold text-muted">
-                New alerts are marked unread until you view this page.
+                Recent practice and progress updates.
               </p>
             </div>
           </header>
 
           {formattedNotifications.length ? (
-            <div className="space-y-4">
-              {formattedNotifications.map((alert) => {
-                const emphasizeUnread = alert.wasUnreadOnOpen || !alert.isRead;
-
-                return (
-                  <article
-                    key={alert.id}
-                    className={cn(
-                      'min-h-[92px] w-full rounded-[var(--alerts-card-radius)] border p-3 transition-colors',
-                      emphasizeUnread
-                        ? 'border-primary-soft bg-[#eff6ff] shadow-[0_10px_20px_rgba(37,99,235,0.08)]'
-                        : 'border-[var(--alerts-card-stroke)] bg-[var(--alerts-card-bg)]'
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex min-w-0 items-center gap-2">
-                        {emphasizeUnread ? (
-                          <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-                        ) : null}
-                        <h2 className="truncate text-[14px] font-bold tracking-[-0.35px] text-[var(--alerts-heading-color)]">
-                          {alert.title}
-                        </h2>
-                      </div>
-                      <p className="shrink-0 text-[10px] font-bold text-[var(--alerts-time-color)]">
-                        {alert.time}
-                      </p>
-                    </div>
-                    <p className="mt-2 text-[12px] font-medium leading-[1.45] text-[var(--alerts-body-color)]">
-                      {alert.body}
+            <div className="overflow-hidden rounded-[22px] border border-[var(--alerts-card-stroke)] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+              {formattedNotifications.map((alert) => (
+                <article
+                  key={alert.id}
+                  className={cn(
+                    'min-h-[86px] w-full border-b border-[#eef2f7] bg-white p-4 transition-[box-shadow,color] last:border-b-0 hover:shadow-[inset_3px_0_0_#2563eb]',
+                    alert.isHighlighted && 'shadow-[inset_3px_0_0_#2563eb]'
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="min-w-0 text-[14px] font-bold leading-[1.25] tracking-[-0.35px] text-[var(--alerts-heading-color)]">
+                      {alert.title}
+                    </h2>
+                    <p className="shrink-0 pt-0.5 text-[10px] font-bold text-[var(--alerts-time-color)]">
+                      {alert.time}
                     </p>
-                    {emphasizeUnread ? (
-                      <p className="mt-2 text-[10px] font-black uppercase tracking-[0.08em] text-primary">
-                        New
-                      </p>
-                    ) : null}
-                  </article>
-                );
-              })}
+                  </div>
+                  <p className="mt-1.5 text-[12px] font-medium leading-[1.45] text-[var(--alerts-body-color)]">
+                    {alert.body}
+                  </p>
+                </article>
+              ))}
             </div>
           ) : (
             <div className="rounded-[var(--alerts-card-radius)] border border-dashed border-[var(--alerts-card-stroke)] bg-white p-4 text-sm font-semibold text-muted">
