@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { requireUser } from '@/utils/auth/require-user';
 import {
+  buildCanonicalAttemptByQuizId,
   buildCompanySummary,
   calculateCompanyProgress
 } from '@/app/(authenticated)/companies/company-summary';
@@ -139,15 +140,7 @@ export async function getHomePageData(): Promise<{
     : { data: [] as AttemptRow[] };
   const attempts = (attemptsData ?? []) as AttemptRow[];
 
-  const latestActiveAttemptByQuiz = attempts.reduce(
-    (acc: Record<string, AttemptRow>, attempt) => {
-      if (!attempt.submitted_at && !acc[attempt.quiz_id]) {
-        acc[attempt.quiz_id] = attempt;
-      }
-      return acc;
-    },
-    {}
-  );
+  const canonicalAttemptByQuiz = buildCanonicalAttemptByQuizId(attempts);
   const latestAttemptByQuiz = attempts.reduce(
     (acc: Record<string, AttemptRow>, attempt) => {
       if (!acc[attempt.quiz_id]) {
@@ -160,7 +153,7 @@ export async function getHomePageData(): Promise<{
 
   const attemptIdsToLoadAnswers = Array.from(
     new Set([
-      ...Object.values(latestActiveAttemptByQuiz).map((attempt) => attempt?.id),
+      ...Object.values(canonicalAttemptByQuiz).map((attempt) => attempt?.id),
       ...Object.values(latestAttemptByQuiz).map((attempt) => attempt?.id)
     ])
   ).filter(Boolean) as string[];
@@ -215,7 +208,7 @@ export async function getHomePageData(): Promise<{
         progress: calculateCompanyProgress({
           quizIds: quizIdsForTrack,
           questionCountByQuizId: totalQuestionsByQuiz,
-          canonicalActiveAttemptByQuizId: latestActiveAttemptByQuiz,
+          canonicalAttemptByQuizId: canonicalAttemptByQuiz,
           answeredCountByAttempt: solvedQuestionsByAttempt
         })
       }),
