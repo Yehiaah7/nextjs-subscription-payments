@@ -48,6 +48,39 @@ type AnswerRow = {
   points_awarded: number | null;
 };
 
+type ChallengeCardDebugValues = {
+  challengeId: string;
+  attemptId: string | null;
+  answeredCount: number;
+  totalSteps: number;
+  progressPercent: number;
+  score: number;
+  isCompleted: boolean;
+  solvedBadgeValue: string;
+  tabClassification: string;
+};
+
+const logChallengeCardDebugValues = (values: ChallengeCardDebugValues[]) => {
+  values.forEach((value) => {
+    console.log('[ChallengeCardRawValues] card render source', value);
+  });
+
+  const samples = {
+    untouched: values.find((value) => value.answeredCount === 0) ?? null,
+    partiallyCompleted:
+      values.find(
+        (value) =>
+          value.answeredCount > 0 && value.answeredCount < value.totalSteps
+      ) ?? null,
+    fullyCompleted:
+      values.find(
+        (value) => value.answeredCount === value.totalSteps && value.isCompleted
+      ) ?? null
+  };
+
+  console.log('[ChallengeCardRawValues] required samples', samples);
+};
+
 export default async function CompanyDetailsPage({
   params
 }: {
@@ -161,6 +194,15 @@ export default async function CompanyDetailsPage({
     {}
   );
 
+  const questionIdsByQuiz = questions.reduce(
+    (acc: Record<string, Set<string>>, question) => {
+      acc[question.quiz_id] ??= new Set<string>();
+      acc[question.quiz_id].add(question.id);
+      return acc;
+    },
+    {}
+  );
+
   const totalPointsByQuiz = questions.reduce(
     (acc: Record<string, number>, question) => {
       acc[question.quiz_id] = (acc[question.quiz_id] ?? 0) + question.points;
@@ -178,6 +220,8 @@ export default async function CompanyDetailsPage({
     {}
   );
 
+  const challengeCardDebugValues: ChallengeCardDebugValues[] = [];
+
   const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
     const currentAttempt = canonicalAttemptByQuizId[quiz.id] ?? null;
     const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;
@@ -185,7 +229,11 @@ export default async function CompanyDetailsPage({
     const progress = calculateQuizAttemptProgress({
       attempt: currentAttempt,
       answeredQuestionIds: currentAttempt
-        ? (answeredCountByAttempt[currentAttempt.id] ?? new Set<string>())
+        ? new Set(
+            Array.from(answeredCountByAttempt[currentAttempt.id] ?? []).filter(
+              (questionId) => questionIdsByQuiz[quiz.id]?.has(questionId)
+            )
+          )
         : new Set<string>(),
       totalSteps,
       awardedPoints: currentAttempt
@@ -196,18 +244,18 @@ export default async function CompanyDetailsPage({
     });
     const isSubmitted = Boolean(currentAttempt?.submitted_at);
 
-    console.log('[ChallengeCardTrace] quiz card progress inputs', {
-      quizId: quiz.id,
-      canonicalAttemptId: currentAttempt?.id ?? null,
-      answeredSteps: progress.answeredSteps,
+    const challengeCardDebugValue = {
+      challengeId: quiz.id,
+      attemptId: progress.attemptId,
+      answeredCount: progress.answeredCount,
       totalSteps: progress.totalSteps,
+      progressPercent: progress.progressPercent,
       score: progress.score,
-      status: progress.status,
-      outerProgressValue: progress.progressPercent
-    });
-    console.log(
-      `[RuntimeProof] outer card attempt id=${currentAttempt?.id ?? 'null'} quiz attempt id=${currentAttempt?.id ?? 'null'} outer card progress=${progress.progressPercent}% answered steps=${progress.answeredSteps}`
-    );
+      isCompleted: progress.isCompleted,
+      solvedBadgeValue: progress.solvedBadgeValue,
+      tabClassification: progress.tabClassification
+    };
+    challengeCardDebugValues.push(challengeCardDebugValue);
 
     return {
       id: quiz.id,
@@ -215,6 +263,11 @@ export default async function CompanyDetailsPage({
       category: quiz.modules?.title ?? 'Challenge',
       categorySortOrder: 99,
       status: progress.status,
+      attemptId: progress.attemptId,
+      answeredCount: progress.answeredCount,
+      isCompleted: progress.isCompleted,
+      solvedBadgeValue: progress.solvedBadgeValue,
+      tabClassification: progress.tabClassification,
       practicingCount: `${10 + ((quiz.title.length * 13) % 91)}`,
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
       seniority: (quiz.difficulty ?? 'junior') as Seniority,
@@ -227,6 +280,8 @@ export default async function CompanyDetailsPage({
       reviewAvailable: isSubmitted && progress.passed
     };
   });
+
+  logChallengeCardDebugValues(challengeCardDebugValues);
 
   const companySummary = buildCompanySummary({
     id: company.id,
