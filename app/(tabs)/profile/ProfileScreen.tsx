@@ -23,6 +23,7 @@ import MotionPage from '@/components/motion/MotionPage';
 import ProGymPassCard from '@/components/ProGymPassCard';
 import UserAvatar from '@/components/ui/UserAvatar';
 import UserStatTile from '@/components/ui/UserStatTile';
+import { toast } from '@/components/ui/Toasts/use-toast';
 import { cardInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
@@ -584,6 +585,9 @@ export default function ProfileScreen({
 
       setAvatarImageUrl(null);
       setUploadSuccess(AVATAR_REMOVE_SUCCESS_MESSAGE);
+      toast({
+        title: AVATAR_REMOVE_SUCCESS_MESSAGE
+      });
       router.refresh();
       logAvatarStage('avatar removal refresh completed', {
         profilePage: true,
