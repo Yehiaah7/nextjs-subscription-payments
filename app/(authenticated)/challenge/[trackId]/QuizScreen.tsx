@@ -25,6 +25,10 @@ import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
 import { markCompanyChallengeListStale } from '../../companies/challenge-refresh';
 import {
+  addChallengeCompletedNotification,
+  addPartialChallengeProgressNotification
+} from '@/lib/notifications/store';
+import {
   buildCanonicalAttemptByQuizId,
   calculateQuizAttemptProgress
 } from '../../companies/company-summary';
@@ -184,6 +188,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const [companyId, setCompanyId] = useState<string | null>(
     searchParams.get('company')
   );
+  const [userId, setUserId] = useState<string | null>(null);
   const returnToTrackHref = companyId ? `/companies/${companyId}` : '/home';
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -239,6 +244,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         data: { user }
       } = await supabase.auth.getUser();
       if (!user) return;
+      setUserId(user.id);
 
       const { data: quizData } = await supabase
         .from('quizzes')
@@ -468,6 +474,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       })
       .eq('id', attemptId);
 
+    if (userId) {
+      addChallengeCompletedNotification({ userId, challengeId });
+    }
+
     setPersistedAnsweredQuestionIds(savedQuestionIds);
     markCompanyChallengeListStale(companyId);
     setResult({ scorePercent: finalScore, awarded, total: totalPossible });
@@ -641,6 +651,20 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     if (pendingSaveRef.current) {
       await pendingSaveRef.current;
     }
+
+    if (
+      userId &&
+      !result &&
+      inQuizProgressPercent > 0 &&
+      inQuizProgressPercent < 100
+    ) {
+      addPartialChallengeProgressNotification({
+        userId,
+        challengeId,
+        progressPercent: inQuizProgressPercent
+      });
+    }
+
     markCompanyChallengeListStale(companyId);
     router.push(returnToTrackHref);
   };

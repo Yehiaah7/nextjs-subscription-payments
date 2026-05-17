@@ -1,4 +1,5 @@
 import MobileAppLayout from '@/components/mobile/MobileAppLayout';
+import { NotificationsProvider } from '@/components/notifications/NotificationsProvider';
 import { UserAvatarProvider } from '@/components/ui/UserAvatarContext';
 import { requireUser } from '@/utils/auth/require-user';
 import { createClient } from '@/utils/supabase/server';
@@ -36,20 +37,22 @@ export default async function TabsLayout({ children }: PropsWithChildren) {
   const userRecord = (userData ?? null) as UserRecord | null;
 
   return (
-    <UserAvatarProvider
-      initialAvatar={{
-        firstName: profile?.first_name,
-        lastName: profile?.last_name,
-        fullName:
-          profile?.name ??
-          userRecord?.full_name ??
-          user.user_metadata?.full_name ??
-          user.user_metadata?.name,
-        email: user.email,
-        imageUrl: profile?.avatar_url ?? null
-      }}
-    >
-      <MobileAppLayout showBottomNav>{children}</MobileAppLayout>
-    </UserAvatarProvider>
+    <NotificationsProvider userId={user.id}>
+      <UserAvatarProvider
+        initialAvatar={{
+          firstName: profile?.first_name,
+          lastName: profile?.last_name,
+          fullName:
+            profile?.name ??
+            userRecord?.full_name ??
+            user.user_metadata?.full_name ??
+            user.user_metadata?.name,
+          email: user.email,
+          imageUrl: profile?.avatar_url ?? null
+        }}
+      >
+        <MobileAppLayout showBottomNav>{children}</MobileAppLayout>
+      </UserAvatarProvider>
+    </NotificationsProvider>
   );
 }

@@ -38,6 +38,8 @@ import type { CompanySummary } from '@/app/(authenticated)/companies/company-sum
 import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
+import { useNotifications } from '@/components/notifications/NotificationsProvider';
+import { ensureCompanyProgressReminder } from '@/lib/notifications/store';
 import UserStatTile from '@/components/ui/UserStatTile';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 
@@ -68,6 +70,7 @@ export default function HomeScreen({
   companyTracks,
   skillPathCategories,
   skillPathChallenges,
+  userId,
   userName,
   userFirstName,
   userLastName,
@@ -78,6 +81,7 @@ export default function HomeScreen({
   companyTracks: HomeTrack[];
   skillPathCategories: SkillPathCategory[];
   skillPathChallenges: SkillPathChallenge[];
+  userId: string;
   userName: string;
   userFirstName?: string | null;
   userLastName?: string | null;
@@ -86,6 +90,7 @@ export default function HomeScreen({
   userStats: UserProfileStats;
 }) {
   const { avatar } = useUserAvatar();
+  const { unreadCount, refreshNotifications } = useNotifications();
   const [tab, setTab] = useState<MainTab>('companies');
   const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
   const [selectedSeniority, setSelectedSeniority] =
@@ -141,6 +146,19 @@ export default function HomeScreen({
     window.localStorage.setItem(SENIORITY_STORAGE_KEY, selectedSeniority);
   }, [selectedSeniority]);
 
+  useEffect(() => {
+    ensureCompanyProgressReminder({
+      userId,
+      companies: companyTracks.map((track) => ({
+        companyId: track.companySummary.id,
+        companyName: track.companySummary.name,
+        progress: track.companySummary.progress,
+        totalChallenges: track.companySummary.challengesCount
+      }))
+    });
+    refreshNotifications();
+  }, [companyTracks, refreshNotifications, userId]);
+
   return (
     <MotionPage>
       <section className="text-text">
@@ -150,12 +168,20 @@ export default function HomeScreen({
             href="/alerts"
             aria-label="Open Notifications"
             className={cn(
-              'inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-muted hover:text-primary',
+              'relative inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-muted hover:text-primary',
               iconBtnInteractive,
               focusRingInteractive
             )}
           >
             <BellFilledIcon className="h-4 w-4" />
+            {unreadCount > 0 ? (
+              <span
+                aria-label={`${unreadCount} unread notifications`}
+                className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#ff4d4f] px-1 text-[9px] font-black leading-none text-white shadow-[0_2px_6px_rgba(239,68,68,0.35)]"
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            ) : null}
           </Link>
         </header>
 
