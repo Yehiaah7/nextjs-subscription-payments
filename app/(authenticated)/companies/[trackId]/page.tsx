@@ -221,6 +221,7 @@ export default async function CompanyDetailsPage({
       answeredSteps: progress.answeredSteps,
       completedSteps: progress.completedSteps,
       totalSteps: progress.totalSteps,
+      progressPercent: progress.progressPercent,
       score: progress.score,
       retake: isSubmitted && !progress.passed,
       reviewAvailable: isSubmitted && progress.passed
