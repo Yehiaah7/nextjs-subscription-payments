@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import {
-  BellFilledIcon,
   CheckCircleFilledIcon,
   ChevronRightFilledIcon,
   FireFilledIcon,
@@ -38,6 +37,7 @@ import type { CompanySummary } from '@/app/(authenticated)/companies/company-sum
 import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
+import NotificationsBellButton from '@/components/notifications/NotificationsBellButton';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
 import { ensureCompanyProgressReminder } from '@/lib/notifications/store';
 import UserStatTile from '@/components/ui/UserStatTile';
@@ -164,25 +164,7 @@ export default function HomeScreen({
       <section className="text-text">
         <header className="mb-4 flex items-start justify-between gap-3">
           <h1 className="t-title">Product Gym Floor</h1>
-          <Link
-            href="/alerts"
-            aria-label="Open Notifications"
-            className={cn(
-              'relative inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-muted hover:text-primary',
-              iconBtnInteractive,
-              focusRingInteractive
-            )}
-          >
-            <BellFilledIcon className="h-4 w-4" />
-            {unreadCount > 0 ? (
-              <span
-                aria-label={`${unreadCount} unread notifications`}
-                className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#ff4d4f] px-1 text-[9px] font-black leading-none text-white shadow-[0_2px_6px_rgba(239,68,68,0.35)]"
-              >
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            ) : null}
-          </Link>
+          <NotificationsBellButton unreadCount={unreadCount} />
         </header>
 
         {showFreeTrialCard ? (
