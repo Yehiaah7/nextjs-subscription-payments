@@ -26,9 +26,11 @@ import {
 } from '@/components/icons/FilledIcons';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CompanySummary } from '../company-summary';
 import CompanySummaryCard from '../CompanySummaryCard';
+import { consumeCompanyChallengeListRefresh } from '../challenge-refresh';
 
 export type ChallengeStatus = 'in-progress' | 'not-solved' | 'solved';
 export type CompanyChallenge = {
@@ -77,9 +79,28 @@ export default function CompanyDetailsScreen({
   companyId: string;
   challenges: CompanyChallenge[];
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [filter, setFilter] = useState<FilterTab>('all');
   const [selectedSeniority, setSelectedSeniority] =
     useState<SeniorityFilter>('all');
+
+  const refreshChallengeSnapshot = useCallback(() => {
+    if (consumeCompanyChallengeListRefresh(companyId)) {
+      router.refresh();
+    }
+  }, [companyId, router]);
+
+  useEffect(() => {
+    refreshChallengeSnapshot();
+  }, [pathname, refreshChallengeSnapshot]);
+
+  useEffect(() => {
+    const handlePageShow = () => refreshChallengeSnapshot();
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, [refreshChallengeSnapshot]);
+
   useEffect(() => {
     const stored = window.localStorage.getItem(SENIORITY_STORAGE_KEY);
     if (stored && SENIORITY_OPTIONS.includes(stored as SeniorityFilter)) {

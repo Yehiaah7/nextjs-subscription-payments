@@ -23,6 +23,7 @@ import MotionPage from '@/components/motion/MotionPage';
 import { useReducedMotionPref } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
+import { markCompanyChallengeListStale } from '../../companies/challenge-refresh';
 
 type Question = {
   id: string;
@@ -304,6 +305,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       .eq('id', attemptId);
 
     setPersistedAnsweredQuestionIds(savedQuestionIds);
+    markCompanyChallengeListStale(companyId);
     setResult({ scorePercent: finalScore, awarded, total: totalPossible });
     setFinishing(false);
   };
@@ -400,6 +402,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     console.log(
       `[RuntimeProof] quiz attempt id=${attemptId} saved answers count=${savedCount ?? 'null'} in-quiz progress=${inQuizProgressValue}% after question=${nextAnsweredCount}`
     );
+    markCompanyChallengeListStale(companyId);
     setPersistedAnsweredQuestionIds((current) => {
       const next = new Set(current);
       next.add(question.id);
@@ -446,8 +449,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     if (pendingSaveRef.current) {
       await pendingSaveRef.current;
     }
+    markCompanyChallengeListStale(companyId);
     router.push(returnToTrackHref);
-    router.refresh();
   };
 
   if (result) {

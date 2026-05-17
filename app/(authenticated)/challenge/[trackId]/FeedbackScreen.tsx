@@ -1,16 +1,17 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import MotionPage from '@/components/motion/MotionPage';
 import { tapScale, useReducedMotionPref } from '@/lib/motion';
+import { markCompanyChallengeListStale } from '../../companies/challenge-refresh';
 
 export default function FeedbackScreen({
   variant
 }: {
   variant: 'correct' | 'wrong';
 }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const companyId = searchParams.get('company');
   const returnToTrackHref = companyId ? `/companies/${companyId}` : '/home';
@@ -28,12 +29,16 @@ export default function FeedbackScreen({
             : 'Review the feedback and retry this step to proceed.'}
         </p>
         <motion.div whileTap={reducedMotion ? undefined : tapScale.cta}>
-          <Link
-            href={returnToTrackHref}
+          <button
+            type="button"
+            onClick={() => {
+              markCompanyChallengeListStale(companyId);
+              router.push(returnToTrackHref);
+            }}
             className="inline-flex h-[45px] w-full items-center justify-center rounded-2xl bg-[#155dfc] text-sm font-bold text-white"
           >
             Back to Challenges
-          </Link>
+          </button>
         </motion.div>
       </section>
     </MotionPage>
