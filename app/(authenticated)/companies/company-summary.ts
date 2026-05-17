@@ -16,18 +16,32 @@ type AttemptLike = {
   submitted_at: string | null;
 };
 
-export const buildCanonicalActiveAttemptByQuizId = <T extends AttemptLike>(
+export type QuizProgressStatus = 'in-progress' | 'not-solved' | 'solved';
+
+export type QuizAttemptProgress = {
+  attempt: AttemptLike | null;
+  answeredSteps: number;
+  completedSteps: number;
+  totalSteps: number;
+  progressPercent: number;
+  score: number;
+  passed: boolean;
+  status: QuizProgressStatus;
+};
+
+export const buildCanonicalAttemptByQuizId = <T extends AttemptLike>(
   attempts: T[]
 ) =>
-  attempts.reduce(
-    (acc: Record<string, T>, attempt) => {
-      if (!attempt.submitted_at && !acc[attempt.quiz_id]) {
-        acc[attempt.quiz_id] = attempt;
-      }
-      return acc;
-    },
-    {}
-  );
+  attempts.reduce((acc: Record<string, T>, attempt) => {
+    const existing = acc[attempt.quiz_id];
+    if (!existing || (!attempt.submitted_at && existing.submitted_at)) {
+      acc[attempt.quiz_id] = attempt;
+    }
+    return acc;
+  }, {});
+
+export const buildCanonicalActiveAttemptByQuizId =
+  buildCanonicalAttemptByQuizId;
 
 const hashString = (value: string) =>
   value
@@ -65,12 +79,12 @@ export const buildCompanySummary = ({
 export const calculateCompanyProgress = ({
   quizIds,
   questionCountByQuizId,
-  canonicalActiveAttemptByQuizId,
+  canonicalAttemptByQuizId,
   answeredCountByAttempt
 }: {
   quizIds: string[];
   questionCountByQuizId: Record<string, number>;
-  canonicalActiveAttemptByQuizId: Record<string, AttemptLike>;
+  canonicalAttemptByQuizId: Record<string, AttemptLike>;
   answeredCountByAttempt: Record<string, Set<string>>;
 }) => {
   const totalSteps = quizIds.reduce(
@@ -79,10 +93,52 @@ export const calculateCompanyProgress = ({
   );
 
   const answeredSteps = quizIds.reduce((sum, quizId) => {
-    const attemptId = canonicalActiveAttemptByQuizId[quizId]?.id;
+    const attemptId = canonicalAttemptByQuizId[quizId]?.id;
     if (!attemptId) return sum;
     return sum + (answeredCountByAttempt[attemptId]?.size ?? 0);
   }, 0);
 
   return totalSteps ? Math.round((answeredSteps / totalSteps) * 100) : 0;
+};
+
+export const calculateQuizAttemptProgress = ({
+  attempt,
+  answeredQuestionIds,
+  totalSteps,
+  awardedPoints,
+  totalPoints,
+  passScore
+}: {
+  attempt: AttemptLike | null;
+  answeredQuestionIds: Set<string>;
+  totalSteps: number;
+  awardedPoints: number;
+  totalPoints: number;
+  passScore: number;
+}): QuizAttemptProgress => {
+  const answeredSteps = Math.min(answeredQuestionIds.size, totalSteps);
+  const progressPercent = totalSteps
+    ? Math.round((answeredSteps / totalSteps) * 100)
+    : 0;
+  const score = totalPoints
+    ? Math.round((awardedPoints / totalPoints) * 100)
+    : 0;
+  const hasCompletedAllSteps = totalSteps > 0 && answeredSteps >= totalSteps;
+  const passed = hasCompletedAllSteps && score >= passScore;
+  const status: QuizProgressStatus = passed
+    ? 'solved'
+    : answeredSteps > 0 && !hasCompletedAllSteps
+      ? 'in-progress'
+      : 'not-solved';
+
+  return {
+    attempt,
+    answeredSteps,
+    completedSteps: answeredSteps,
+    totalSteps,
+    progressPercent,
+    score,
+    passed,
+    status
+  };
 };

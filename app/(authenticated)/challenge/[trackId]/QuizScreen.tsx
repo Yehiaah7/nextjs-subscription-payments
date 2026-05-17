@@ -124,7 +124,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const [attemptStates, setAttemptStates] = useState<
     Record<string, AttemptState>
   >({});
-  const [persistedAnsweredQuestionIds, setPersistedAnsweredQuestionIds] = useState<Set<string>>(new Set());
+  const [persistedAnsweredQuestionIds, setPersistedAnsweredQuestionIds] =
+    useState<Set<string>>(new Set());
   const pendingSaveRef = useRef<Promise<unknown> | null>(null);
   const [wrongAnimatingOptionId, setWrongAnimatingOptionId] = useState<
     string | null
@@ -161,17 +162,19 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         setCompanyId(normalizedQuiz.modules.track_id);
       }
 
-      const { data: canonicalActiveAttempt } = await supabase
+      const { data: attemptsData } = await supabase
         .from('attempts')
         .select('id,submitted_at,passed,score,started_at')
         .eq('quiz_id', challengeId)
         .eq('user_id', user.id)
-        .is('submitted_at', null)
-        .order('started_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .order('started_at', { ascending: false });
 
-      let effectiveAttempt = canonicalActiveAttempt;
+      const retryRequested = searchParams.get('retry') === '1';
+      let effectiveAttempt = retryRequested
+        ? null
+        : ((attemptsData ?? []).find((attempt: any) => !attempt.submitted_at) ??
+          attemptsData?.[0] ??
+          null);
       if (!effectiveAttempt) {
         const { data: newAttempt } = await supabase
           .from('attempts')
@@ -226,7 +229,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }
 
       setAttemptStates(nextStates);
-      setPersistedAnsweredQuestionIds(new Set((answersData ?? []).map((answer: any) => answer.question_id)));
+      setPersistedAnsweredQuestionIds(
+        new Set((answersData ?? []).map((answer: any) => answer.question_id))
+      );
 
       const firstPending = normalizedQuiz.questions.findIndex(
         (question) => !nextStates[question.id]?.lastSelectedOptionId
@@ -255,6 +260,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     if (!attemptId || !quiz) return;
 
     setFinishing(true);
+    if (pendingSaveRef.current) {
+      await pendingSaveRef.current;
+    }
     const totalPossible = quiz.questions.reduce(
       (sum, item) => sum + item.points,
       0
@@ -264,7 +272,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       0
     );
     const finalScore = Math.round((awarded / Math.max(totalPossible, 1)) * 100);
-    const passed = finalScore >= 60;
+    const passed = finalScore >= (quiz.pass_score ?? 60);
 
     await supabase
       .from('attempts')
@@ -413,6 +421,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       )
     : [...currentQuestion.options].sort((a, b) => a.sort_order - b.sort_order);
 
+  const goBackToTrack = async () => {
+    if (pendingSaveRef.current) {
+      await pendingSaveRef.current;
+    }
+    router.push(returnToTrackHref);
+    router.refresh();
+  };
+
   if (result) {
     return (
       <MotionPage>
@@ -435,7 +451,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           </p>
           <MotionButton
             type="button"
-            onClick={() => router.push(returnToTrackHref)}
+            onClick={goBackToTrack}
             className={cn(
               'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white',
               btnInteractive,
@@ -449,14 +465,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       </MotionPage>
     );
   }
-
-  const goBackToTrack = async () => {
-    if (pendingSaveRef.current) {
-      await pendingSaveRef.current;
-    }
-    router.push(returnToTrackHref);
-    router.refresh();
-  };
 
   return (
     <MotionPage>
@@ -623,7 +631,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                   Math.min(quiz.questions.length - 1, value + 1)
                 );
               }}
-              disabled={!canMoveNext || finishing || (isLastStep && !allQuestionsAnswered)}
+              disabled={
+                !canMoveNext ||
+                finishing ||
+                (isLastStep && !allQuestionsAnswered)
+              }
               className={cn(
                 'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#ffd230] bg-[#f59e0b] px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
                 btnInteractive,
@@ -637,7 +649,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           </div>
           <MotionButton
             type="button"
-            onClick={() => router.push(returnToTrackHref)}
+            onClick={goBackToTrack}
             className={cn(
               'inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
               btnInteractive,

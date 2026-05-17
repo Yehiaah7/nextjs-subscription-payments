@@ -3,9 +3,10 @@ import { notFound, redirect } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
 import CompanyDetailsScreen, { CompanyChallenge } from './CompanyDetailsScreen';
 import {
-  buildCanonicalActiveAttemptByQuizId,
+  buildCanonicalAttemptByQuizId,
   buildCompanySummary,
-  calculateCompanyProgress
+  calculateCompanyProgress,
+  calculateQuizAttemptProgress
 } from '../company-summary';
 
 type Seniority = 'junior' | 'mid' | 'senior';
@@ -20,6 +21,7 @@ type QuizRow = {
   id: string;
   title: string;
   difficulty: Seniority | null;
+  pass_score: number | null;
   module_id: string | null;
   modules: { title: string; track_id: string } | null;
 };
@@ -27,6 +29,7 @@ type QuizRow = {
 type QuestionRow = {
   id: string;
   quiz_id: string;
+  points: number;
 };
 
 type AttemptRow = {
@@ -74,7 +77,9 @@ export default async function CompanyDetailsPage({
 
   const { data: quizzesData, error: quizzesError } = await supabase
     .from('quizzes')
-    .select('id,title,difficulty,module_id,modules!inner(title,track_id)')
+    .select(
+      'id,title,difficulty,pass_score,module_id,modules!inner(title,track_id)'
+    )
     .eq('modules.track_id', company.id)
     .order('title', { ascending: true });
 
@@ -90,7 +95,7 @@ export default async function CompanyDetailsPage({
   const { data: questionsData } = quizIds.length
     ? await supabase
         .from('questions')
-        .select('id,quiz_id')
+        .select('id,quiz_id,points')
         .in('quiz_id', quizIds)
     : { data: [] as QuestionRow[] };
   const questions = (questionsData ?? []) as QuestionRow[];
@@ -115,16 +120,12 @@ export default async function CompanyDetailsPage({
     {}
   );
 
-  const canonicalActiveAttemptByQuizId = buildCanonicalActiveAttemptByQuizId(
-    attempts
-  );
+  const canonicalAttemptByQuizId = buildCanonicalAttemptByQuizId(attempts);
 
   const attemptIdsToLoadAnswers = Array.from(
     new Set([
       ...Object.values(latestAttemptByQuizId).map((attempt) => attempt?.id),
-      ...Object.values(canonicalActiveAttemptByQuizId).map(
-        (attempt) => attempt?.id
-      )
+      ...Object.values(canonicalAttemptByQuizId).map((attempt) => attempt?.id)
     ])
   ).filter(Boolean);
 
@@ -160,41 +161,52 @@ export default async function CompanyDetailsPage({
     {}
   );
 
+  const totalPointsByQuiz = questions.reduce(
+    (acc: Record<string, number>, question) => {
+      acc[question.quiz_id] = (acc[question.quiz_id] ?? 0) + question.points;
+      return acc;
+    },
+    {}
+  );
+
+  const awardedPointsByAttempt = answers.reduce(
+    (acc: Record<string, number>, answer) => {
+      acc[answer.attempt_id] =
+        (acc[answer.attempt_id] ?? 0) + (answer.points_awarded ?? 0);
+      return acc;
+    },
+    {}
+  );
+
   const challenges: CompanyChallenge[] = quizzes.map((quiz) => {
-    const latestAttempt = latestAttemptByQuizId[quiz.id];
-    const progressAttempt = canonicalActiveAttemptByQuizId[quiz.id];
-    const currentAttempt = progressAttempt ?? latestAttempt;
-    const answeredSteps = progressAttempt
-      ? (answeredCountByAttempt[progressAttempt.id]?.size ?? 0)
-      : 0;
+    const currentAttempt = canonicalAttemptByQuizId[quiz.id] ?? null;
     const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;
+    const passScore = quiz.pass_score ?? 60;
+    const progress = calculateQuizAttemptProgress({
+      attempt: currentAttempt,
+      answeredQuestionIds: currentAttempt
+        ? (answeredCountByAttempt[currentAttempt.id] ?? new Set<string>())
+        : new Set<string>(),
+      totalSteps,
+      awardedPoints: currentAttempt
+        ? (awardedPointsByAttempt[currentAttempt.id] ?? 0)
+        : 0,
+      totalPoints: totalPointsByQuiz[quiz.id] ?? totalSteps,
+      passScore
+    });
     const isSubmitted = Boolean(currentAttempt?.submitted_at);
-    const score = currentAttempt?.score ?? 0;
-
-    const isFullyAnswered = totalSteps > 0 && answeredSteps >= totalSteps;
-
-    const status = isFullyAnswered
-      ? 'solved'
-      : answeredSteps > 0
-        ? 'in-progress'
-        : 'not-solved';
-
-    const completedSteps = Math.min(answeredSteps, totalSteps);
-    const outerProgressValue = totalSteps
-      ? (completedSteps / totalSteps) * 100
-      : 0;
 
     console.log('[ChallengeCardTrace] quiz card progress inputs', {
       quizId: quiz.id,
-      latestAttemptId: latestAttempt?.id ?? null,
-      progressAttemptId: progressAttempt?.id ?? null,
-      outerCardAttemptIdUsed: currentAttempt?.id ?? null,
-      answeredSteps,
-      totalSteps,
-      outerProgressValue
+      canonicalAttemptId: currentAttempt?.id ?? null,
+      answeredSteps: progress.answeredSteps,
+      totalSteps: progress.totalSteps,
+      score: progress.score,
+      status: progress.status,
+      outerProgressValue: progress.progressPercent
     });
     console.log(
-      `[RuntimeProof] outer card attempt id=${currentAttempt?.id ?? 'null'} quiz attempt id=${progressAttempt?.id ?? currentAttempt?.id ?? 'null'} outer card progress=${outerProgressValue}% answered steps=${answeredSteps}`
+      `[RuntimeProof] outer card attempt id=${currentAttempt?.id ?? 'null'} quiz attempt id=${currentAttempt?.id ?? 'null'} outer card progress=${progress.progressPercent}% answered steps=${progress.answeredSteps}`
     );
 
     return {
@@ -202,16 +214,16 @@ export default async function CompanyDetailsPage({
       title: quiz.title,
       category: quiz.modules?.title ?? 'Challenge',
       categorySortOrder: 99,
-      status,
+      status: progress.status,
       practicingCount: `${10 + ((quiz.title.length * 13) % 91)}`,
       duration: `${Math.max(totalSteps * 2, 5)} mins`,
       seniority: (quiz.difficulty ?? 'junior') as Seniority,
-      answeredSteps: completedSteps,
-      completedSteps,
-      totalSteps,
-      score,
-      retake: isSubmitted && score < 60,
-      reviewAvailable: isSubmitted && score >= 60
+      answeredSteps: progress.answeredSteps,
+      completedSteps: progress.completedSteps,
+      totalSteps: progress.totalSteps,
+      score: progress.score,
+      retake: isSubmitted && !progress.passed,
+      reviewAvailable: isSubmitted && progress.passed
     };
   });
 
@@ -223,7 +235,7 @@ export default async function CompanyDetailsPage({
     progress: calculateCompanyProgress({
       quizIds,
       questionCountByQuizId: totalQuestionsByQuiz,
-      canonicalActiveAttemptByQuizId,
+      canonicalAttemptByQuizId,
       answeredCountByAttempt
     })
   });

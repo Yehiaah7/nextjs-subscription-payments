@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { requireUser } from '@/utils/auth/require-user';
 import CompaniesScreen from '../CompaniesScreen';
 import {
-  buildCanonicalActiveAttemptByQuizId,
+  buildCanonicalAttemptByQuizId,
   buildCompanySummary,
   calculateCompanyProgress
 } from '../company-summary';
@@ -105,13 +105,11 @@ export default async function ViewAllCompaniesPage() {
     {}
   );
 
-  const canonicalActiveAttemptByQuizId = buildCanonicalActiveAttemptByQuizId(
-    attempts
-  );
+  const canonicalAttemptByQuizId = buildCanonicalAttemptByQuizId(attempts);
 
   const attemptIds = Array.from(
     new Set(
-      Object.values(canonicalActiveAttemptByQuizId).map((attempt) => attempt.id)
+      Object.values(canonicalAttemptByQuizId).map((attempt) => attempt.id)
     )
   ).filter(Boolean);
 
@@ -159,7 +157,7 @@ export default async function ViewAllCompaniesPage() {
     const progress = calculateCompanyProgress({
       quizIds: companyQuizzes.map((quiz) => quiz.id),
       questionCountByQuizId,
-      canonicalActiveAttemptByQuizId,
+      canonicalAttemptByQuizId,
       answeredCountByAttempt
     });
 
