@@ -38,6 +38,7 @@ type AttemptRow = {
   quiz_id: string;
   submitted_at: string | null;
   passed: boolean | null;
+  score: number | null;
   started_at: string;
 };
 
@@ -133,7 +134,7 @@ export async function getHomePageData(): Promise<{
   const { data: attemptsData } = quizIds.length
     ? await db
         .from('attempts')
-        .select('id,quiz_id,submitted_at,passed,started_at')
+        .select('id,quiz_id,submitted_at,passed,score,started_at')
         .eq('user_id', user.id)
         .in('quiz_id', quizIds)
         .order('started_at', { ascending: false })

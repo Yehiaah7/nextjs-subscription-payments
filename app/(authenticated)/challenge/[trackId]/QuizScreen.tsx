@@ -256,19 +256,39 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     loadQuiz().finally(() => setLoading(false));
   }, [challengeId, supabase]);
 
-  const finalizeAttempt = async (nextStates: Record<string, AttemptState>) => {
+  const finalizeAttempt = async () => {
     if (!attemptId || !quiz) return;
 
     setFinishing(true);
     if (pendingSaveRef.current) {
       await pendingSaveRef.current;
     }
+    const requiredQuestionIds = new Set(quiz.questions.map((item) => item.id));
+    const { data: savedAnswersData } = await supabase
+      .from('answers')
+      .select('question_id,points_awarded')
+      .eq('attempt_id', attemptId);
+    const savedAnswers = (savedAnswersData ?? []).filter((answer: any) =>
+      requiredQuestionIds.has(answer.question_id)
+    );
+    const savedQuestionIds = new Set<string>(
+      savedAnswers.map((answer: any) => answer.question_id as string)
+    );
+    const hasSavedAllRequiredSteps =
+      savedQuestionIds.size === quiz.questions.length;
+
+    if (!hasSavedAllRequiredSteps) {
+      setPersistedAnsweredQuestionIds(savedQuestionIds);
+      setFinishing(false);
+      return;
+    }
+
     const totalPossible = quiz.questions.reduce(
       (sum, item) => sum + item.points,
       0
     );
-    const awarded = quiz.questions.reduce(
-      (sum, item) => sum + (nextStates[item.id]?.pointsAwarded ?? 0),
+    const awarded = savedAnswers.reduce(
+      (sum: number, item: any) => sum + (item.points_awarded ?? 0),
       0
     );
     const finalScore = Math.round((awarded / Math.max(totalPossible, 1)) * 100);
@@ -283,6 +303,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       })
       .eq('id', attemptId);
 
+    setPersistedAnsweredQuestionIds(savedQuestionIds);
     setResult({ scorePercent: finalScore, awarded, total: totalPossible });
     setFinishing(false);
   };
@@ -624,7 +645,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                 if (!canMoveNext || finishing) return;
                 if (isLastStep) {
                   if (!allQuestionsAnswered) return;
-                  finalizeAttempt(attemptStates);
+                  finalizeAttempt();
                   return;
                 }
                 setActiveIndex((value) =>

@@ -28,6 +28,8 @@ type AttemptRow = {
   id: string;
   quiz_id: string;
   submitted_at: string | null;
+  passed: boolean | null;
+  score: number | null;
   started_at: string;
 };
 
@@ -83,7 +85,7 @@ export default async function ViewAllCompaniesPage() {
   const { data: attemptsData, error: attemptsError } = quizIds.length
     ? await db
         .from('attempts')
-        .select('id,quiz_id,submitted_at,started_at')
+        .select('id,quiz_id,submitted_at,passed,score,started_at')
         .eq('user_id', user.id)
         .in('quiz_id', quizIds)
         .order('started_at', { ascending: false })

@@ -43,6 +43,7 @@ export type CompanyChallenge = {
   answeredSteps: number;
   completedSteps: number;
   totalSteps: number;
+  progressPercent: number;
   score: number;
   retake: boolean;
   reviewAvailable: boolean;
@@ -128,7 +129,10 @@ export default function CompanyDetailsScreen({
           <h1 className="t-title">Home</h1>
         </header>
 
-        <CompanySummaryCard company={companySummary} className="app-card mb-5" />
+        <CompanySummaryCard
+          company={companySummary}
+          className="app-card mb-5"
+        />
 
         <div className="mb-4 flex items-center gap-2">
           <span className="t-card-title">PM interview practice</span>
@@ -238,13 +242,7 @@ export default function CompanyDetailsScreen({
                         <div
                           className="h-full rounded-pill bg-primary"
                           style={{
-                            width: `${
-                              challenge.totalSteps
-                                ? (challenge.completedSteps /
-                                    challenge.totalSteps) *
-                                  100
-                                : 0
-                            }%`
+                            width: `${challenge.progressPercent}%`
                           }}
                         />
                       </div>
