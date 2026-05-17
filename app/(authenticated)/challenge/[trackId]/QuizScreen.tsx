@@ -121,6 +121,31 @@ const emptyAttemptState: AttemptState = {
   pointsAwarded: 0
 };
 
+const getSavedAnsweredQuestionIds = (
+  answers: { question_id: string }[],
+  questions: Pick<Question, 'id'>[]
+) => {
+  const quizQuestionIds = new Set(questions.map((question) => question.id));
+  return new Set(
+    answers
+      .map((answer) => answer.question_id)
+      .filter((questionId) => quizQuestionIds.has(questionId))
+  );
+};
+
+const loadSavedAnsweredQuestionIds = async (
+  supabase: any,
+  currentAttemptId: string,
+  questions: Pick<Question, 'id'>[]
+) => {
+  const { data: savedAnswersData } = await supabase
+    .from('answers')
+    .select('question_id')
+    .eq('attempt_id', currentAttemptId);
+
+  return getSavedAnsweredQuestionIds(savedAnswersData ?? [], questions);
+};
+
 const saveAnswer = async (
   supabase: any,
   answerPayload: AnswerPayload
@@ -295,9 +320,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
       const answersData =
         answersByAttemptId.get(String(effectiveAttempt.id)) ?? [];
+      const persistedAnsweredIds = getSavedAnsweredQuestionIds(
+        answersData ?? [],
+        normalizedQuiz.questions
+      );
 
       const nextStates: Record<string, AttemptState> = {};
       for (const answer of answersData ?? []) {
+        if (!persistedAnsweredIds.has(answer.question_id)) continue;
         let parsedMeta: {
           wrongAttemptsCount?: number;
           lastSelectedOptionId?: string;
@@ -326,9 +356,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }
 
       setAttemptStates(nextStates);
-      setPersistedAnsweredQuestionIds(
-        new Set((answersData ?? []).map((answer: any) => answer.question_id))
-      );
+      setPersistedAnsweredQuestionIds(persistedAnsweredIds);
 
       const firstPending = normalizedQuiz.questions.findIndex(
         (question) => !nextStates[question.id]?.lastSelectedOptionId
@@ -340,7 +368,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       setActiveIndex(resumeIndex);
       console.log('[QuizTrace] resume index chosen', {
         attemptId: effectiveAttempt.id,
-        answeredCount: (answersData ?? []).length,
+        answeredCount: persistedAnsweredIds.size,
         firstPending,
         resumeIndex,
         resumeStep: resumeIndex + 1
@@ -492,33 +520,28 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       return;
     }
 
-    const { count: savedCount } = await supabase
-      .from('answers')
-      .select('question_id', { count: 'exact', head: true })
-      .eq('attempt_id', attemptId);
-    const nextAnsweredCount = persistedAnsweredQuestionIds.has(question.id)
-      ? persistedAnsweredQuestionIds.size
-      : persistedAnsweredQuestionIds.size + 1;
+    const savedAnsweredQuestionIds = await loadSavedAnsweredQuestionIds(
+      supabase,
+      attemptId,
+      quiz?.questions ?? []
+    );
+    const savedCount = savedAnsweredQuestionIds.size;
     const inQuizProgressValue =
-      (nextAnsweredCount / Math.max(quiz?.questions.length ?? 1, 1)) * 100;
+      (savedCount / Math.max(quiz?.questions.length ?? 1, 1)) * 100;
 
     console.log('[QuizTrace] answer saved', {
       attemptId,
       questionId: question.id,
       saveResultError: null,
       saveResultData: saveResult.data ?? null,
-      savedAnswersCountForAttempt: savedCount ?? null,
+      savedAnswersCountForAttempt: savedCount,
       inQuizProgressValue
     });
     console.log(
-      `[RuntimeProof] quiz attempt id=${attemptId} saved answers count=${savedCount ?? 'null'} in-quiz progress=${inQuizProgressValue}% after question=${nextAnsweredCount}`
+      `[RuntimeProof] quiz attempt id=${attemptId} saved answers count=${savedCount} in-quiz progress=${inQuizProgressValue}% after question=${savedCount}`
     );
     markCompanyChallengeListStale(companyId);
-    setPersistedAnsweredQuestionIds((current) => {
-      const next = new Set(current);
-      next.add(question.id);
-      return next;
-    });
+    setPersistedAnsweredQuestionIds(savedAnsweredQuestionIds);
     setSavingAnswerQuestionIds((current) => {
       const next = new Set(current);
       next.delete(question.id);
@@ -539,6 +562,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
   const currentState = attemptStates[currentQuestion.id] ?? emptyAttemptState;
   const answeredCount = persistedAnsweredQuestionIds.size;
+  const inQuizProgressPercent =
+    (answeredCount / Math.max(quiz.questions.length, 1)) * 100;
   const isLastStep = activeIndex === quiz.questions.length - 1;
   const isSavingCurrentAnswer = savingAnswerQuestionIds.has(currentQuestion.id);
   const canMoveNext =
@@ -675,7 +700,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           <div
             className="h-full rounded-pill bg-primary"
             style={{
-              width: `${(answeredCount / Math.max(quiz.questions.length, 1)) * 100}%`
+              width: `${inQuizProgressPercent}%`
             }}
           />
         </div>
