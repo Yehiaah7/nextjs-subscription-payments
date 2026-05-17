@@ -13,10 +13,7 @@ import {
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ReactNode, useEffect, useState } from 'react';
-import {
-  MotionButton,
-  MotionCard
-} from '@/components/motion';
+import { MotionButton, MotionCard } from '@/components/motion';
 import MotionPage from '@/components/motion/MotionPage';
 import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
 import {
@@ -35,16 +32,14 @@ import {
   Seniority,
   SeniorityFilter
 } from '@/components/seniority/constants';
-import {
-  fadeSlideUp,
-  listVariants,
-  springTransition
-} from '@/lib/motion';
+import { fadeSlideUp, listVariants, springTransition } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import type { CompanySummary } from '@/app/(authenticated)/companies/company-summary';
 import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
+import UserStatTile from '@/components/ui/UserStatTile';
+import type { UserProfileStats } from '@/types/user-profile-stats';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 
@@ -69,12 +64,6 @@ export type SkillPathChallenge = {
   durationMax: number;
 };
 
-type UserStats = {
-  rank: string;
-  solved: string;
-  solvingDays: string;
-};
-
 export default function HomeScreen({
   companyTracks,
   skillPathCategories,
@@ -94,7 +83,7 @@ export default function HomeScreen({
   userLastName?: string | null;
   userAvatarUrl?: string | null;
   userEmail?: string | null;
-  userStats: UserStats;
+  userStats: UserProfileStats;
 }) {
   const { avatar } = useUserAvatar();
   const [tab, setTab] = useState<MainTab>('companies');
@@ -245,20 +234,22 @@ export default function HomeScreen({
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            <StatTile
+            <UserStatTile
               icon={<TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />}
               label="Rank"
-              value={userStats.rank}
+              stat={userStats.rank}
             />
-            <StatTile
-              icon={<CheckCircleFilledIcon className="h-3.5 w-3.5 text-[#22c55e]" />}
+            <UserStatTile
+              icon={
+                <CheckCircleFilledIcon className="h-3.5 w-3.5 text-[#22c55e]" />
+              }
               label="Solved"
-              value={userStats.solved}
+              stat={userStats.solved}
             />
-            <StatTile
+            <UserStatTile
               icon={<FireFilledIcon className="h-3.5 w-3.5 text-orange-500" />}
               label="Solving Days"
-              value={userStats.solvingDays}
+              stat={userStats.solvingDays}
             />
           </div>
         </MotionCard>
@@ -386,30 +377,6 @@ function SkillPathChallengeCard({
         </Link>
       </MotionCard>
     </MotionCard>
-  );
-}
-
-function StatTile({
-  icon,
-  label,
-  value
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <article className="rounded-xl bg-[#eff6ff] px-2 py-2 text-center">
-      <div className="mb-1 inline-flex items-center justify-center rounded-full bg-white p-1">
-        {icon}
-      </div>
-      <p className="text-[9px] font-black tracking-[0.04em] text-[#64748b]">
-        {label}
-      </p>
-      <p className="mt-1 text-[20px] font-bold leading-none text-[#0f172a]">
-        {value}
-      </p>
-    </article>
   );
 }
 
