@@ -397,7 +397,16 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
 
   return (
     <MotionCard>
-      <Link href={href} className={cn('block w-full', focusRingInteractive)}>
+      <Link
+        href={href}
+        onClick={() =>
+          console.log('[proof] company challenge card clicked', {
+            companyId: track.companySummary.id,
+            href
+          })
+        }
+        className={cn('block w-full', focusRingInteractive)}
+      >
         <article
           className={cn(
             'app-card cursor-pointer border border-primary-soft',
