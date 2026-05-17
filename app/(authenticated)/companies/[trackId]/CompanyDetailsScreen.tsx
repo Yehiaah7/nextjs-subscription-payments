@@ -202,7 +202,7 @@ export default function CompanyDetailsScreen({
               <motion.div key={challenge.id} variants={fadeSlideUp}>
                 <MotionCard>
                   <Link
-                    href={`/challenge/${challenge.id}?company=${companyId}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
+                    href={`/challenge/${challenge.id}?company=${companyId}${challenge.attemptId ? `&attempt=${challenge.attemptId}` : ''}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
                     className={cn(
                       'app-card block cursor-pointer',
                       cardInteractive,
