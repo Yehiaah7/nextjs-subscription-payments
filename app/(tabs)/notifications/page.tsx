@@ -1,7 +1,8 @@
-export default function NotificationsPage() {
-  return (
-    <section className="p-4 text-text">
-      <h1 className="t-title">Notifications</h1>
-    </section>
-  );
+import { requireUser } from '@/utils/auth/require-user';
+import AlertsScreen from '../alerts/AlertsScreen';
+
+export default async function NotificationsPage() {
+  await requireUser();
+
+  return <AlertsScreen />;
 }
