@@ -23,12 +23,17 @@ export type QuizProgressStatus = 'in-progress' | 'not-solved' | 'solved';
 
 export type QuizAttemptProgress = {
   attempt: AttemptLike | null;
+  attemptId: string | null;
+  answeredCount: number;
   answeredSteps: number;
   completedSteps: number;
   totalSteps: number;
   progressPercent: number;
   score: number;
+  isCompleted: boolean;
   passed: boolean;
+  solvedBadgeValue: 'IN PROGRESS' | 'NOT SOLVED' | 'SOLVED';
+  tabClassification: QuizProgressStatus;
   status: QuizProgressStatus;
 };
 
@@ -119,7 +124,13 @@ export const calculateCompanyProgress = ({
   const answeredSteps = quizIds.reduce((sum, quizId) => {
     const attemptId = canonicalAttemptByQuizId[quizId]?.id;
     if (!attemptId) return sum;
-    return sum + (answeredCountByAttempt[attemptId]?.size ?? 0);
+    return (
+      sum +
+      Math.min(
+        answeredCountByAttempt[attemptId]?.size ?? 0,
+        questionCountByQuizId[quizId] ?? 0
+      )
+    );
   }, 0);
 
   return totalSteps ? Math.round((answeredSteps / totalSteps) * 100) : 0;
@@ -140,8 +151,8 @@ export const calculateQuizAttemptProgress = ({
   totalPoints: number;
   passScore: number;
 }): QuizAttemptProgress => {
-  const answeredSteps = Math.min(answeredQuestionIds.size, totalSteps);
-  const hasCompletedAllSteps = totalSteps > 0 && answeredSteps >= totalSteps;
+  const answeredCount = Math.min(answeredQuestionIds.size, totalSteps);
+  const hasAnsweredEveryStep = totalSteps > 0 && answeredCount === totalSteps;
   const savedScore =
     typeof attempt?.score === 'number'
       ? Math.max(0, Math.min(100, attempt.score))
@@ -149,32 +160,44 @@ export const calculateQuizAttemptProgress = ({
   const score =
     savedScore ??
     (totalPoints ? Math.round((awardedPoints / totalPoints) * 100) : 0);
-  const savedCompletionSatisfied =
+  const isCompleted =
     Boolean(attempt?.submitted_at) &&
-    hasCompletedAllSteps &&
+    hasAnsweredEveryStep &&
     (attempt?.passed === true ||
       (attempt?.passed == null && score >= passScore));
   const progressPercent = totalSteps
-    ? savedCompletionSatisfied
-      ? 100
-      : Math.round((answeredSteps / totalSteps) * 100)
+    ? Math.round((answeredCount / totalSteps) * 100)
     : 0;
-  const completedSteps = savedCompletionSatisfied ? totalSteps : answeredSteps;
-  const passed = savedCompletionSatisfied;
-  const status: QuizProgressStatus = passed
-    ? 'solved'
-    : answeredSteps > 0 && !attempt?.submitted_at
-      ? 'in-progress'
-      : 'not-solved';
+  const completedSteps = answeredCount;
+  const passed = isCompleted;
+  const tabClassification: QuizProgressStatus =
+    answeredCount === 0
+      ? 'not-solved'
+      : answeredCount < totalSteps
+        ? 'in-progress'
+        : isCompleted
+          ? 'solved'
+          : 'not-solved';
+  const solvedBadgeValue =
+    tabClassification === 'solved'
+      ? 'SOLVED'
+      : tabClassification === 'in-progress'
+        ? 'IN PROGRESS'
+        : 'NOT SOLVED';
 
   return {
     attempt,
-    answeredSteps,
+    attemptId: attempt?.id ?? null,
+    answeredCount,
+    answeredSteps: answeredCount,
     completedSteps,
     totalSteps,
     progressPercent,
     score,
+    isCompleted,
     passed,
-    status
+    solvedBadgeValue,
+    tabClassification,
+    status: tabClassification
   };
 };

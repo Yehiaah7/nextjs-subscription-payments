@@ -37,6 +37,11 @@ export type CompanyChallenge = {
   category: string;
   categorySortOrder: number;
   status: ChallengeStatus;
+  attemptId: string | null;
+  answeredCount: number;
+  isCompleted: boolean;
+  solvedBadgeValue: 'IN PROGRESS' | 'NOT SOLVED' | 'SOLVED';
+  tabClassification: ChallengeStatus;
   practicingCount: string;
   duration: string;
   seniority: Seniority;
@@ -61,12 +66,6 @@ const STATUS_STYLES: Record<ChallengeStatus, string> = {
   'in-progress': 'bg-amber-100 text-amber-600',
   'not-solved': 'bg-red-100 text-red-600',
   solved: 'bg-green-100 text-green-600'
-};
-
-const STATUS_LABELS: Record<ChallengeStatus, string> = {
-  'in-progress': 'IN PROGRESS',
-  'not-solved': 'NOT SOLVED',
-  solved: 'SOLVED'
 };
 
 export default function CompanyDetailsScreen({
@@ -101,7 +100,7 @@ export default function CompanyDetailsScreen({
             : challenge.seniority === selectedSeniority
         )
         .filter((challenge) =>
-          filter === 'all' ? true : challenge.status === filter
+          filter === 'all' ? true : challenge.tabClassification === filter
         )
         .sort((a, b) =>
           a.categorySortOrder === b.categorySortOrder
@@ -199,10 +198,10 @@ export default function CompanyDetailsScreen({
                         </div>
                         <span
                           className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
-                            STATUS_STYLES[challenge.status]
+                            STATUS_STYLES[challenge.tabClassification]
                           }`}
                         >
-                          {STATUS_LABELS[challenge.status]}
+                          {challenge.solvedBadgeValue}
                         </span>
                         {challenge.retake ? (
                           <ArrowPathFilledIcon
