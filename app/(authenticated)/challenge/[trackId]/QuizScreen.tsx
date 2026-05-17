@@ -48,6 +48,14 @@ type Quiz = {
   questions: Question[];
 };
 
+type AttemptRow = {
+  id: string;
+  submitted_at: string | null;
+  passed: boolean | null;
+  score: number | null;
+  started_at: string;
+};
+
 type AttemptState = {
   solvedOptionId: string | null;
   lastSelectedOptionId: string | null;
@@ -102,6 +110,22 @@ const emptyAttemptState: AttemptState = {
   wrongAttemptsCount: 0,
   pointsAwarded: 0
 };
+
+const getAttemptStartedAtMs = (attempt: AttemptRow) =>
+  attempt.started_at ? new Date(attempt.started_at).getTime() : 0;
+
+const selectAttemptToResume = (attempts: AttemptRow[]) =>
+  [...attempts].sort((a, b) => {
+    const aIsSolved = Boolean(a.submitted_at && a.passed);
+    const bIsSolved = Boolean(b.submitted_at && b.passed);
+    if (aIsSolved !== bIsSolved) return aIsSolved ? -1 : 1;
+
+    const aIsOpen = !a.submitted_at;
+    const bIsOpen = !b.submitted_at;
+    if (aIsOpen !== bIsOpen) return aIsOpen ? -1 : 1;
+
+    return getAttemptStartedAtMs(b) - getAttemptStartedAtMs(a);
+  })[0] ?? null;
 
 export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const supabase = useMemo(() => createClient() as any, []);
@@ -171,11 +195,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         .order('started_at', { ascending: false });
 
       const retryRequested = searchParams.get('retry') === '1';
+      const attempts = (attemptsData ?? []) as AttemptRow[];
       let effectiveAttempt = retryRequested
         ? null
-        : ((attemptsData ?? []).find((attempt: any) => !attempt.submitted_at) ??
-          attemptsData?.[0] ??
-          null);
+        : selectAttemptToResume(attempts);
       if (!effectiveAttempt) {
         const { data: newAttempt } = await supabase
           .from('attempts')
@@ -257,8 +280,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     loadQuiz().finally(() => setLoading(false));
   }, [challengeId, supabase]);
 
-  const finalizeAttempt = async () => {
-    if (!attemptId || !quiz) return;
+  const finalizeAttempt = async (completedQuestionIds?: Set<string>) => {
+    if (!attemptId || !quiz || finishing) return;
 
     setFinishing(true);
     if (pendingSaveRef.current) {
@@ -275,8 +298,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     const savedQuestionIds = new Set<string>(
       savedAnswers.map((answer: any) => answer.question_id as string)
     );
+    const completedIds = completedQuestionIds ?? savedQuestionIds;
     const hasSavedAllRequiredSteps =
-      savedQuestionIds.size === quiz.questions.length;
+      savedQuestionIds.size === quiz.questions.length &&
+      quiz.questions.every((question) => completedIds.has(question.id));
 
     if (!hasSavedAllRequiredSteps) {
       setPersistedAnsweredQuestionIds(savedQuestionIds);
@@ -304,15 +329,19 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       })
       .eq('id', attemptId);
 
-    setPersistedAnsweredQuestionIds(savedQuestionIds);
+    setPersistedAnsweredQuestionIds(
+      new Set(quiz.questions.map((question) => question.id))
+    );
     markCompanyChallengeListStale(companyId);
+    router.refresh();
     setResult({ scorePercent: finalScore, awarded, total: totalPossible });
     setFinishing(false);
   };
 
   const onSelectOption = async (question: Question, optionId: string) => {
-    if (!attemptId) return;
+    if (!attemptId || !quiz) return;
 
+    const loadedQuiz = quiz;
     const previousState = attemptStates[question.id] ?? emptyAttemptState;
     const option = question.options.find((item) => item.id === optionId);
     if (!option) return;
@@ -380,7 +409,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       ? persistedAnsweredQuestionIds.size
       : persistedAnsweredQuestionIds.size + 1;
     const inQuizProgressValue =
-      (nextAnsweredCount / Math.max(quiz?.questions.length ?? 1, 1)) * 100;
+      (nextAnsweredCount / Math.max(loadedQuiz.questions.length, 1)) * 100;
     const rawSaveError = saveResult.error
       ? {
           message: saveResult.error.message,
@@ -403,13 +432,23 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       `[RuntimeProof] quiz attempt id=${attemptId} saved answers count=${savedCount ?? 'null'} in-quiz progress=${inQuizProgressValue}% after question=${nextAnsweredCount}`
     );
     markCompanyChallengeListStale(companyId);
-    setPersistedAnsweredQuestionIds((current) => {
-      const next = new Set(current);
-      next.add(question.id);
-      return next;
-    });
+    const nextPersistedQuestionIds = new Set(persistedAnsweredQuestionIds);
+    nextPersistedQuestionIds.add(question.id);
+    setPersistedAnsweredQuestionIds(nextPersistedQuestionIds);
     if (pendingSaveRef.current === savePromise) {
       pendingSaveRef.current = null;
+    }
+
+    const answeredFinalRequiredQuestion =
+      loadedQuiz.questions[loadedQuiz.questions.length - 1]?.id === question.id;
+    const answeredEveryRequiredQuestion =
+      Boolean(loadedQuiz.questions.length) &&
+      loadedQuiz.questions.every((item) =>
+        nextPersistedQuestionIds.has(item.id)
+      );
+
+    if (answeredFinalRequiredQuestion && answeredEveryRequiredQuestion) {
+      await finalizeAttempt(nextPersistedQuestionIds);
     }
   };
 
