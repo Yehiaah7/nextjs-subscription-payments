@@ -22,6 +22,7 @@ module.exports = {
         container: 'var(--color-container)',
         primary: 'var(--color-primary)',
         'primary-soft': 'var(--color-primary-soft)',
+        'success-button': 'var(--color-success-button)',
         'surface-muted': 'var(--color-surface-muted)',
         'surface-soft': 'var(--color-surface-soft)',
         border: 'var(--color-border)',
