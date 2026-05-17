@@ -150,12 +150,14 @@ export const calculateQuizAttemptProgress = ({
   const score = totalPoints
     ? Math.round((awardedPoints / totalPoints) * 100)
     : 0;
-  const isCompleted = hasAnsweredEveryStep && score >= passScore;
+  const attemptMarkedPassed = attempt?.passed === true;
+  const isCompleted =
+    hasAnsweredEveryStep && (attemptMarkedPassed || score >= passScore);
   const progressPercent = totalSteps
     ? Math.round((answeredCount / totalSteps) * 100)
     : 0;
   const completedSteps = answeredCount;
-  const passed = isCompleted;
+  const passed = attemptMarkedPassed || isCompleted;
   const tabClassification: QuizProgressStatus =
     answeredCount === 0
       ? 'not-solved'
