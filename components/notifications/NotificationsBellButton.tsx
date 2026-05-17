@@ -19,14 +19,21 @@ export default function NotificationsBellButton({
   const router = useRouter();
 
   const openNotifications = useCallback(() => {
+    console.log('open notifications handler fired');
+    console.log('navigation started');
     router.push('/alerts');
   }, [router]);
+
+  const handleBellClick = useCallback(() => {
+    console.log('bell clicked');
+    openNotifications();
+  }, [openNotifications]);
 
   return (
     <button
       type="button"
       aria-label="Open Notifications"
-      onClick={openNotifications}
+      onClick={handleBellClick}
       className={cn(
         'relative z-20 inline-flex h-8 w-8 touch-manipulation items-center justify-center rounded-full bg-white text-muted hover:text-primary',
         iconBtnInteractive,
