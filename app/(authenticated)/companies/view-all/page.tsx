@@ -97,16 +97,6 @@ export default async function ViewAllCompaniesPage() {
 
   const attempts = (attemptsData ?? []) as AttemptRow[];
 
-  const latestAttemptByQuizId = attempts.reduce(
-    (acc: Record<string, AttemptRow>, attempt) => {
-      if (!acc[attempt.quiz_id]) {
-        acc[attempt.quiz_id] = attempt;
-      }
-      return acc;
-    },
-    {}
-  );
-
   const canonicalAttemptByQuizId = buildCanonicalAttemptByQuizId(attempts);
 
   const attemptIds = Array.from(

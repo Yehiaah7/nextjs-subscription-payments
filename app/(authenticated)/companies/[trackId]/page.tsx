@@ -143,23 +143,12 @@ export default async function CompanyDetailsPage({
     : { data: [] as AttemptRow[] };
   const attempts = (attemptsData ?? []) as AttemptRow[];
 
-  const latestAttemptByQuizId = attempts.reduce(
-    (acc: Record<string, AttemptRow>, attempt) => {
-      if (!acc[attempt.quiz_id]) {
-        acc[attempt.quiz_id] = attempt;
-      }
-      return acc;
-    },
-    {}
-  );
-
   const canonicalAttemptByQuizId = buildCanonicalAttemptByQuizId(attempts);
 
   const attemptIdsToLoadAnswers = Array.from(
-    new Set([
-      ...Object.values(latestAttemptByQuizId).map((attempt) => attempt?.id),
-      ...Object.values(canonicalAttemptByQuizId).map((attempt) => attempt?.id)
-    ])
+    new Set(
+      Object.values(canonicalAttemptByQuizId).map((attempt) => attempt.id)
+    )
   ).filter(Boolean);
 
   const { data: answersData } = attemptIdsToLoadAnswers.length
@@ -242,7 +231,6 @@ export default async function CompanyDetailsPage({
       totalPoints: totalPointsByQuiz[quiz.id] ?? totalSteps,
       passScore
     });
-    const isSubmitted = Boolean(currentAttempt?.submitted_at);
 
     const challengeCardDebugValue = {
       challengeId: quiz.id,
@@ -276,8 +264,9 @@ export default async function CompanyDetailsPage({
       totalSteps: progress.totalSteps,
       progressPercent: progress.progressPercent,
       score: progress.score,
-      retake: isSubmitted && !progress.passed,
-      reviewAvailable: isSubmitted && progress.passed
+      retake:
+        progress.answeredCount === progress.totalSteps && !progress.passed,
+      reviewAvailable: progress.passed
     };
   });
 
