@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 
-const transition = { duration: 0.18, ease: 'easeOut' } as const;
+const transition = { duration: 0.08, ease: 'easeOut' } as const;
 
 export function MotionCard({
   children,
@@ -22,9 +22,7 @@ export function MotionCard({
     <motion.div
       {...props}
       whileHover={
-        reducedMotion || disabled
-          ? undefined
-          : { y: -2, scale: 1.01 }
+        reducedMotion || disabled ? undefined : { y: -2, scale: 1.01 }
       }
       whileTap={reducedMotion || disabled ? undefined : { scale: 0.99 }}
       transition={transition}

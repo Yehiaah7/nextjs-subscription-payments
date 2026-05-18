@@ -67,10 +67,8 @@ p a {
 }
 
 .animated {
-  -webkit-animation-duration: 1s;
-  animation-duration: 1s;
-  -webkit-animation-duration: 1s;
-  animation-duration: 1s;
+  -webkit-animation-duration: 160ms;
+  animation-duration: 160ms;
   -webkit-animation-fill-mode: both;
   animation-fill-mode: both;
 }
@@ -126,12 +124,43 @@ body.mobile-app-page main#skip {
     border: 0;
   }
 
-  .t-title { font-size: var(--font-size-title); font-weight: var(--font-weight-title); line-height: var(--line-height-title); letter-spacing: var(--letter-spacing-title); }
-  .t-card-title { font-size: var(--font-size-card-title); font-weight: var(--font-weight-title); line-height: var(--line-height-card-title); letter-spacing: var(--letter-spacing-card-title); }
-  .t-body-muted { font-size: var(--font-size-body); font-weight: var(--font-weight-body); line-height: var(--line-height-body); letter-spacing: var(--letter-spacing-body); color: var(--color-text-subtle); }
-  .t-label { font-size: var(--font-size-label); font-weight: var(--font-weight-label); line-height: var(--line-height-label); letter-spacing: var(--letter-spacing-label); text-transform: none; }
-  .t-button { font-size: 12px; font-weight: var(--font-weight-label); letter-spacing: .08em; text-transform: none; }
-  .t-streak { font-size: 14px; font-weight: var(--font-weight-title); line-height: 1.4; }
+  .t-title {
+    font-size: var(--font-size-title);
+    font-weight: var(--font-weight-title);
+    line-height: var(--line-height-title);
+    letter-spacing: var(--letter-spacing-title);
+  }
+  .t-card-title {
+    font-size: var(--font-size-card-title);
+    font-weight: var(--font-weight-title);
+    line-height: var(--line-height-card-title);
+    letter-spacing: var(--letter-spacing-card-title);
+  }
+  .t-body-muted {
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
+    line-height: var(--line-height-body);
+    letter-spacing: var(--letter-spacing-body);
+    color: var(--color-text-subtle);
+  }
+  .t-label {
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-label);
+    line-height: var(--line-height-label);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: none;
+  }
+  .t-button {
+    font-size: 12px;
+    font-weight: var(--font-weight-label);
+    letter-spacing: 0.08em;
+    text-transform: none;
+  }
+  .t-streak {
+    font-size: 14px;
+    font-weight: var(--font-weight-title);
+    line-height: 1.4;
+  }
 }
 
 @layer utilities {
@@ -189,19 +218,19 @@ body.mobile-app-page main#skip {
   }
 
   .animate-page-enter {
-    animation: page-enter 200ms ease-out both;
+    animation: page-enter 100ms ease-out both;
   }
 
   .animate-option-correct {
-    animation: option-correct-pop 150ms ease-out both;
+    animation: option-correct-pop 120ms ease-out both;
   }
 
   .animate-option-wrong {
-    animation: option-wrong-shake 200ms ease-out 1;
+    animation: option-wrong-shake 150ms ease-out 1;
   }
 
   .animate-completion-pop {
-    animation: completion-pop 180ms ease-out both;
+    animation: completion-pop 120ms ease-out both;
   }
 
   .uppercase {
