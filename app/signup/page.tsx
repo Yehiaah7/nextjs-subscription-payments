@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
 import AuthSubmitButton from '@/components/ui/AuthSubmitButton';
+import GoogleSignInButton from '@/components/ui/AuthForms/GoogleSignInButton';
 import {
   btnInteractive,
   btnInteractiveColored,
@@ -173,6 +174,10 @@ export default async function SignupPage({
             Create account
           </AuthSubmitButton>
         </form>
+
+        <div className="mt-4">
+          <GoogleSignInButton label="Continue with Google" />
+        </div>
 
         {searchParams.error && (
           <p className="mt-3 text-sm text-red-500">{searchParams.error}</p>
