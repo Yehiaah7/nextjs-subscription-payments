@@ -141,19 +141,6 @@ const getSavedAnsweredQuestionIds = (
   );
 };
 
-const loadSavedAnsweredQuestionIds = async (
-  supabase: any,
-  currentAttemptId: string,
-  questions: Pick<Question, 'id'>[]
-) => {
-  const { data: savedAnswersData } = await supabase
-    .from('answers')
-    .select('question_id')
-    .eq('attempt_id', currentAttemptId);
-
-  return getSavedAnsweredQuestionIds(savedAnswersData ?? [], questions);
-};
-
 const saveAnswer = async (
   supabase: any,
   answerPayload: AnswerPayload
@@ -195,7 +182,6 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [finishing, setFinishing] = useState(false);
   const [result, setResult] = useState<{
     scorePercent: number;
     awarded: number;
@@ -207,10 +193,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   >({});
   const [persistedAnsweredQuestionIds, setPersistedAnsweredQuestionIds] =
     useState<Set<string>>(new Set());
-  const [savingAnswerQuestionIds, setSavingAnswerQuestionIds] = useState<
-    Set<string>
-  >(new Set());
-  const pendingSaveRef = useRef<Promise<unknown> | null>(null);
+  const pendingSaveRef = useRef<Promise<SaveAnswerResult> | null>(null);
   const loadQuizKeyRef = useRef<string | null>(null);
   const [wrongAnimatingOptionId, setWrongAnimatingOptionId] = useState<
     string | null
@@ -230,12 +213,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     setAttemptId(null);
     setActiveIndex(0);
     setLoading(true);
-    setFinishing(false);
     setResult(null);
     setNextChallengeId(null);
     setAttemptStates({});
     setPersistedAnsweredQuestionIds(new Set());
-    setSavingAnswerQuestionIds(new Set());
     pendingSaveRef.current = null;
     setWrongAnimatingOptionId(null);
 
@@ -432,56 +413,57 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const finalizeAttempt = async () => {
     if (!attemptId || !quiz) return;
 
-    setFinishing(true);
-    if (pendingSaveRef.current) {
-      await pendingSaveRef.current;
-    }
-    const requiredQuestionIds = new Set(quiz.questions.map((item) => item.id));
-    const { data: savedAnswersData } = await supabase
-      .from('answers')
-      .select('question_id,points_awarded')
-      .eq('attempt_id', attemptId);
-    const savedAnswers = (savedAnswersData ?? []).filter((answer: any) =>
-      requiredQuestionIds.has(answer.question_id)
-    );
-    const savedQuestionIds = new Set<string>(
-      savedAnswers.map((answer: any) => answer.question_id as string)
-    );
-    const hasSavedAllRequiredSteps =
-      savedQuestionIds.size === quiz.questions.length;
-
-    if (!hasSavedAllRequiredSteps) {
-      setPersistedAnsweredQuestionIds(savedQuestionIds);
-      setFinishing(false);
-      return;
-    }
-
+    const selectedQuestionIds = new Set<string>();
+    let awarded = 0;
     const totalPossible = quiz.questions.reduce(
       (sum, item) => sum + item.points,
       0
     );
-    const awarded = savedAnswers.reduce(
-      (sum: number, item: any) => sum + (item.points_awarded ?? 0),
-      0
-    );
-    const finalScore = Math.round((awarded / Math.max(totalPossible, 1)) * 100);
-    await supabase
-      .from('attempts')
-      .update({
-        submitted_at: new Date().toISOString(),
-        score: finalScore,
-        passed: true
-      })
-      .eq('id', attemptId);
 
-    if (userId) {
-      addChallengeCompletedNotification({ userId, challengeId });
+    for (const question of quiz.questions) {
+      const questionState = attemptStates[question.id] ?? emptyAttemptState;
+      if (questionState.lastSelectedOptionId) {
+        selectedQuestionIds.add(question.id);
+      }
+      awarded += questionState.pointsAwarded;
     }
 
-    setPersistedAnsweredQuestionIds(savedQuestionIds);
-    markCompanyChallengeListStale(companyId);
+    if (selectedQuestionIds.size !== quiz.questions.length) {
+      setPersistedAnsweredQuestionIds(selectedQuestionIds);
+      return;
+    }
+
+    const finalScore = Math.round((awarded / Math.max(totalPossible, 1)) * 100);
+
+    setPersistedAnsweredQuestionIds(selectedQuestionIds);
     setResult({ scorePercent: finalScore, awarded, total: totalPossible });
-    setFinishing(false);
+    markCompanyChallengeListStale(companyId);
+
+    const finishInBackground = async () => {
+      if (pendingSaveRef.current) {
+        await pendingSaveRef.current;
+      }
+
+      await supabase
+        .from('attempts')
+        .update({
+          submitted_at: new Date().toISOString(),
+          score: finalScore,
+          passed: true
+        })
+        .eq('id', attemptId);
+
+      if (userId) {
+        addChallengeCompletedNotification({ userId, challengeId });
+      }
+    };
+
+    finishInBackground().catch((error) => {
+      console.error('[QuizTrace] finalize sync failed', {
+        attemptId,
+        error
+      });
+    });
   };
 
   const onSelectOption = async (question: Question, optionId: string) => {
@@ -541,7 +523,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
     console.log('[QuizTrace] answers save payload', answerPayload);
 
-    setSavingAnswerQuestionIds((current) => {
+    setPersistedAnsweredQuestionIds((current) => {
       const next = new Set(current);
       next.add(question.id);
       return next;
@@ -561,44 +543,30 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         questionId: question.id,
         error: saveResult.error
       });
-      setSavingAnswerQuestionIds((current) => {
-        const next = new Set(current);
-        next.delete(question.id);
-        return next;
-      });
       if (pendingSaveRef.current === savePromise) {
         pendingSaveRef.current = null;
       }
       return;
     }
 
-    const savedAnsweredQuestionIds = await loadSavedAnsweredQuestionIds(
-      supabase,
-      attemptId,
-      quiz?.questions ?? []
-    );
-    const savedCount = savedAnsweredQuestionIds.size;
+    const optimisticAnsweredQuestionIds = new Set(persistedAnsweredQuestionIds);
+    optimisticAnsweredQuestionIds.add(question.id);
+    const savedCount = optimisticAnsweredQuestionIds.size;
     const inQuizProgressValue =
       (savedCount / Math.max(quiz?.questions.length ?? 1, 1)) * 100;
 
-    console.log('[QuizTrace] answer saved', {
+    console.log('[QuizTrace] answer saved in background', {
       attemptId,
       questionId: question.id,
       saveResultError: null,
       saveResultData: saveResult.data ?? null,
-      savedAnswersCountForAttempt: savedCount,
+      optimisticAnswersCountForAttempt: savedCount,
       inQuizProgressValue
     });
     console.log(
-      `[RuntimeProof] quiz attempt id=${attemptId} saved answers count=${savedCount} in-quiz progress=${inQuizProgressValue}% after question=${savedCount}`
+      `[RuntimeProof] quiz attempt id=${attemptId} optimistic answers count=${savedCount} in-quiz progress=${inQuizProgressValue}% after question=${savedCount}`
     );
     markCompanyChallengeListStale(companyId);
-    setPersistedAnsweredQuestionIds(savedAnsweredQuestionIds);
-    setSavingAnswerQuestionIds((current) => {
-      const next = new Set(current);
-      next.delete(question.id);
-      return next;
-    });
     if (pendingSaveRef.current === savePromise) {
       pendingSaveRef.current = null;
     }
@@ -617,9 +585,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const inQuizProgressPercent =
     (answeredCount / Math.max(quiz.questions.length, 1)) * 100;
   const isLastStep = activeIndex === quiz.questions.length - 1;
-  const isSavingCurrentAnswer = savingAnswerQuestionIds.has(currentQuestion.id);
-  const canMoveNext =
-    Boolean(currentState.lastSelectedOptionId) && !isSavingCurrentAnswer;
+  const canMoveNext = Boolean(currentState.lastSelectedOptionId);
   const selectedQuestionIds = new Set(persistedAnsweredQuestionIds);
   for (const [questionId, state] of Object.entries(attemptStates)) {
     if (state.lastSelectedOptionId) {
@@ -647,11 +613,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       )
     : [...currentQuestion.options].sort((a, b) => a.sort_order - b.sort_order);
 
-  const goBackToTrack = async () => {
-    if (pendingSaveRef.current) {
-      await pendingSaveRef.current;
-    }
-
+  const goBackToTrack = () => {
     if (
       userId &&
       !result &&
@@ -667,6 +629,15 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
     markCompanyChallengeListStale(companyId);
     router.push(returnToTrackHref);
+    pendingSaveRef.current?.catch((error) => {
+      console.error(
+        '[QuizTrace] background answer sync failed before leaving',
+        {
+          attemptId,
+          error
+        }
+      );
+    });
   };
 
   const goToNextChallenge = () => {
@@ -896,7 +867,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             <MotionButton
               type="button"
               onClick={() => {
-                if (!canMoveNext || finishing) return;
+                if (!canMoveNext) return;
                 if (isLastStep) {
                   if (!allQuestionsSelected) return;
                   finalizeAttempt();
@@ -906,11 +877,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                   Math.min(quiz.questions.length - 1, value + 1)
                 );
               }}
-              disabled={
-                !canMoveNext ||
-                finishing ||
-                (isLastStep && !allQuestionsSelected)
-              }
+              disabled={!canMoveNext || (isLastStep && !allQuestionsSelected)}
               className={cn(
                 'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
                 isLastStep

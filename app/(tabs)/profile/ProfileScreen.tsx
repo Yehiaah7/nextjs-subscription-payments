@@ -262,6 +262,7 @@ export default function ProfileScreen({
   const [isPhotoActionsOpen, setIsPhotoActionsOpen] = useState(false);
   const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
   const avatarUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const optimisticAvatarUrlRef = useRef<string | null>(null);
   const supabase = useMemo(() => createClient(), []);
   const currentAvatarUrl = avatar.imageUrl ?? null;
   const isAvatarActionPending =
@@ -274,6 +275,22 @@ export default function ProfileScreen({
       }
     };
   }, [editorImage]);
+
+  useEffect(() => {
+    return () => {
+      if (optimisticAvatarUrlRef.current) {
+        URL.revokeObjectURL(optimisticAvatarUrlRef.current);
+      }
+    };
+  }, []);
+
+  const replaceOptimisticAvatarUrl = (nextUrl: string | null) => {
+    if (optimisticAvatarUrlRef.current) {
+      URL.revokeObjectURL(optimisticAvatarUrlRef.current);
+    }
+
+    optimisticAvatarUrlRef.current = nextUrl;
+  };
 
   const closeAvatarEditor = () => {
     if (editorImage) {
@@ -344,6 +361,7 @@ export default function ProfileScreen({
     }
 
     let nextAvatarPath: string | null = null;
+    const previousAvatarUrl = currentAvatarUrl;
 
     try {
       setIsUploading(true);
@@ -363,6 +381,12 @@ export default function ProfileScreen({
           'Edited avatar exceeded the 4MB upload limit.'
         );
       }
+
+      const optimisticAvatarUrl = URL.createObjectURL(croppedAvatarBlob);
+      replaceOptimisticAvatarUrl(optimisticAvatarUrl);
+      closeAvatarEditor();
+      setAvatarImageUrl(optimisticAvatarUrl);
+
       const {
         data: { user }
       } = await supabase.auth.getUser();
@@ -452,7 +476,7 @@ export default function ProfileScreen({
           .remove([previousAvatarLocation.path]);
       }
 
-      closeAvatarEditor();
+      replaceOptimisticAvatarUrl(null);
       setAvatarImageUrl(nextAvatarUrl);
       setUploadSuccess(AVATAR_UPDATE_SUCCESS_MESSAGE);
       router.refresh();
@@ -467,6 +491,8 @@ export default function ProfileScreen({
         await supabase.storage.from(AVATAR_BUCKET).remove([nextAvatarPath]);
       }
 
+      replaceOptimisticAvatarUrl(null);
+      setAvatarImageUrl(previousAvatarUrl);
       setUploadSuccess(null);
       setUploadError(
         error instanceof AvatarStageError
@@ -520,6 +546,8 @@ export default function ProfileScreen({
       setUploadError(null);
       setUploadSuccess(null);
       closeAvatarEditor();
+      replaceOptimisticAvatarUrl(null);
+      setAvatarImageUrl(null);
 
       const {
         data: { user }
@@ -583,7 +611,6 @@ export default function ProfileScreen({
         }
       }
 
-      setAvatarImageUrl(null);
       setUploadSuccess(AVATAR_REMOVE_SUCCESS_MESSAGE);
       toast({
         title: AVATAR_REMOVE_SUCCESS_MESSAGE
@@ -596,6 +623,7 @@ export default function ProfileScreen({
         avatar_url: null
       });
     } catch (error) {
+      setAvatarImageUrl(avatarUrlToRemove);
       setUploadSuccess(null);
       setUploadError(
         error instanceof AvatarStageError

@@ -113,18 +113,25 @@ export function NotificationsProvider({
 
   const deleteNotificationById = useCallback(
     (notificationId: string) => {
-      setNotifications(deleteNotification(userId, notificationId));
+      setNotifications((currentNotifications) =>
+        currentNotifications.filter(
+          (notification) => notification.id !== notificationId
+        )
+      );
       setClearedHighlightKeys((currentKeys) => {
         const nextKeys = new Set(currentKeys);
-        notifications
+        notificationsRef.current
           .filter((notification) => notification.id === notificationId)
           .forEach((notification) =>
             nextKeys.delete(notificationHighlightKey(notification))
           );
         return nextKeys;
       });
+      queueMicrotask(() => {
+        deleteNotification(userId, notificationId);
+      });
     },
-    [notifications, userId]
+    [userId]
   );
 
   const highlightedNotificationIds = useMemo(
