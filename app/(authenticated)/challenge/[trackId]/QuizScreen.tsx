@@ -227,19 +227,41 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       if (!user) return;
       setUserId(user.id);
 
-      const { data: quizData } = await supabase
-        .from('quizzes')
-        .select(
-          'id,title,module_id,pass_score,modules(title,track_id),questions(id,prompt,explanation,sort_order,points,options(id,label,sort_order,is_correct))'
-        )
-        .eq('id', challengeId)
-        .single();
+      const loadQuiz = (questionExplanationField: 'explanation' | 'feedback') =>
+        supabase
+          .from('quizzes')
+          .select(
+            `id,title,module_id,pass_score,modules(title,track_id),questions(id,prompt,${questionExplanationField},sort_order,points,options(id,label,sort_order,is_correct))`
+          )
+          .eq('id', challengeId)
+          .single();
+
+      let questionExplanationField: 'explanation' | 'feedback' = 'explanation';
+      let { data: quizData, error: quizDataError } = await loadQuiz(
+        questionExplanationField
+      );
+      if (quizDataError) {
+        const fallback = await loadQuiz('feedback');
+        if (fallback.error) {
+          throw quizDataError;
+        }
+        questionExplanationField = 'feedback';
+        quizData = fallback.data;
+      }
 
       if (!quizData) return;
 
       const normalizedQuiz = {
         ...quizData,
-        questions: (quizData.questions ?? []).sort(
+        questions: (quizData.questions ?? [])
+          .map((question: any) => ({
+            ...question,
+            explanation:
+              questionExplanationField === 'feedback'
+                ? (question.feedback ?? null)
+                : (question.explanation ?? null)
+          }))
+          .sort(
           (a: Question, b: Question) => a.sort_order - b.sort_order
         )
       } as Quiz;

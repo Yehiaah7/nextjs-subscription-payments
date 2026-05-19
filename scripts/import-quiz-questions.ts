@@ -22,7 +22,7 @@ type QuestionRecord = {
   quiz_id: string;
   prompt: string;
   sort_order: number;
-  feedback: string | null;
+  explanation: string | null;
   options: Array<{ id: string; sort_order: number; label: string; is_correct: boolean }>;
 };
 
@@ -103,6 +103,7 @@ const parseCsv = (csvPath: string): { rows: CsvRow[]; invalidRows: string[] } =>
     if (opts.some((o) => !o)) { invalidRows.push(`Row ${row.rowNumber}: empty option found`); continue; }
     if (new Set(opts.map(normalize)).size !== 4) { invalidRows.push(`Row ${row.rowNumber}: duplicate options detected`); continue; }
     if (!['A', 'B', 'C', 'D'].includes(row.correctLetter)) { invalidRows.push(`Row ${row.rowNumber}: invalid Correct value '${row.correctLetter}'`); continue; }
+    if (!row.feedback.trim()) { invalidRows.push(`Row ${row.rowNumber}: missing Feedback (Why)`); continue; }
 
     const key = safeKey(row.qNumber, row.step);
     if (seen.has(key)) { invalidRows.push(`Row ${row.rowNumber}: duplicate Q# + Step key (${key})`); continue; }
@@ -143,11 +144,24 @@ async function run() {
   }
   if (!bestQuiz) throw new Error('No Google quiz found to update.');
 
-  const { data: questions, error: qError } = await supabase
-    .from('questions')
-    .select('id,quiz_id,prompt,sort_order,feedback,options(id,sort_order,label,is_correct)')
-    .eq('quiz_id', bestQuiz.id);
-  if (qError) throw qError;
+  const loadQuestions = async (explanationColumn: string) =>
+    supabase
+      .from('questions')
+      .select(`id,quiz_id,prompt,sort_order,${explanationColumn},options(id,sort_order,label,is_correct)`)
+      .eq('quiz_id', bestQuiz.id);
+
+  let explanationColumn: 'explanation' | 'feedback' = 'explanation';
+  let { data: questions, error: qError } = await loadQuestions(explanationColumn);
+
+  if (qError) {
+    const fallback = await loadQuestions('feedback');
+    if (fallback.error) {
+      throw qError;
+    }
+    explanationColumn = 'feedback';
+    questions = fallback.data;
+    qError = null;
+  }
 
   const questionRecords = (questions ?? []) as QuestionRecord[];
   const keyToQuestion = new Map<string, QuestionRecord[]>();
@@ -200,7 +214,10 @@ async function run() {
     }
 
     operations.push(async () => {
-      await supabase.from('questions').update({ prompt: row.quizQuestion, feedback: row.feedback || null }).eq('id', question.id);
+      await supabase
+        .from('questions')
+        .update({ prompt: row.quizQuestion, [explanationColumn]: row.feedback || null })
+        .eq('id', question.id);
       for (let i = 0; i < 4; i += 1) {
         await supabase
           .from('options')
