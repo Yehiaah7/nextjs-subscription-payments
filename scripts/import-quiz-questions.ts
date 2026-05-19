@@ -22,7 +22,8 @@ type QuestionRecord = {
   quiz_id: string;
   prompt: string;
   sort_order: number;
-  explanation: string | null;
+  explanation?: string | null;
+  feedback?: string | null;
   options: Array<{ id: string; sort_order: number; label: string; is_correct: boolean }>;
 };
 type QuizRecord = {
@@ -140,28 +141,45 @@ async function run() {
 
   const supabase = createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SERVICE_ROLE_KEY')) as any;
 
+  const { data: schemaColumns, error: schemaError } = await supabase
+    .from('information_schema.columns')
+    .select('table_name,column_name')
+    .eq('table_schema', 'public')
+    .in('table_name', ['questions', 'options']);
+  if (schemaError) throw schemaError;
+  const columnsByTable = new Map<string, Set<string>>();
+  for (const row of schemaColumns ?? []) {
+    const table = row.table_name as string;
+    const col = row.column_name as string;
+    columnsByTable.set(table, new Set([...(columnsByTable.get(table) ?? []), col]));
+  }
+  const questionFeedbackColumn = columnsByTable.get('questions')?.has('feedback') ? 'feedback' : 'explanation';
+  if (!columnsByTable.get('questions')?.has(questionFeedbackColumn)) {
+    throw new Error('Neither questions.feedback nor questions.explanation exists in the database schema.');
+  }
+  if (!columnsByTable.get('options')?.has('feedback')) {
+    throw new Error('options.feedback column is missing in the database schema.');
+  }
+  if (!columnsByTable.get('options')?.has('is_correct')) {
+    throw new Error('options.is_correct column is missing in the database schema.');
+  }
+
   const { data: quizzes, error: quizzesError } = await supabase
     .from('quizzes')
     .select('id,title,module_id,difficulty,modules(id,title,track_id,tracks(id,title,type))');
   if (quizzesError) throw quizzesError;
 
   const quizList = (quizzes ?? []) as QuizRecord[];
-  const loadQuestions = async (explanationColumn: string, quizId: string) =>
+  const loadQuestions = async (feedbackColumn: string, quizId: string) =>
     supabase
       .from('questions')
-      .select(`id,quiz_id,prompt,sort_order,${explanationColumn},options(id,sort_order,label,is_correct)`)
+      .select(`id,quiz_id,prompt,sort_order,${feedbackColumn},options(id,sort_order,label,is_correct,feedback)`)
       .eq('quiz_id', quizId);
 
-  let explanationColumn: 'explanation' | 'feedback' = 'explanation';
   const quizQuestions = new Map<string, QuestionRecord[]>();
   for (const quiz of quizList) {
-    let { data: questions, error: qError } = await loadQuestions(explanationColumn, quiz.id);
-    if (qError) {
-      const fallback = await loadQuestions('feedback', quiz.id);
-      if (fallback.error) throw qError;
-      explanationColumn = 'feedback';
-      questions = fallback.data;
-    }
+    const { data: questions, error: qError } = await loadQuestions(questionFeedbackColumn, quiz.id);
+    if (qError) throw qError;
     quizQuestions.set(quiz.id, (questions ?? []) as QuestionRecord[]);
   }
 
@@ -172,6 +190,8 @@ async function run() {
   const unmatchedReasons: string[] = [];
 
   const operations: Array<() => Promise<void>> = [];
+  const targetedQuestionIds = new Set<string>();
+  const targetedOptionIds = new Set<string>();
 
   const groups = new Map<string, CsvRow[]>();
   for (const row of rows) groups.set(row.qNumber, [...(groups.get(row.qNumber) ?? []), row]);
@@ -247,15 +267,19 @@ async function run() {
     }
 
     operations.push(async () => {
-      await supabase
+      const { error: questionUpdateError } = await supabase
         .from('questions')
-        .update({ prompt: row.quizQuestion, [explanationColumn]: row.feedback || null })
+        .update({ prompt: row.quizQuestion, [questionFeedbackColumn]: row.feedback || null })
         .eq('id', question.id);
+      if (questionUpdateError) throw questionUpdateError;
+      targetedQuestionIds.add(question.id);
       for (let i = 0; i < 4; i += 1) {
-        await supabase
+        const { error: optionUpdateError } = await supabase
           .from('options')
           .update({ label: row.options[i], is_correct: i === row.correctLetter.charCodeAt(0) - 65, feedback: i === row.correctLetter.charCodeAt(0) - 65 ? row.feedback || null : null })
           .eq('id', sortedOptions[i].id);
+        if (optionUpdateError) throw optionUpdateError;
+        targetedOptionIds.add(sortedOptions[i].id);
       }
     });
 
@@ -278,11 +302,42 @@ async function run() {
     for (const op of operations) await op();
   }
 
+  let verification: null | {
+    questionsUpdated: number;
+    optionsUpdated: number;
+    feedbackSavedOnQuestions: number;
+    feedbackSavedOnOptions: number;
+  } = null;
+  if (!dryRun) {
+    const questionIds = Array.from(targetedQuestionIds);
+    const optionIds = Array.from(targetedOptionIds);
+    const { data: updatedQuestions, error: updatedQuestionsError } = await supabase
+      .from('questions')
+      .select(`id,${questionFeedbackColumn}`)
+      .in('id', questionIds);
+    if (updatedQuestionsError) throw updatedQuestionsError;
+    const { data: updatedOptions, error: updatedOptionsError } = await supabase
+      .from('options')
+      .select('id,feedback')
+      .in('id', optionIds);
+    if (updatedOptionsError) throw updatedOptionsError;
+    verification = {
+      questionsUpdated: updatedQuestions?.length ?? 0,
+      optionsUpdated: updatedOptions?.length ?? 0,
+      feedbackSavedOnQuestions: (updatedQuestions ?? []).filter((q: any) => typeof q[questionFeedbackColumn] === 'string' && q[questionFeedbackColumn].trim() !== '').length,
+      feedbackSavedOnOptions: (updatedOptions ?? []).filter((o: any) => typeof o.feedback === 'string' && o.feedback.trim() !== '').length
+    };
+  }
+
   console.log(`Mode: ${dryRun ? 'dry-run' : 'apply'}`);
   console.log('Q# -> target quiz mapping:');
   console.log(mappingReport.join('\n'));
   if (!dryRun) console.log(`Backup written: ${backupPath}`);
   console.table(summary);
+  if (verification) {
+    console.log('Post-update DB verification:');
+    console.table(verification);
+  }
   if (invalidRows.length) console.log('Invalid rows (skipped):\n' + invalidRows.join('\n'));
   if (unmatched.length) console.log('Unmatched rows:\n' + unmatched.join('\n'));
   if (unmatchedReasons.length) console.log('Unmatched reasons:\n' + unmatchedReasons.join('\n'));
