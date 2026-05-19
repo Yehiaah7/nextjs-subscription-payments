@@ -1,54 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
+const DEFAULT_REDIRECT = '/dashboard';
+const CALLBACK_ERROR_REDIRECT = '/login?error=auth_callback_failed';
+
+function getSafeRedirectPath(candidate: string | null) {
+  if (!candidate) return DEFAULT_REDIRECT;
+  if (!candidate.startsWith('/')) return DEFAULT_REDIRECT;
+  if (candidate.startsWith('//')) return DEFAULT_REDIRECT;
+  return candidate;
+}
+
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
-  const next = requestUrl.searchParams.get('next') ?? '/home';
+  const next = getSafeRedirectPath(requestUrl.searchParams.get('next'));
 
-  if (code) {
-    const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (error) {
-      return NextResponse.redirect(
-        `${requestUrl.origin}/login?error=${encodeURIComponent(error.message)}`
-      );
-    }
-
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (user) {
-      const metadata = user.user_metadata ?? {};
-      const fullName = metadata.full_name ?? metadata.name ?? null;
-      const avatarUrl = metadata.avatar_url ?? metadata.picture ?? null;
-      const firstName = metadata.given_name ?? null;
-      const lastName = metadata.family_name ?? null;
-
-      const { error: profileError } = await supabase.from('profiles').upsert(
-        {
-          id: user.id,
-          name: fullName,
-          first_name: firstName,
-          last_name: lastName,
-          avatar_url: avatarUrl
-        },
-        {
-          onConflict: 'id'
-        }
-      );
-
-      if (profileError) {
-        return NextResponse.redirect(
-          `${requestUrl.origin}/login?error=${encodeURIComponent(
-            profileError.message
-          )}`
-        );
-      }
-    }
+  if (!code) {
+    return NextResponse.redirect(
+      new URL(CALLBACK_ERROR_REDIRECT, requestUrl.origin)
+    );
   }
 
-  return NextResponse.redirect(`${requestUrl.origin}${next}`);
+  const supabase = createClient();
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) {
+    return NextResponse.redirect(
+      new URL(CALLBACK_ERROR_REDIRECT, requestUrl.origin)
+    );
+  }
+
+  return NextResponse.redirect(new URL(next, requestUrl.origin));
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { createClient } from '@/utils/supabase/client';
-import { getURL } from '@/utils/helpers';
 import { cn } from '@/utils/cn';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -28,7 +27,7 @@ export default function GoogleSignInButton({
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     const supabase = createClient();
-    const redirectTo = getURL('/auth/callback?next=/home');
+    const redirectTo = `${window.location.origin}/auth/callback?next=/dashboard`;
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
