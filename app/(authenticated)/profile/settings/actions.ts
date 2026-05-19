@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/utils/auth/require-user';
 import { createClient } from '@/utils/supabase/server';
 
-const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
+const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
 const PASSWORD_MIN_LENGTH = 8;
 const ALLOWED_PROFILE_FIELDS = new Set([
   'first_name',
@@ -77,7 +77,7 @@ export async function updateAccountPreferences(formData: FormData) {
 
   if (!USERNAME_PATTERN.test(username)) {
     return redirect(
-      '/profile/settings?error=Username%20must%20be%203-20%20characters%20using%20only%20letters%2C%20numbers%2C%20or%20underscores.'
+      '/profile/settings?error=Username%20must%20be%203-30%20characters%20using%20lowercase%20letters%2C%20numbers%2C%20dots%2C%20underscores%2C%20or%20hyphens.'
     );
   }
 
@@ -174,6 +174,14 @@ export async function updateAccountPreferences(formData: FormData) {
 
 export async function changePassword(formData: FormData) {
   const user = await requireUser();
+  const providers: string[] = Array.isArray(user.app_metadata?.providers)
+    ? user.app_metadata.providers
+    : [];
+  const canChangePassword = providers.includes('email') || providers.length === 0;
+
+  if (!canChangePassword) {
+    return redirect('/profile/settings?error=Password%20is%20managed%20by%20your%20Google%20account.');
+  }
 
   const currentPassword = String(formData.get('currentPassword') || '').trim();
   const password = String(formData.get('password') || '').trim();

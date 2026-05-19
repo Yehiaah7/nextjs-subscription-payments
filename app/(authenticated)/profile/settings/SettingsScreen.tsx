@@ -76,11 +76,13 @@ function parsePhoneFromProfile(profile: ProfileValues) {
 export default function SettingsScreen({
   email,
   profile,
+  canChangePassword,
   status,
   error
 }: {
   email: string;
   profile: ProfileValues;
+  canChangePassword: boolean;
   status?: string;
   error?: string;
 }) {
@@ -177,7 +179,7 @@ export default function SettingsScreen({
                 setFormValues((prev) => ({ ...prev, email: value }))
               }
               type="email"
-              required
+              readOnly
             />
             <Field
               label="Username"
@@ -191,9 +193,9 @@ export default function SettingsScreen({
               }
               required
               minLength={3}
-              maxLength={20}
-              pattern="[A-Za-z0-9_]{3,20}"
-              title="3-20 chars: letters, numbers, underscore"
+              maxLength={30}
+              pattern="[a-z0-9._-]{3,30}"
+              title="3-30 chars: lowercase letters, numbers, dot, underscore, hyphen"
             />
 
             {status && (
@@ -248,7 +250,7 @@ export default function SettingsScreen({
           <p className="mb-3 text-[12px] font-bold tracking-[-0.3px] text-[#0f172b]">
             Security
           </p>
-          <form action={changePassword} className="space-y-3">
+          {canChangePassword ? <form action={changePassword} className="space-y-3">
             <Field
               label="Current password"
               name="currentPassword"
@@ -280,7 +282,7 @@ export default function SettingsScreen({
                 Change Password
               </FormLoadingButton>
             </div>
-          </form>
+          </form> : <p className="text-xs font-medium text-[#64748b]">You signed in with Google. Password is managed by your Google account.</p>}
         </section>
 
         <button

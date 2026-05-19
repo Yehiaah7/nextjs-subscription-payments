@@ -1,4 +1,5 @@
 import { requireUser } from '@/utils/auth/require-user';
+import { ensureProfileForUser } from '@/utils/profile/ensure-profile';
 import { createClient } from '@/utils/supabase/server';
 import SettingsScreen from './SettingsScreen';
 
@@ -56,6 +57,7 @@ export default async function SettingsPage({
 }) {
   const user = await requireUser();
   const supabase = createClient();
+  await ensureProfileForUser(user);
 
   const { data } = await (supabase as any)
     .from('profiles')
@@ -67,45 +69,16 @@ export default async function SettingsPage({
 
   const resolvedProfile = deriveProfileValues(user, (data ?? null) as ProfileRecord | null);
 
-  const hasProfileData = Boolean(
-    data?.first_name || data?.last_name || data?.username || data?.phone || data?.phone_e164
-  );
-  const hasMetadataData = Boolean(
-    user.user_metadata?.first_name ||
-      user.user_metadata?.last_name ||
-      user.user_metadata?.username ||
-      user.user_metadata?.phone
-  );
-
-  if (!hasProfileData && hasMetadataData) {
-    await (supabase as any).from('profiles').upsert(
-      {
-        id: user.id,
-        first_name: resolvedProfile.first_name || null,
-        last_name: resolvedProfile.last_name || null,
-        username: resolvedProfile.username || null,
-        phone: resolvedProfile.phone || null,
-        phone_country: resolvedProfile.phone_country || FALLBACK_PHONE_COUNTRY,
-        phone_country_code:
-          resolvedProfile.phone_country_code || FALLBACK_PHONE_COUNTRY_CODE,
-        phone_national: resolvedProfile.phone_national || null,
-        phone_e164: resolvedProfile.phone_e164 || null,
-        name:
-          [resolvedProfile.first_name, resolvedProfile.last_name]
-            .filter(Boolean)
-            .join(' ')
-            .trim() ||
-          user.email ||
-          'Member'
-      },
-      { onConflict: 'id' }
-    );
-  }
+  const providers: string[] = Array.isArray(user.app_metadata?.providers)
+    ? user.app_metadata.providers
+    : [];
+  const canChangePassword = providers.includes('email') || providers.length === 0;
 
   return (
     <SettingsScreen
       email={user.email ?? 'member@example.com'}
       profile={resolvedProfile}
+      canChangePassword={canChangePassword}
       error={searchParams.error}
       status={searchParams.status}
     />
