@@ -33,6 +33,11 @@ type QuizRecord = {
   difficulty: string | null;
   modules?: { id: string; title: string; track_id: string; tracks?: { id: string; title: string; type: string } };
 };
+type UpdateStats = {
+  questionRowsUpdated: number;
+  optionRowsUpdated: number;
+  feedbackRowsUpdated: number;
+};
 
 const STEP_ORDER = ['clarify', 'users', 'pain points', 'solutions', 'prioritize', 'metrics'] as const;
 
@@ -195,40 +200,34 @@ async function run() {
   const targetedQuestionIds = new Set<string>();
   const targetedOptionIds = new Set<string>();
 
-  const groups = new Map<string, CsvRow[]>();
-  for (const row of rows) groups.set(row.qNumber, [...(groups.get(row.qNumber) ?? []), row]);
-  const quizByQ = new Map<string, QuizRecord>();
-
-  for (const [qNumber, groupRows] of Array.from(groups.entries())) {
-    let winner: QuizRecord | null = null;
-    let bestScore = -1;
-    for (const quiz of quizList) {
-      const qs = quizQuestions.get(quiz.id) ?? [];
-      if (!qs.length) continue;
-      const promptSet = new Set(qs.map((q) => normalize(q.prompt)));
-      const promptMatches = groupRows.filter((r) => promptSet.has(normalize(r.quizQuestion))).length;
-      const titleMatches = groupRows.filter((r) => normalize(quiz.title) === normalize(r.originalQuestion)).length;
-      const moduleMatches = groupRows.filter((r) => normalize(quiz.modules?.title ?? '') === normalize(r.category)).length;
-      const trackMatches = groupRows.filter((r) => normalize(quiz.modules?.tracks?.title ?? '') === normalize(r.company)).length;
-      const score = promptMatches * 100 + titleMatches * 10 + moduleMatches * 3 + trackMatches;
-      if (score > bestScore) { bestScore = score; winner = quiz; }
-    }
-    if (winner && bestScore > 0) {
-      quizByQ.set(qNumber, winner);
-      mappingReport.push(`Q#${qNumber} -> ${winner.title} [${winner.id}] (track=${winner.modules?.tracks?.title ?? 'n/a'}, module=${winner.modules?.title ?? 'n/a'}, score=${bestScore})`);
-    } else {
-      mappingReport.push(`Q#${qNumber} -> UNMAPPED`);
-    }
-  }
+  const updateStats: UpdateStats = { questionRowsUpdated: 0, optionRowsUpdated: 0, feedbackRowsUpdated: 0 };
+  const validRowsCount = rows.length;
 
   for (const row of rows) {
-    const quiz = quizByQ.get(row.qNumber);
+    const quizCandidates = quizList
+      .map((quiz) => {
+        const qs = quizQuestions.get(quiz.id) ?? [];
+        const promptSet = new Set(qs.map((q) => normalize(q.prompt)));
+        const promptMatch = promptSet.has(normalize(row.quizQuestion)) ? 1 : 0;
+        const titleMatch = normalize(quiz.title) === normalize(row.originalQuestion) ? 1 : 0;
+        const moduleMatch = normalize(quiz.modules?.title ?? '') === normalize(row.category) ? 1 : 0;
+        const trackMatch = normalize(quiz.modules?.tracks?.title ?? '') === normalize(row.company) ? 1 : 0;
+        const score = promptMatch * 1000 + titleMatch * 100 + moduleMatch * 10 + trackMatch;
+        return { quiz, score };
+      })
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    const quiz = quizCandidates[0]?.quiz;
     if (!quiz) {
       summary.unmatchedRows += 1;
       unmatched.push(`Row ${row.rowNumber}`);
       unmatchedReasons.push(`Row ${row.rowNumber}: no mapped quiz for Q#${row.qNumber}`);
       continue;
     }
+    mappingReport.push(
+      `Row ${row.rowNumber} (Q#${row.qNumber}) -> ${quiz.title} [${quiz.id}] (track=${quiz.modules?.tracks?.title ?? 'n/a'}, module=${quiz.modules?.title ?? 'n/a'}, score=${quizCandidates[0]?.score ?? 0})`
+    );
     const questionRecords = quizQuestions.get(quiz.id) ?? [];
     let matches = questionRecords.filter((q) => normalize(q.prompt) === normalize(row.quizQuestion));
     if (matches.length !== 1) {
@@ -275,6 +274,8 @@ async function run() {
         .eq('id', question.id);
       if (questionUpdateError) throw questionUpdateError;
       targetedQuestionIds.add(question.id);
+      updateStats.questionRowsUpdated += 1;
+      if (row.feedback.trim()) updateStats.feedbackRowsUpdated += 1;
       for (let i = 0; i < 4; i += 1) {
         const { error: optionUpdateError } = await supabase
           .from('options')
@@ -282,6 +283,7 @@ async function run() {
           .eq('id', sortedOptions[i].id);
         if (optionUpdateError) throw optionUpdateError;
         targetedOptionIds.add(sortedOptions[i].id);
+        updateStats.optionRowsUpdated += 1;
       }
     });
 
@@ -309,6 +311,8 @@ async function run() {
     optionsUpdated: number;
     feedbackSavedOnQuestions: number;
     feedbackSavedOnOptions: number;
+    feedbackCountAfterUpdate: number;
+    sampleUpdatedQuestions: Array<{ id: string; prompt: string; feedbackValue: string | null }>;
   } = null;
   if (!dryRun) {
     const questionIds = Array.from(targetedQuestionIds);
@@ -323,12 +327,37 @@ async function run() {
       .select('id,feedback')
       .in('id', optionIds);
     if (updatedOptionsError) throw updatedOptionsError;
+    const { count: feedbackCountAfterUpdate, error: feedbackCountError } = await supabase
+      .from('questions')
+      .select('id', { count: 'exact', head: true })
+      .not(questionFeedbackColumn, 'is', null)
+      .neq(questionFeedbackColumn, '');
+    if (feedbackCountError) throw feedbackCountError;
+    const { data: sampleUpdatedQuestions, error: sampleError } = await supabase
+      .from('questions')
+      .select(`id,prompt,${questionFeedbackColumn}`)
+      .in('id', questionIds)
+      .not(questionFeedbackColumn, 'is', null)
+      .neq(questionFeedbackColumn, '')
+      .limit(10);
+    if (sampleError) throw sampleError;
     verification = {
       questionsUpdated: updatedQuestions?.length ?? 0,
       optionsUpdated: updatedOptions?.length ?? 0,
       feedbackSavedOnQuestions: (updatedQuestions ?? []).filter((q: any) => typeof q[questionFeedbackColumn] === 'string' && q[questionFeedbackColumn].trim() !== '').length,
-      feedbackSavedOnOptions: (updatedOptions ?? []).filter((o: any) => typeof o.feedback === 'string' && o.feedback.trim() !== '').length
+      feedbackSavedOnOptions: (updatedOptions ?? []).filter((o: any) => typeof o.feedback === 'string' && o.feedback.trim() !== '').length,
+      feedbackCountAfterUpdate: feedbackCountAfterUpdate ?? 0,
+      sampleUpdatedQuestions: (sampleUpdatedQuestions ?? []).map((q: any) => ({
+        id: q.id,
+        prompt: q.prompt,
+        feedbackValue: q[questionFeedbackColumn] ?? null
+      }))
     };
+    if (updateStats.feedbackRowsUpdated < Math.floor(validRowsCount * 0.9)) {
+      throw new Error(
+        `Apply failed: feedbackRowsUpdated=${updateStats.feedbackRowsUpdated} is below 90% threshold of valid rows (${Math.floor(validRowsCount * 0.9)}/${validRowsCount}). Unmatched=${summary.unmatchedRows}, ambiguous=${summary.skippedAmbiguous}, invalid=${summary.invalidRows}.`
+      );
+    }
   }
 
   console.log(`Mode: ${dryRun ? 'dry-run' : 'apply'}`);
@@ -336,9 +365,20 @@ async function run() {
   console.log(mappingReport.join('\n'));
   if (!dryRun) console.log(`Backup written: ${backupPath}`);
   console.table(summary);
+  console.log('DB update counts:');
+  console.table(updateStats);
   if (verification) {
     console.log('Post-update DB verification:');
-    console.table(verification);
+    console.table({
+      questionRowsUpdated: updateStats.questionRowsUpdated,
+      optionRowsUpdated: updateStats.optionRowsUpdated,
+      feedbackRowsUpdated: updateStats.feedbackRowsUpdated,
+      feedbackCountAfterUpdate: verification.feedbackCountAfterUpdate,
+      feedbackSavedOnQuestions: verification.feedbackSavedOnQuestions,
+      feedbackSavedOnOptions: verification.feedbackSavedOnOptions
+    });
+    console.log('Sample updated questions with feedback:');
+    console.table(verification.sampleUpdatedQuestions);
   }
   if (invalidRows.length) console.log('Invalid rows (skipped):\n' + invalidRows.join('\n'));
   if (unmatched.length) console.log('Unmatched rows:\n' + unmatched.join('\n'));
