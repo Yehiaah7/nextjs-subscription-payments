@@ -177,7 +177,7 @@ async function run() {
   for (const row of rows) groups.set(row.qNumber, [...(groups.get(row.qNumber) ?? []), row]);
   const quizByQ = new Map<string, QuizRecord>();
 
-  for (const [qNumber, groupRows] of groups.entries()) {
+  for (const [qNumber, groupRows] of Array.from(groups.entries())) {
     let winner: QuizRecord | null = null;
     let bestScore = -1;
     for (const quiz of quizList) {
