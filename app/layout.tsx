@@ -5,8 +5,9 @@ import { getURL } from '@/utils/helpers';
 import { Red_Hat_Display } from 'next/font/google';
 import 'styles/main.css';
 
-const title = 'Next.js Subscription Starter';
-const description = 'Brought to you by Vercel, Stripe, and Supabase.';
+const title = 'Product Gym';
+const description =
+  'Practice product management skills, interview questions, and product thinking challenges.';
 const redHatDisplay = Red_Hat_Display({
   subsets: ['latin'],
   variable: '--font-sans'
@@ -14,9 +15,17 @@ const redHatDisplay = Red_Hat_Display({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getURL()),
+  applicationName: 'Product Gym',
   title: title,
   description: description,
   openGraph: {
+    title: title,
+    description: description,
+    url: 'https://productgymapp.vercel.app',
+    siteName: 'Product Gym'
+  },
+  twitter: {
+    card: 'summary_large_image',
     title: title,
     description: description
   }
