@@ -27,7 +27,7 @@ export default function GoogleSignInButton({
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=/dashboard`;
+    const redirectTo = `${window.location.origin}/auth/callback?next=/home`;
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',

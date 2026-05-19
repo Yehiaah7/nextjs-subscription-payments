@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
-const DEFAULT_REDIRECT = '/dashboard';
+const DEFAULT_REDIRECT = '/home';
 const CALLBACK_ERROR_REDIRECT = '/login?error=auth_callback_failed';
 
 function getSafeRedirectPath(candidate: string | null) {
