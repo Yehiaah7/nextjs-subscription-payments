@@ -285,9 +285,9 @@ export default function SettingsScreen({
 
         <button
           onClick={() => setOpenModal('signout')}
-          className="h-[64px] w-full rounded-[16px] border border-[#dbeafe] bg-white p-3 text-left"
+          className="h-[64px] w-full rounded-[16px] border border-[#ff6467] bg-white p-3 text-left"
         >
-          <p className="text-[16px] font-bold tracking-[-0.4px] text-[var(--profile-title-color)]">
+          <p className="text-[16px] font-bold tracking-[-0.4px] text-[#e7000b]">
             Sign Out
           </p>
           <p className="text-[12px] font-medium text-[#64748b]">
@@ -297,14 +297,9 @@ export default function SettingsScreen({
 
         <button
           onClick={() => setOpenModal('deactivation')}
-          className="h-[64px] w-full rounded-[16px] border border-[#ff6467] bg-white p-3 text-left"
+          className="w-fit text-left text-[16px] font-bold tracking-[-0.4px] text-[#e7000b]"
         >
-          <p className="text-[16px] font-bold tracking-[-0.4px] text-[#e7000b]">
-            Deactivate Account
-          </p>
-          <p className="text-[12px] font-medium text-[#ff6467]">
-            Wipe all progress permanently.
-          </p>
+          Deactivate Account
         </button>
 
         <ConfirmModal
