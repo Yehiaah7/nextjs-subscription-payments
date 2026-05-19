@@ -151,7 +151,9 @@ async function run() {
   for (const row of schemaColumns ?? []) {
     const table = row.table_name as string;
     const col = row.column_name as string;
-    columnsByTable.set(table, new Set([...(columnsByTable.get(table) ?? []), col]));
+    const existingColumns = columnsByTable.get(table) ?? new Set<string>();
+    existingColumns.add(col);
+    columnsByTable.set(table, existingColumns);
   }
   const questionFeedbackColumn = columnsByTable.get('questions')?.has('feedback') ? 'feedback' : 'explanation';
   if (!columnsByTable.get('questions')?.has(questionFeedbackColumn)) {
