@@ -6,7 +6,6 @@ import { createClient } from '@supabase/supabase-js';
 type CsvRow = {
   rowNumber: number;
   qNumber: string;
-  level: string;
   company: string;
   category: string;
   originalQuestion: string;
@@ -22,21 +21,21 @@ type QuestionRecord = {
   quiz_id: string;
   prompt: string;
   sort_order: number;
-  explanation?: string | null;
-  feedback?: string | null;
-  options: Array<{ id: string; sort_order: number; label: string; is_correct: boolean }>;
+  feedback: string | null;
+  options: Array<{ id: string; sort_order: number; label: string; is_correct: boolean; feedback: string | null }>;
 };
+
 type QuizRecord = {
   id: string;
   title: string;
-  module_id: string;
-  difficulty: string | null;
-  modules?: { id: string; title: string; track_id: string; tracks?: { id: string; title: string; type: string } };
+  modules?: { title: string; tracks?: { title: string } };
 };
-type UpdateStats = {
-  questionRowsUpdated: number;
-  optionRowsUpdated: number;
-  feedbackRowsUpdated: number;
+
+type PlannedUpdate = {
+  row: CsvRow;
+  question: QuestionRecord;
+  sortedOptions: QuestionRecord['options'];
+  correctIndex: number;
 };
 
 const STEP_ORDER = ['clarify', 'users', 'pain points', 'solutions', 'prioritize', 'metrics'] as const;
@@ -48,7 +47,6 @@ const requireEnv = (key: string) => {
 };
 
 const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
-const safeKey = (qNumber: string, step: string) => `${qNumber.trim()}::${normalize(step)}`;
 const parseSortFromStep = (step: string) => {
   const n = Number.parseInt(step, 10);
   if (Number.isInteger(n) && n > 0) return n;
@@ -66,6 +64,7 @@ const parseArgs = () => {
 const parseCsv = (csvPath: string): { rows: CsvRow[]; invalidRows: string[] } => {
   const content = fs.readFileSync(csvPath, 'utf8').replace(/^\uFEFF/, '');
   const lines = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
+
   const parseLine = (line: string) => {
     const values: string[] = [];
     let cur = '';
@@ -100,13 +99,14 @@ const parseCsv = (csvPath: string): { rows: CsvRow[]; invalidRows: string[] } =>
   const out: CsvRow[] = [];
   const invalidRows: string[] = [];
   const seen = new Set<string>();
+
   for (let i = 1; i < lines.length; i += 1) {
     const cols = parseLine(lines[i]);
     if (cols.every((c) => c === '')) continue;
+
     const row: CsvRow = {
       rowNumber: i + 1,
       qNumber: cols[idx('Q#')] ?? '',
-      level: cols[idx('level')] ?? '',
       company: cols[idx('Company')] ?? '',
       category: cols[idx('Category')] ?? '',
       originalQuestion: cols[idx('Original Question')] ?? '',
@@ -118,23 +118,19 @@ const parseCsv = (csvPath: string): { rows: CsvRow[]; invalidRows: string[] } =>
     };
 
     const opts = row.options.map((o) => o.trim());
+    const dedupeKey = `${row.qNumber}::${normalize(row.step)}`;
+
     if (!row.qNumber || !row.step || !row.quizQuestion) { invalidRows.push(`Row ${row.rowNumber}: missing required key fields`); continue; }
     if (opts.some((o) => !o)) { invalidRows.push(`Row ${row.rowNumber}: empty option found`); continue; }
-    if (new Set(opts.map(normalize)).size !== 4) {
-      const counts = new Map<string, number>();
-      for (const opt of opts.map(normalize)) counts.set(opt, (counts.get(opt) ?? 0) + 1);
-      const dups = Array.from(counts.entries()).filter(([, count]) => count > 1).map(([value]) => value).join(' | ');
-      invalidRows.push(`Row ${row.rowNumber}: duplicate options detected -> ${dups}`);
-      continue;
-    }
+    if (new Set(opts.map(normalize)).size !== 4) { invalidRows.push(`Row ${row.rowNumber}: duplicate options detected`); continue; }
     if (!['A', 'B', 'C', 'D'].includes(row.correctLetter)) { invalidRows.push(`Row ${row.rowNumber}: invalid Correct value '${row.correctLetter}'`); continue; }
     if (!row.feedback.trim()) { invalidRows.push(`Row ${row.rowNumber}: missing Feedback (Why)`); continue; }
+    if (seen.has(dedupeKey)) { invalidRows.push(`Row ${row.rowNumber}: duplicate Q# + Step key (${dedupeKey})`); continue; }
 
-    const key = safeKey(row.qNumber, row.step);
-    if (seen.has(key)) { invalidRows.push(`Row ${row.rowNumber}: duplicate Q# + Step key (${key})`); continue; }
-    seen.add(key);
+    seen.add(dedupeKey);
     out.push(row);
   }
+
   return { rows: out, invalidRows };
 };
 
@@ -142,77 +138,41 @@ async function run() {
   const { dryRun } = parseArgs();
   const csvPath = path.resolve(process.cwd(), 'data/quiz_questions_v2.csv');
   if (!fs.existsSync(csvPath)) throw new Error(`CSV not found: ${csvPath}`);
-  const { rows, invalidRows } = parseCsv(csvPath);
 
+  const { rows, invalidRows } = parseCsv(csvPath);
   const supabase = createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SERVICE_ROLE_KEY')) as any;
 
-  const { data: schemaColumns, error: schemaError } = await supabase
-    .from('information_schema.columns')
-    .select('table_name,column_name')
-    .eq('table_schema', 'public')
-    .in('table_name', ['questions', 'options']);
-  if (schemaError) throw schemaError;
-  const columnsByTable = new Map<string, Set<string>>();
-  for (const row of schemaColumns ?? []) {
-    const table = row.table_name as string;
-    const col = row.column_name as string;
-    const existingColumns = columnsByTable.get(table) ?? new Set<string>();
-    existingColumns.add(col);
-    columnsByTable.set(table, existingColumns);
-  }
-  const questionFeedbackColumn = columnsByTable.get('questions')?.has('feedback') ? 'feedback' : 'explanation';
-  if (!columnsByTable.get('questions')?.has(questionFeedbackColumn)) {
-    throw new Error('Neither questions.feedback nor questions.explanation exists in the database schema.');
-  }
-  if (!columnsByTable.get('options')?.has('feedback')) {
-    throw new Error('options.feedback column is missing in the database schema.');
-  }
-  if (!columnsByTable.get('options')?.has('is_correct')) {
-    throw new Error('options.is_correct column is missing in the database schema.');
-  }
-
+  // The quiz UI reads from: quizzes -> questions(feedback) -> options(label,is_correct).
   const { data: quizzes, error: quizzesError } = await supabase
     .from('quizzes')
-    .select('id,title,module_id,difficulty,modules(id,title,track_id,tracks(id,title,type))');
+    .select('id,title,modules(title,tracks(title))');
   if (quizzesError) throw quizzesError;
 
   const quizList = (quizzes ?? []) as QuizRecord[];
-  const loadQuestions = async (feedbackColumn: string, quizId: string) =>
-    supabase
-      .from('questions')
-      .select(`id,quiz_id,prompt,sort_order,${feedbackColumn},options(id,sort_order,label,is_correct,feedback)`)
-      .eq('quiz_id', quizId);
-
   const quizQuestions = new Map<string, QuestionRecord[]>();
   for (const quiz of quizList) {
-    const { data: questions, error: qError } = await loadQuestions(questionFeedbackColumn, quiz.id);
-    if (qError) throw qError;
+    const { data: questions, error } = await supabase
+      .from('questions')
+      .select('id,quiz_id,prompt,sort_order,feedback,options(id,sort_order,label,is_correct,feedback)')
+      .eq('quiz_id', quiz.id);
+    if (error) throw error;
     quizQuestions.set(quiz.id, (questions ?? []) as QuestionRecord[]);
   }
 
-  const summary = { totalCsvRows: rows.length + invalidRows.length, matchedRows: 0, unmatchedRows: 0, invalidRows: invalidRows.length, skippedAmbiguous: 0 };
+  const planned: PlannedUpdate[] = [];
   const ambiguous: string[] = [];
   const unmatched: string[] = [];
-  const mappingReport: string[] = [];
-  const unmatchedReasons: string[] = [];
-
-  const operations: Array<() => Promise<void>> = [];
-  const targetedQuestionIds = new Set<string>();
-  const targetedOptionIds = new Set<string>();
-
-  const updateStats: UpdateStats = { questionRowsUpdated: 0, optionRowsUpdated: 0, feedbackRowsUpdated: 0 };
-  const validRowsCount = rows.length;
 
   for (const row of rows) {
     const quizCandidates = quizList
       .map((quiz) => {
         const qs = quizQuestions.get(quiz.id) ?? [];
         const promptSet = new Set(qs.map((q) => normalize(q.prompt)));
-        const promptMatch = promptSet.has(normalize(row.quizQuestion)) ? 1 : 0;
-        const titleMatch = normalize(quiz.title) === normalize(row.originalQuestion) ? 1 : 0;
-        const moduleMatch = normalize(quiz.modules?.title ?? '') === normalize(row.category) ? 1 : 0;
-        const trackMatch = normalize(quiz.modules?.tracks?.title ?? '') === normalize(row.company) ? 1 : 0;
-        const score = promptMatch * 1000 + titleMatch * 100 + moduleMatch * 10 + trackMatch;
+        const score =
+          (promptSet.has(normalize(row.quizQuestion)) ? 1000 : 0) +
+          (normalize(quiz.title) === normalize(row.originalQuestion) ? 100 : 0) +
+          (normalize(quiz.modules?.title ?? '') === normalize(row.category) ? 10 : 0) +
+          (normalize(quiz.modules?.tracks?.title ?? '') === normalize(row.company) ? 1 : 0);
         return { quiz, score };
       })
       .filter((entry) => entry.score > 0)
@@ -220,170 +180,111 @@ async function run() {
 
     const quiz = quizCandidates[0]?.quiz;
     if (!quiz) {
-      summary.unmatchedRows += 1;
-      unmatched.push(`Row ${row.rowNumber}`);
-      unmatchedReasons.push(`Row ${row.rowNumber}: no mapped quiz for Q#${row.qNumber}`);
+      unmatched.push(`Row ${row.rowNumber}: no quiz match`);
       continue;
     }
-    mappingReport.push(
-      `Row ${row.rowNumber} (Q#${row.qNumber}) -> ${quiz.title} [${quiz.id}] (track=${quiz.modules?.tracks?.title ?? 'n/a'}, module=${quiz.modules?.title ?? 'n/a'}, score=${quizCandidates[0]?.score ?? 0})`
-    );
+
     const questionRecords = quizQuestions.get(quiz.id) ?? [];
     let matches = questionRecords.filter((q) => normalize(q.prompt) === normalize(row.quizQuestion));
+
     if (matches.length !== 1) {
       const stepSort = parseSortFromStep(row.step);
       if (stepSort !== null) matches = questionRecords.filter((q) => q.sort_order === stepSort);
     }
 
-    if (matches.length > 1) {
-      matches = matches.filter((m) => normalize(m.prompt) === normalize(row.quizQuestion));
-    }
-
     if (matches.length !== 1) {
-      const strictPromptMatches = questionRecords.filter((q) => normalize(q.prompt) === normalize(row.quizQuestion));
-      if (strictPromptMatches.length === 1) {
-        matches = strictPromptMatches;
-      }
-    }
-
-    if (matches.length === 0) {
-      summary.unmatchedRows += 1;
-      unmatched.push(`Row ${row.rowNumber} (${row.qNumber}+${row.step})`);
-      unmatchedReasons.push(`Row ${row.rowNumber}: no question match by prompt or sort_order in quiz ${quiz.title} (${quiz.id})`);
-      continue;
-    }
-
-    if (matches.length > 1) {
-      summary.skippedAmbiguous += 1;
-      ambiguous.push(`Row ${row.rowNumber} (${row.qNumber}+${row.step}) -> ${matches.map((m) => m.id).join(', ')}`);
+      unmatched.push(`Row ${row.rowNumber}: no unique question match`);
       continue;
     }
 
     const question = matches[0];
     const sortedOptions = [...(question.options ?? [])].sort((a, b) => a.sort_order - b.sort_order);
     if (sortedOptions.length !== 4) {
-      summary.skippedAmbiguous += 1;
-      ambiguous.push(`Row ${row.rowNumber} question ${question.id} does not have exactly 4 options`);
+      ambiguous.push(`Row ${row.rowNumber}: question ${question.id} does not have 4 options`);
       continue;
     }
 
-    operations.push(async () => {
-      const { error: questionUpdateError } = await supabase
-        .from('questions')
-        .update({ prompt: row.quizQuestion, [questionFeedbackColumn]: row.feedback || null })
-        .eq('id', question.id);
-      if (questionUpdateError) throw questionUpdateError;
-      targetedQuestionIds.add(question.id);
-      updateStats.questionRowsUpdated += 1;
-      if (row.feedback.trim()) updateStats.feedbackRowsUpdated += 1;
-      for (let i = 0; i < 4; i += 1) {
-        const { error: optionUpdateError } = await supabase
-          .from('options')
-          .update({ label: row.options[i], is_correct: i === row.correctLetter.charCodeAt(0) - 65, feedback: i === row.correctLetter.charCodeAt(0) - 65 ? row.feedback || null : null })
-          .eq('id', sortedOptions[i].id);
-        if (optionUpdateError) throw optionUpdateError;
-        targetedOptionIds.add(sortedOptions[i].id);
-        updateStats.optionRowsUpdated += 1;
-      }
-    });
-
-    summary.matchedRows += 1;
-  }
-  const unmatchedRate = rows.length ? summary.unmatchedRows / rows.length : 0;
-  if (!dryRun && unmatchedRate > 0.05) {
-    throw new Error(`Apply blocked: unmatched rows ${summary.unmatchedRows}/${rows.length} (${(unmatchedRate * 100).toFixed(1)}%) exceed 5% threshold`);
+    planned.push({ row, question, sortedOptions, correctIndex: row.correctLetter.charCodeAt(0) - 65 });
   }
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupPath = path.resolve(process.cwd(), `data/backups/quiz-backup-${timestamp}.json`);
-  if (!dryRun) {
-    fs.mkdirSync(path.dirname(backupPath), { recursive: true });
-    fs.writeFileSync(
-      backupPath,
-      JSON.stringify({ quizzes: quizList.map((q) => ({ ...q, questions: quizQuestions.get(q.id) ?? [] })), exportedAt: new Date().toISOString() }, null, 2),
-      'utf8'
-    );
-    for (const op of operations) await op();
+  const summary = {
+    totalCsvRows: rows.length + invalidRows.length,
+    validCsvRows: rows.length,
+    plannedUpdates: planned.length,
+    invalidRows: invalidRows.length,
+    unmatchedRows: unmatched.length,
+    ambiguousRows: ambiguous.length
+  };
+
+  if (dryRun) {
+    console.log('Mode: dry-run');
+    console.table(summary);
+    if (invalidRows.length) console.log('Invalid rows:\n' + invalidRows.join('\n'));
+    if (unmatched.length) console.log('Unmatched rows:\n' + unmatched.join('\n'));
+    if (ambiguous.length) console.log('Ambiguous rows:\n' + ambiguous.join('\n'));
+    return;
   }
 
-  let verification: null | {
-    questionsUpdated: number;
-    optionsUpdated: number;
-    feedbackSavedOnQuestions: number;
-    feedbackSavedOnOptions: number;
-    feedbackCountAfterUpdate: number;
-    sampleUpdatedQuestions: Array<{ id: string; prompt: string; feedbackValue: string | null }>;
-  } = null;
-  if (!dryRun) {
-    const questionIds = Array.from(targetedQuestionIds);
-    const optionIds = Array.from(targetedOptionIds);
-    const { data: updatedQuestions, error: updatedQuestionsError } = await supabase
+  if (planned.length < 200) {
+    throw new Error(`Apply blocked: planned updates ${planned.length} is below required minimum 200.`);
+  }
+
+  let questionsUpdated = 0;
+  let optionsUpdated = 0;
+  let feedbackUpdated = 0;
+  const touchedQuestionIds: string[] = [];
+
+  for (const item of planned) {
+    const { error: qErr } = await supabase
       .from('questions')
-      .select(`id,${questionFeedbackColumn}`)
-      .in('id', questionIds);
-    if (updatedQuestionsError) throw updatedQuestionsError;
-    const { data: updatedOptions, error: updatedOptionsError } = await supabase
-      .from('options')
-      .select('id,feedback')
-      .in('id', optionIds);
-    if (updatedOptionsError) throw updatedOptionsError;
-    const { count: feedbackCountAfterUpdate, error: feedbackCountError } = await supabase
-      .from('questions')
-      .select('id', { count: 'exact', head: true })
-      .not(questionFeedbackColumn, 'is', null)
-      .neq(questionFeedbackColumn, '');
-    if (feedbackCountError) throw feedbackCountError;
-    const { data: sampleUpdatedQuestions, error: sampleError } = await supabase
-      .from('questions')
-      .select(`id,prompt,${questionFeedbackColumn}`)
-      .in('id', questionIds)
-      .not(questionFeedbackColumn, 'is', null)
-      .neq(questionFeedbackColumn, '')
-      .limit(10);
-    if (sampleError) throw sampleError;
-    verification = {
-      questionsUpdated: updatedQuestions?.length ?? 0,
-      optionsUpdated: updatedOptions?.length ?? 0,
-      feedbackSavedOnQuestions: (updatedQuestions ?? []).filter((q: any) => typeof q[questionFeedbackColumn] === 'string' && q[questionFeedbackColumn].trim() !== '').length,
-      feedbackSavedOnOptions: (updatedOptions ?? []).filter((o: any) => typeof o.feedback === 'string' && o.feedback.trim() !== '').length,
-      feedbackCountAfterUpdate: feedbackCountAfterUpdate ?? 0,
-      sampleUpdatedQuestions: (sampleUpdatedQuestions ?? []).map((q: any) => ({
-        id: q.id,
-        prompt: q.prompt,
-        feedbackValue: q[questionFeedbackColumn] ?? null
-      }))
-    };
-    if (updateStats.feedbackRowsUpdated < Math.floor(validRowsCount * 0.9)) {
-      throw new Error(
-        `Apply failed: feedbackRowsUpdated=${updateStats.feedbackRowsUpdated} is below 90% threshold of valid rows (${Math.floor(validRowsCount * 0.9)}/${validRowsCount}). Unmatched=${summary.unmatchedRows}, ambiguous=${summary.skippedAmbiguous}, invalid=${summary.invalidRows}.`
-      );
+      .update({ prompt: item.row.quizQuestion, feedback: item.row.feedback })
+      .eq('id', item.question.id)
+      .select('id')
+      .single();
+    if (qErr) throw qErr;
+
+    questionsUpdated += 1;
+    feedbackUpdated += 1;
+    touchedQuestionIds.push(item.question.id);
+
+    for (let i = 0; i < 4; i += 1) {
+      const { error: oErr } = await supabase
+        .from('options')
+        .update({
+          label: item.row.options[i],
+          is_correct: i === item.correctIndex,
+          feedback: i === item.correctIndex ? item.row.feedback : null
+        })
+        .eq('id', item.sortedOptions[i].id)
+        .select('id')
+        .single();
+      if (oErr) throw oErr;
+      optionsUpdated += 1;
     }
   }
 
-  console.log(`Mode: ${dryRun ? 'dry-run' : 'apply'}`);
-  console.log('Q# -> target quiz mapping:');
-  console.log(mappingReport.join('\n'));
-  if (!dryRun) console.log(`Backup written: ${backupPath}`);
-  console.table(summary);
-  console.log('DB update counts:');
-  console.table(updateStats);
-  if (verification) {
-    console.log('Post-update DB verification:');
-    console.table({
-      questionRowsUpdated: updateStats.questionRowsUpdated,
-      optionRowsUpdated: updateStats.optionRowsUpdated,
-      feedbackRowsUpdated: updateStats.feedbackRowsUpdated,
-      feedbackCountAfterUpdate: verification.feedbackCountAfterUpdate,
-      feedbackSavedOnQuestions: verification.feedbackSavedOnQuestions,
-      feedbackSavedOnOptions: verification.feedbackSavedOnOptions
-    });
-    console.log('Sample updated questions with feedback:');
-    console.table(verification.sampleUpdatedQuestions);
+  const { data: dbUpdatedRows, error: verifyError } = await supabase
+    .from('questions')
+    .select('id,prompt,feedback')
+    .in('id', touchedQuestionIds)
+    .not('feedback', 'is', null)
+    .neq('feedback', '');
+  if (verifyError) throw verifyError;
+
+  const verifiedFeedbackCount = (dbUpdatedRows ?? []).length;
+  if (verifiedFeedbackCount < 200) {
+    throw new Error(`Apply failed: feedback updated count ${verifiedFeedbackCount} is below required minimum 200.`);
   }
-  if (invalidRows.length) console.log('Invalid rows (skipped):\n' + invalidRows.join('\n'));
-  if (unmatched.length) console.log('Unmatched rows:\n' + unmatched.join('\n'));
-  if (unmatchedReasons.length) console.log('Unmatched reasons:\n' + unmatchedReasons.join('\n'));
-  if (ambiguous.length) console.log('Ambiguous rows:\n' + ambiguous.join('\n'));
+
+  const sample = (dbUpdatedRows ?? []).slice(0, 5);
+
+  console.log('Mode: apply');
+  console.table(summary);
+  console.log(`questions updated: ${questionsUpdated}`);
+  console.log(`options updated: ${optionsUpdated}`);
+  console.log(`feedback updated: ${verifiedFeedbackCount}`);
+  console.log('sample 5 updated rows from DB:');
+  console.table(sample);
 }
 
 run().catch((error) => {
