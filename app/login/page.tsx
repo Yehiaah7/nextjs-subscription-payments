@@ -120,8 +120,15 @@ export default async function LoginPage({
           </AuthSubmitButton>
         </form>
 
-        <div className="mt-4">
-          <GoogleSignInButton label="Sign in with Google" />
+        <div className="mt-6 grid gap-4">
+          <GoogleSignInButton label="Continue with Google" />
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              or continue with email
+            </span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
         </div>
 
         {searchParams.error && (
