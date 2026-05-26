@@ -23,7 +23,8 @@
     "seed:productgym": "tsx scripts/seed-productgym.ts",
     "seed:companies": "tsx scripts/seed-companies-from-excel.ts",
     "seed:content": "tsx scripts/seed-content.ts",
-    "import:quiz": "tsx scripts/import-quiz-questions.ts"
+    "import:quiz": "tsx scripts/import-quiz-questions.ts",
+    "import:new-companies": "tsx scripts/import-new-companies.ts"
   },
   "dependencies": {
     "@radix-ui/react-toast": "^1.1.5",
