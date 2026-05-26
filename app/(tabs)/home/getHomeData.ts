@@ -112,7 +112,7 @@ export async function getHomePageData(): Promise<{
   const { data: quizzesData } = trackIds.length
     ? await db
         .from('quizzes')
-        .select('id,title,difficulty,module_id,modules(id,title,track_id)')
+        .select('id,title,difficulty,module_id,modules!inner(id,title,track_id)')
         .in('modules.track_id', trackIds)
     : { data: [] as QuizRow[] };
 
@@ -176,7 +176,11 @@ export async function getHomePageData(): Promise<{
     {}
   );
 
-  const companyTracks: HomeTrack[] = tracks.map((track) => {
+  const tracksWithQuizzes = tracks.filter(
+    (track) => (quizzesByTrack[track.id] ?? []).length > 0
+  );
+
+  const companyTracks: HomeTrack[] = tracksWithQuizzes.map((track) => {
     const quizzesForTrack = quizzesByTrack[track.id] ?? [];
     const quizIdsForTrack = quizzesForTrack.map((quiz) => quiz.id);
     const seniorities = Array.from(
