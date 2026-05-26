@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 type Level = 'junior' | 'mid' | 'senior';
@@ -230,7 +231,8 @@ async function run() {
   const quizCache = new Map<string, string>();
 
   for (const row of rows) {
-    let trackId = trackCache.get(normalize(row.company));
+    const companyKey = normalize(row.company);
+    let trackId = trackCache.get(companyKey);
     if (!trackId) {
       const { data: existingTrack, error: trackReadErr } = await supabase
         .from('tracks')
@@ -252,20 +254,21 @@ async function run() {
         trackId = data.id;
         summary.tracksCreated += 1;
       } else {
-        trackId = `dry-track-${normalize(row.company)}`;
+        trackId = randomUUID();
         summary.tracksCreated += 1;
       }
       if (!trackId) {
         throw new Error(`Failed to resolve track id for company: ${row.company}`);
       }
-      trackCache.set(normalize(row.company), trackId);
+      trackCache.set(companyKey, trackId);
     }
 
     if (!trackId) {
       throw new Error(`Failed to resolve track id for company: ${row.company}`);
     }
 
-    const moduleKey = `${trackId}::${normalize(row.category)}`;
+    const categoryKey = normalize(row.category);
+    const moduleKey = `${companyKey}::${categoryKey}`;
     let moduleId = moduleCache.get(moduleKey);
     if (!moduleId) {
       const { data: existingModule, error: moduleReadErr } = await supabase
@@ -288,7 +291,7 @@ async function run() {
         moduleId = data.id;
         summary.modulesCreated += 1;
       } else {
-        moduleId = `dry-module-${moduleKey}`;
+        moduleId = randomUUID();
         summary.modulesCreated += 1;
       }
       if (!moduleId) {
@@ -301,7 +304,8 @@ async function run() {
       throw new Error(`Failed to resolve module id for category: ${row.category}`);
     }
 
-    const quizKey = `${moduleId}::${normalize(row.originalQuestion)}::${row.level}`;
+    const originalQuestionKey = normalize(row.originalQuestion);
+    const quizKey = `${companyKey}::${categoryKey}::${originalQuestionKey}::${row.level}`;
     let quizId = quizCache.get(quizKey);
     if (!quizId) {
       const { data: existingQuiz, error: quizReadErr } = await supabase
@@ -325,7 +329,7 @@ async function run() {
         quizId = data.id;
         summary.quizzesCreated += 1;
       } else {
-        quizId = `dry-quiz-${quizKey}`;
+        quizId = randomUUID();
         summary.quizzesCreated += 1;
       }
       if (!quizId) {
@@ -368,7 +372,7 @@ async function run() {
       if (error) throw error;
       questionId = data.id;
     } else {
-      questionId = `dry-question-${quizId}-${row.sortOrder}`;
+      questionId = randomUUID();
     }
     summary.questionsCreated += 1;
 
