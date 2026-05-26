@@ -12,7 +12,8 @@ type CsvRow = {
   company: string;
   category: string;
   originalQuestion: string;
-  step: number;
+  step: string;
+  sortOrder: number;
   quizQuestion: string;
   options: [string, string, string, string];
   correctLetter: 'A' | 'B' | 'C' | 'D';
@@ -30,6 +31,34 @@ type Summary = {
 };
 
 const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+
+const STEP_SORT_ORDER: Record<string, number> = {
+  clarify: 1,
+  users: 2,
+  'pain points': 3,
+  solutions: 4,
+  prioritize: 5,
+  metrics: 6,
+  'product & goal': 7,
+  'user journey': 8,
+  'select metrics': 9,
+  evaluate: 10,
+  scope: 11,
+  'internal vs external': 12,
+  hypotheses: 13,
+  validate: 14,
+  recommend: 15,
+  'company context': 16,
+  'strategic options': 17,
+  'evaluate tradeoffs': 18,
+  'market & competitors': 19,
+  'segments & wtp': 20,
+  model: 21,
+  test: 22,
+  'root cause': 23,
+  hypothesize: 24,
+  solution: 25
+};
 
 const requireEnv = (key: string) => {
   const value = process.env[key];
@@ -90,13 +119,14 @@ const parseCsv = (csvPath: string) => {
   const rows: CsvRow[] = [];
   const invalid: string[] = [];
   const dedupeKeys = new Set<string>();
+  const fallbackOrderByQuestion = new Map<string, number>();
 
   for (let i = 1; i < lines.length; i += 1) {
     const cols = parseLine(lines[i]);
     if (cols.every((c) => !c.trim())) continue;
 
     const level = normalizeLevel(cols[indexOf('level')] ?? '');
-    const step = Number.parseInt((cols[indexOf('Step')] ?? '').trim(), 10);
+    const step = (cols[indexOf('Step')] ?? '').trim();
     const correct = ((cols[indexOf('Correct')] ?? '').trim().toUpperCase()) as CsvRow['correctLetter'];
 
     const row = {
@@ -107,6 +137,7 @@ const parseCsv = (csvPath: string) => {
       category: (cols[indexOf('Category')] ?? '').trim(),
       originalQuestion: (cols[indexOf('Original Question')] ?? '').trim(),
       step,
+      sortOrder: 0,
       quizQuestion: (cols[indexOf('Quiz Question')] ?? '').trim(),
       options: [
         (cols[indexOf('Option A')] ?? '').trim(),
@@ -118,10 +149,6 @@ const parseCsv = (csvPath: string) => {
       feedback: (cols[indexOf('Feedback (Why)')] ?? '').trim()
     };
 
-    const dedupeKey = `${normalize(row.company)}::${normalize(row.category)}::${normalize(row.originalQuestion)}::${normalize(
-      row.qNumber
-    )}::${row.step}`;
-
     if (!row.company || !row.category || !row.originalQuestion || !row.quizQuestion || !row.qNumber) {
       invalid.push(`Row ${row.rowNumber}: missing required fields`);
       continue;
@@ -130,10 +157,25 @@ const parseCsv = (csvPath: string) => {
       invalid.push(`Row ${row.rowNumber}: invalid level`);
       continue;
     }
-    if (!Number.isInteger(row.step) || row.step <= 0) {
+    const normalizedStep = normalize(row.step);
+    const numericStep = Number.parseInt(row.step, 10);
+    let sortOrder = STEP_SORT_ORDER[normalizedStep];
+    if (!sortOrder && Number.isInteger(numericStep) && numericStep > 0) {
+      sortOrder = numericStep;
+    }
+    if (!sortOrder) {
+      const fallbackKey = `${normalize(row.company)}::${normalize(row.category)}::${normalize(row.originalQuestion)}::${normalize(
+        row.level
+      )}::${normalize(row.qNumber)}`;
+      const nextOrder = (fallbackOrderByQuestion.get(fallbackKey) ?? 0) + 1;
+      fallbackOrderByQuestion.set(fallbackKey, nextOrder);
+      sortOrder = nextOrder;
+    }
+    if (!Number.isInteger(sortOrder) || sortOrder <= 0) {
       invalid.push(`Row ${row.rowNumber}: invalid Step`);
       continue;
     }
+    row.sortOrder = sortOrder;
     if (row.options.some((o) => !o)) {
       invalid.push(`Row ${row.rowNumber}: every option must be non-empty`);
       continue;
@@ -150,6 +192,9 @@ const parseCsv = (csvPath: string) => {
       invalid.push(`Row ${row.rowNumber}: Feedback (Why) is required`);
       continue;
     }
+    const dedupeKey = `${normalize(row.company)}::${normalize(row.category)}::${normalize(row.originalQuestion)}::${normalize(
+      row.qNumber
+    )}::${row.sortOrder}::${normalizedStep || row.step}`;
     if (dedupeKeys.has(dedupeKey)) {
       invalid.push(`Row ${row.rowNumber}: duplicate key Company+Category+Original Question+Q#+Step`);
       continue;
@@ -297,7 +342,7 @@ async function run() {
       .from('questions')
       .select('id,prompt,feedback')
       .eq('quiz_id', quizId)
-      .eq('sort_order', row.step)
+      .eq('sort_order', row.sortOrder)
       .maybeSingle();
     if (questionReadErr) throw questionReadErr;
 
@@ -314,7 +359,7 @@ async function run() {
           quiz_id: quizId,
           type: 'single_choice',
           prompt: row.quizQuestion,
-          sort_order: row.step,
+          sort_order: row.sortOrder,
           points: 1,
           feedback: row.feedback
         })
@@ -323,7 +368,7 @@ async function run() {
       if (error) throw error;
       questionId = data.id;
     } else {
-      questionId = `dry-question-${quizId}-${row.step}`;
+      questionId = `dry-question-${quizId}-${row.sortOrder}`;
     }
     summary.questionsCreated += 1;
 
