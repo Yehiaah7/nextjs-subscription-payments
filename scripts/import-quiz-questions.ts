@@ -22,7 +22,7 @@ type QuestionRecord = {
   prompt: string;
   sort_order: number;
   feedback: string | null;
-  options: Array<{ id: string; sort_order: number; label: string; is_correct: boolean; feedback: string | null }>;
+  options: Array<{ id: string; sort_order: number; label: string; is_correct: boolean }>;
 };
 
 type QuizRecord = {
@@ -153,7 +153,7 @@ async function run() {
   for (const quiz of quizList) {
     const { data: questions, error } = await supabase
       .from('questions')
-      .select('id,quiz_id,prompt,sort_order,feedback,options(id,sort_order,label,is_correct,feedback)')
+      .select('id,quiz_id,prompt,sort_order,feedback,options(id,sort_order,label,is_correct)')
       .eq('quiz_id', quiz.id);
     if (error) throw error;
     quizQuestions.set(quiz.id, (questions ?? []) as QuestionRecord[]);
@@ -252,8 +252,7 @@ async function run() {
         .from('options')
         .update({
           label: item.row.options[i],
-          is_correct: i === item.correctIndex,
-          feedback: i === item.correctIndex ? item.row.feedback : null
+          is_correct: i === item.correctIndex
         })
         .eq('id', item.sortedOptions[i].id)
         .select('id')
