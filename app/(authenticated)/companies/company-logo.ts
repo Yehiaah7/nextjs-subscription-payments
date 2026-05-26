@@ -1,12 +1,20 @@
 export const COMPANY_LOGO_MAP: Record<string, string> = {
+  airbnb: '/airbnb.svg',
   amazon: '/Amazon.svg',
   apple: '/Apple.svg',
+  coinbase: '/coinbase.svg',
   google: '/Google.svg',
+  linkedin: '/linkedin.svg',
   meta: '/Meta.svg',
   microsoft: '/Microsoft.svg',
   netflix: '/Netflix.svg',
+  salesforce: '/salesforce.svg',
+  shopify: '/shopify.svg',
+  spotify: '/spotify.svg',
   stripe: '/stripe.svg',
-  uber: '/Uber.svg'
+  tiktok: '/tiktok.svg',
+  uber: '/Uber.svg',
+  x: '/twitter.x.svg'
 };
 
 const normalizeKey = (value: string) =>
