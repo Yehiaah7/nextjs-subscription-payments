@@ -210,7 +210,14 @@ async function run() {
         trackId = `dry-track-${normalize(row.company)}`;
         summary.tracksCreated += 1;
       }
+      if (!trackId) {
+        throw new Error(`Failed to resolve track id for company: ${row.company}`);
+      }
       trackCache.set(normalize(row.company), trackId);
+    }
+
+    if (!trackId) {
+      throw new Error(`Failed to resolve track id for company: ${row.company}`);
     }
 
     const moduleKey = `${trackId}::${normalize(row.category)}`;
@@ -239,7 +246,14 @@ async function run() {
         moduleId = `dry-module-${moduleKey}`;
         summary.modulesCreated += 1;
       }
+      if (!moduleId) {
+        throw new Error(`Failed to resolve module id for category: ${row.category}`);
+      }
       moduleCache.set(moduleKey, moduleId);
+    }
+
+    if (!moduleId) {
+      throw new Error(`Failed to resolve module id for category: ${row.category}`);
     }
 
     const quizKey = `${moduleId}::${normalize(row.originalQuestion)}::${row.level}`;
@@ -269,7 +283,14 @@ async function run() {
         quizId = `dry-quiz-${quizKey}`;
         summary.quizzesCreated += 1;
       }
+      if (!quizId) {
+        throw new Error(`Failed to resolve quiz id for question: ${row.originalQuestion}`);
+      }
       quizCache.set(quizKey, quizId);
+    }
+
+    if (!quizId) {
+      throw new Error(`Failed to resolve quiz id for question: ${row.originalQuestion}`);
     }
 
     const { data: existingQuestion, error: questionReadErr } = await supabase
