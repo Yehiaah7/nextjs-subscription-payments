@@ -14,13 +14,18 @@ export const COMPANY_LOGO_MAP: Record<string, string> = {
   stripe: '/stripe.svg',
   tiktok: '/tiktok.svg',
   uber: '/Uber.svg',
-  x: '/twitter.x.svg'
+  x: '/twitter.x.svg',
+  twitter: '/twitter.x.svg',
+  'twitter-x': '/twitter.x.svg',
+  doordash: '/doordash.svg',
+  'door-dash': '/doordash.svg'
 };
 
 const normalizeKey = (value: string) =>
   value
     .trim()
     .toLowerCase()
+    .replace(/\s+/g, ' ')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
     .replace(/\s+/g, '-');
