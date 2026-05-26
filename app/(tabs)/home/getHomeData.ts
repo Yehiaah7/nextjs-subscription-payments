@@ -21,6 +21,7 @@ type TrackRow = {
   title: string;
   description: string | null;
   type: 'company';
+  is_published?: boolean | null;
 };
 
 type QuizRow = {
@@ -97,9 +98,10 @@ export async function getHomePageData(): Promise<{
 
   const { data: tracksData } = await db
     .from('tracks')
-    .select('id,title,description,type')
-    .eq('is_published', true)
+    .select('id,title,description,type,is_published')
     .eq('type', 'company')
+    // Keep published tracks, while allowing legacy rows where is_published is null.
+    .or('is_published.eq.true,is_published.is.null')
     .order('title', { ascending: true });
 
   const tracks = Array.from(
