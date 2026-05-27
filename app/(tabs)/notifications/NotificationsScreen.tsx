@@ -147,8 +147,7 @@ export default function NotificationsScreen() {
                   >
                     <div
                       className={cn(
-                        'mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full',
-                        iconConfig.chipClassName
+                        'mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf3ff] shadow-[inset_0_0_0_1px_rgba(81,162,255,0.16)]'
                       )}
                     >
                       <NotificationIcon
