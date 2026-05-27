@@ -1,6 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 
+type ProfilePracticeRow = {
+  practice_time_seconds: number | null;
+};
+
 type AttemptStatRow = {
   id: string;
   quiz_id: string;
@@ -33,6 +37,19 @@ const availableStat = (value: number | string) => ({
   isAvailable: true
 });
 
+
+const formatPracticeTime = (seconds: number | null | undefined) => {
+  if (!seconds || seconds <= 0) return '-';
+  if (seconds < 60) return '<1m';
+
+  const totalMinutes = Math.floor(seconds / 60);
+  if (totalMinutes <= 60) return `${totalMinutes}m`;
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+};
+
 const toUtcDateKey = (value: string | null) => {
   if (!value) return null;
 
@@ -53,13 +70,20 @@ export async function getUserProfileStats(
 
   const rank = unavailableStat();
 
+  const { data: profileData, error: profileError } = await (db as any)
+    .from('profiles')
+    .select('practice_time_seconds')
+    .eq('id', userId)
+    .maybeSingle();
+
   if (error) {
     return {
       rank,
       solved: unavailableStat(),
       solvingDays: unavailableStat(),
       questionsSolved: unavailableStat(),
-      firstTryAccuracy: unavailableStat()
+      firstTryAccuracy: unavailableStat(),
+      practiceTime: unavailableStat()
     };
   }
 
@@ -134,6 +158,9 @@ export async function getUserProfileStats(
       : availableStat(uniqueSolvedQuestionIds.size),
     firstTryAccuracy: answersError
       ? unavailableStat()
-      : availableStat(`${firstTryAccuracy}%`)
+      : availableStat(`${firstTryAccuracy}%`),
+    practiceTime: profileError
+      ? unavailableStat()
+      : availableStat(formatPracticeTime((profileData as ProfilePracticeRow | null)?.practice_time_seconds))
   };
 }

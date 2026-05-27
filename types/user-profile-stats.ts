@@ -3,7 +3,8 @@ export type UserProfileStatKey =
   | 'solved'
   | 'solvingDays'
   | 'questionsSolved'
-  | 'firstTryAccuracy';
+  | 'firstTryAccuracy'
+  | 'practiceTime';
 
 export type UserProfileStat = {
   value: string;

@@ -4,6 +4,7 @@ import { UserAvatarProvider } from '@/components/ui/UserAvatarContext';
 import { requireUser } from '@/utils/auth/require-user';
 import { createClient } from '@/utils/supabase/server';
 import { PropsWithChildren } from 'react';
+import PracticeTimeTracker from '@/components/analytics/PracticeTimeTracker';
 
 type ProfileRecord = {
   name: string | null;
@@ -38,6 +39,7 @@ export default async function TabsLayout({ children }: PropsWithChildren) {
 
   return (
     <NotificationsProvider userId={user.id}>
+      <PracticeTimeTracker userId={user.id} />
       <UserAvatarProvider
         initialAvatar={{
           firstName: profile?.first_name,
