@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Rocket, Sparkles, Target, Trash2, Trophy, Users } from 'lucide-react';
+import { Hand, Rocket, Target, Trash2, Trophy, Users } from 'lucide-react';
 import {
   ArrowLeftFilledIcon,
   BellFilledIcon
@@ -46,7 +46,7 @@ const formatNotificationTime = (createdAt: string) => {
 
 
 const notificationIcons = {
-  sparkles: Sparkles,
+  hand: Hand,
   target: Target,
   rocket: Rocket,
   users: Users,
