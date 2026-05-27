@@ -745,7 +745,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               type="button"
               onClick={goBackToTrack}
               className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[var(--color-border-muted)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
                 btnInteractive,
                 btnInteractiveNeutral,
                 focusRingInteractive
@@ -801,7 +801,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         <section className="w-full rounded-2xl border border-[#d8efe1] bg-[#f8fdf9] p-3">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {currentState.isSolved ? (
-              <div className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-green-800">
+              <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-ritual-lime)]/25 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[color:var(--color-brand-green-strong)]">
                 <CheckCircleFilledIcon className="h-3 w-3" />
                 Solved
               </div>
@@ -816,7 +816,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             {currentQuestion.prompt}
           </p>
           {currentState.isSolved ? (
-            <p className="mt-2 text-xs font-semibold text-green-700">
+            <p className="mt-2 text-xs font-semibold text-[color:var(--color-brand-green-strong)]">
               Solved • You can continue
             </p>
           ) : null}
@@ -828,9 +828,9 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             const isCorrect = option.is_correct;
             const className = selected
               ? isCorrect
-                ? 'border-green-400 bg-green-50'
-                : 'border-red-200 bg-red-50'
-              : 'border-[#e2e8f0] bg-white';
+                ? 'border-[color:var(--color-brand-green)] bg-[color:var(--color-ritual-lime)]/20'
+                : 'border-[color:var(--color-ritual-soft-pink)] bg-[color:var(--color-ritual-soft-pink)]/35'
+              : 'border-[var(--color-border-muted)] bg-white';
 
             return (
               <motion.button
@@ -875,7 +875,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           <motion.div
             initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl bg-green-100 p-3 text-sm text-green-900"
+            className="rounded-2xl bg-[color:var(--color-ritual-lime)]/25 p-3 text-sm text-green-900"
           >
             <p className="font-black uppercase tracking-[0.08em]">Correct</p>
             <p>
@@ -889,7 +889,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           <motion.div
             initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl bg-red-50 p-3 text-sm text-red-800"
+            className="rounded-2xl bg-[color:var(--color-ritual-soft-pink)]/35 p-3 text-sm text-red-800"
           >
             <p className="font-black uppercase tracking-[0.08em]">Wrong</p>
             <p>
@@ -910,7 +910,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               onClick={() => setActiveIndex((value) => Math.max(0, value - 1))}
               disabled={activeIndex === 0}
               className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#94a3b8]',
+                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[var(--color-border-muted)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#8C9AA3]',
                 btnInteractive,
                 btnInteractiveNeutral,
                 focusRingInteractive
@@ -955,7 +955,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             type="button"
             onClick={goBackToTrack}
             className={cn(
-              'inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+              'inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[var(--color-border-muted)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
               btnInteractive,
               btnInteractiveNeutral,
               focusRingInteractive
