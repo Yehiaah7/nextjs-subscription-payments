@@ -106,9 +106,19 @@ export default function ProGymPassCard({
       {isTrial ? (
         <div className="mt-3">
           <p className="text-[11px] font-bold uppercase tracking-[1px] text-[#dcfce7]">Included in your trial:</p>
-          <ul className="mt-1 space-y-1 text-[12px] font-medium leading-4 text-[#f0fdf4]">
-            <li className="flex items-center gap-2"><Image src="/airbnb.svg" alt="Airbnb" width={14} height={14} className="h-3.5 w-3.5 shrink-0 rounded-[2px] bg-white/90 p-[1px]" />Airbnb unlocked</li>
-            <li className="flex items-center gap-2"><Image src="/Uber.svg" alt="Uber" width={14} height={14} className="h-3.5 w-3.5 shrink-0 rounded-[2px] bg-white/90 p-[1px]" />Uber unlocked</li>
+          <ul className="mt-2 space-y-2 text-[12px] font-medium leading-4 text-[#f0fdf4]">
+            <li className="flex items-center gap-2.5">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white">
+                <Image src="/airbnb.svg" alt="Airbnb" width={20} height={20} className="h-5 w-5 object-contain" />
+              </span>
+              <span>Airbnb unlocked</span>
+            </li>
+            <li className="flex items-center gap-2.5">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white">
+                <Image src="/Uber.svg" alt="Uber" width={20} height={20} className="h-5 w-5 object-contain" />
+              </span>
+              <span>Uber unlocked</span>
+            </li>
           </ul>
         </div>
       ) : null}
@@ -127,7 +137,7 @@ export default function ProGymPassCard({
           <LoadingButton type="button" onClick={handleUpgrade} loading={isUpgrading} className={primaryButtonClassName}>
             Upgrade to Pro
           </LoadingButton>
-          <p className="mt-2 text-center text-[11px] text-[#ecfdf5]">Unlock every company and keep practicing without limits.</p>
+          <p className="mt-2 text-center text-[10px] font-medium text-[#dcfce7]">Cancel anytime</p>
         </>
       )}
     </section>
