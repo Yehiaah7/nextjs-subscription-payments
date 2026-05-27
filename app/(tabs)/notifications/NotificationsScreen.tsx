@@ -2,10 +2,15 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Hand, Rocket, Target, Trash2, Trophy, Users } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import {
   ArrowLeftFilledIcon,
-  BellFilledIcon
+  BadgeCheckFilledIcon,
+  BellFilledIcon,
+  CheckCircleFilledIcon,
+  RocketFilledIcon,
+  TrophyFilledIcon,
+  UsersFilledIcon
 } from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
@@ -45,11 +50,11 @@ const formatNotificationTime = (createdAt: string) => {
 };
 
 const notificationIcons = {
-  hand: Hand,
-  target: Target,
-  rocket: Rocket,
-  users: Users,
-  trophy: Trophy
+  hand: BadgeCheckFilledIcon,
+  target: CheckCircleFilledIcon,
+  rocket: RocketFilledIcon,
+  users: UsersFilledIcon,
+  trophy: TrophyFilledIcon
 } as const;
 
 type FormattedNotification = ProductGymNotification & {
@@ -191,7 +196,8 @@ export default function NotificationsScreen() {
                         >
                           <div
                             className={cn(
-                              'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eaf3ff] shadow-[inset_0_0_0_1px_rgba(81,162,255,0.16)]'
+                              'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_rgba(81,162,255,0.16)]',
+                              iconConfig.chipClassName
                             )}
                           >
                             <NotificationIcon
