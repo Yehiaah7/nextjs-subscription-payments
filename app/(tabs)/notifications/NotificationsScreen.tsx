@@ -172,7 +172,7 @@ export default function NotificationsScreen() {
                   <h2 className="mb-2 px-1 text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#506176]">
                     {section.label}
                   </h2>
-                  <div className="overflow-hidden border-y border-[#e9eef5] bg-white">
+                  <div className="overflow-hidden rounded-2xl border border-[#e9eef5] bg-white">
                     {section.items.map((notification, index) => {
                       const iconConfig = getNotificationIconConfig(
                         notification.type
@@ -191,12 +191,12 @@ export default function NotificationsScreen() {
                         >
                           <div
                             className={cn(
-                              'mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf3ff] shadow-[inset_0_0_0_1px_rgba(81,162,255,0.16)]'
+                              'mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#eaf3ff] shadow-[inset_0_0_0_1px_rgba(81,162,255,0.16)]'
                             )}
                           >
                             <NotificationIcon
                               className={cn(
-                                'h-4.5 w-4.5',
+                                'h-5 w-5 shrink-0',
                                 iconConfig.iconClassName
                               )}
                             />
