@@ -128,6 +128,15 @@ export function ClockFilledIcon(props: IconProps) {
   );
 }
 
+
+export function AlarmFilledIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M7.35 2.95a1 1 0 0 1 0 1.4L5.42 6.28a1 1 0 1 1-1.4-1.4l1.93-1.93a1 1 0 0 1 1.4 0Zm10.7 0 1.93 1.93a1 1 0 0 1-1.4 1.4l-1.93-1.93a1 1 0 1 1 1.4-1.4ZM12 5.1a7.15 7.15 0 1 0 0 14.3 7.15 7.15 0 0 0 0-14.3Zm0 1.9a5.25 5.25 0 1 1 0 10.5 5.25 5.25 0 0 1 0-10.5Zm.9 2.25a.9.9 0 1 0-1.8 0v3.55c0 .32.17.62.44.78l2.1 1.25a.9.9 0 0 0 .92-1.55l-1.66-.99V9.25Z" />
+    </svg>
+  );
+}
+
 export function ArrowPathFilledIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>
