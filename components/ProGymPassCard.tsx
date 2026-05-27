@@ -1,9 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
-  BadgeCheckFilledIcon,
   CheckCircleFilledIcon
 } from '@/components/icons/FilledIcons';
 import LoadingButton from '@/components/ui/LoadingButton';
@@ -64,8 +64,8 @@ export default function ProGymPassCard({
 
   const primaryButtonClassName =
     variant === 'plans'
-      ? 'mt-3 inline-flex h-[49px] w-full items-center justify-center rounded-full bg-white px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[#15803d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#22c55e]'
-      : 'mt-3 inline-flex h-[43px] w-full items-center justify-center rounded-full bg-white text-[10px] font-black uppercase tracking-[1px] text-[#15803d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#22c55e]';
+      ? 'mt-3 inline-flex h-[49px] w-full items-center justify-center rounded-full bg-white px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[#15803d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#15803d]'
+      : 'mt-3 inline-flex h-[43px] w-full items-center justify-center rounded-full bg-white text-[10px] font-black uppercase tracking-[1px] text-[#15803d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#15803d]';
 
   const isTrial = subscriptionState === 'trial';
   const isPro = subscriptionState === 'pro';
@@ -73,11 +73,13 @@ export default function ProGymPassCard({
   const trialDaysLabel = `${Math.max(0, Math.round(trialDaysLeft))} days left`;
 
   return (
-    <section id={id} className="rounded-[16px] border border-[#16a34a] bg-[#22c55e] p-3 text-white">
+    <section id={id} className="rounded-[16px] border border-[#166534] bg-[#15803d] p-3 text-white">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-[rgba(255,255,255,0.2)] text-white">
-          <BadgeCheckFilledIcon className="h-4 w-4" />
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+            </svg>
           </span>
           <div>
             <h2 className="text-[16px] font-bold tracking-[-0.4px]">Pro Gym Pass</h2>
@@ -105,8 +107,8 @@ export default function ProGymPassCard({
         <div className="mt-3">
           <p className="text-[11px] font-bold uppercase tracking-[1px] text-[#dcfce7]">Included in your trial:</p>
           <ul className="mt-1 space-y-1 text-[12px] font-medium leading-4 text-[#f0fdf4]">
-            <li className="flex items-start gap-2"><CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />Airbnb unlocked</li>
-            <li className="flex items-start gap-2"><CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white" />Uber unlocked</li>
+            <li className="flex items-center gap-2"><Image src="/airbnb.svg" alt="Airbnb" width={14} height={14} className="h-3.5 w-3.5 shrink-0 rounded-[2px] bg-white/90 p-[1px]" />Airbnb unlocked</li>
+            <li className="flex items-center gap-2"><Image src="/Uber.svg" alt="Uber" width={14} height={14} className="h-3.5 w-3.5 shrink-0 rounded-[2px] bg-white/90 p-[1px]" />Uber unlocked</li>
           </ul>
         </div>
       ) : null}
