@@ -747,7 +747,7 @@ export default function ProfileScreen({
                 />
                 <UserStatTile
                   icon={<Crosshair className="h-3.5 w-3.5 text-violet-500" />}
-                  label="First-Try Accuracy"
+                  label="Accuracy"
                   stat={userStats.firstTryAccuracy}
                   showInfoIcon={false}
                 />
