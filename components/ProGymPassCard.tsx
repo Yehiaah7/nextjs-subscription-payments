@@ -10,6 +10,7 @@ import LoadingButton from '@/components/ui/LoadingButton';
 import { getStripe } from '@/utils/stripe/client';
 import { checkoutWithDefaultPrice } from '@/utils/stripe/server';
 import { getErrorRedirect } from '@/utils/helpers';
+import { getTrialDaysLeft } from '@/lib/trial';
 
 type ProGymPassCardProps = {
   onUpgrade?: () => void;
@@ -70,7 +71,8 @@ export default function ProGymPassCard({
   const isTrial = subscriptionState === 'trial';
   const isPro = subscriptionState === 'pro';
   const hasExpiredTrial = subscriptionState === 'expired';
-  const trialDaysLabel = `${Math.max(0, Math.round(trialDaysLeft))} days left`;
+  const normalizedTrialDaysLeft = getTrialDaysLeft(trialDaysLeft);
+  const trialDaysLabel = `${normalizedTrialDaysLeft} days left`;
 
   return (
     <section id={id} className="rounded-[16px] border border-[#166534] bg-[#15803d] p-3 text-white">

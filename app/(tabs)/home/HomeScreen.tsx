@@ -33,6 +33,7 @@ import {
 } from '@/components/seniority/constants';
 import { fadeSlideUp, listVariants, springTransition } from '@/lib/motion';
 import { cn } from '@/utils/cn';
+import { getProTrialRemainingCopy } from '@/lib/trial';
 import type { CompanySummary } from '@/app/(authenticated)/companies/company-summary';
 import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
 import UserAvatar from '@/components/ui/UserAvatar';
@@ -102,6 +103,8 @@ export default function HomeScreen({
   const [selectedSkillCategoryKey, setSelectedSkillCategoryKey] = useState<
     string | null
   >(defaultSkillCategoryKey);
+  const trialDaysLeft = 7;
+  const freeTrialCopy = getProTrialRemainingCopy(trialDaysLeft);
 
   const selectedCategory =
     skillPathCategories.find(
@@ -170,28 +173,27 @@ export default function HomeScreen({
         {showFreeTrialCard ? (
           <MotionCard
             className={cn(
-              'app-card mb-4 border border-primary-soft',
+              'mb-4 rounded-[16px] border border-[#166534] bg-[#15803d] p-3 text-white',
               cardInteractive
             )}
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex items-center gap-2">
-                <div className="rounded-lg bg-primary-soft p-1.5">
-                  <RocketFilledIcon className="h-3.5 w-3.5 text-primary" />
+                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/20 text-white">
+                  <RocketFilledIcon className="h-3.5 w-3.5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="t-label text-primary">Free Trial Active</p>
-                  <p className="text-[11px] font-semibold text-muted">
-                    7 Days remaining in your Pro trial
+                  <p className="t-label text-white">Free Trial Active</p>
+                  <p className="text-[11px] font-semibold text-[#dcfce7]">
+                    {freeTrialCopy}
                   </p>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1">
                 <MotionButton
                   className={cn(
-                    'rounded-pill whitespace-nowrap bg-success-button px-2.5 py-1 t-label text-white',
+                    'rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-[#15803d]',
                     btnInteractive,
-                    btnInteractiveColored,
                     focusRingInteractive
                   )}
                 >
@@ -202,7 +204,7 @@ export default function HomeScreen({
                   onClick={() => setShowFreeTrialCard(false)}
                   aria-label="Dismiss free trial card"
                   className={cn(
-                    'inline-flex h-6 w-6 items-center justify-center rounded-full text-muted hover:bg-primary-soft hover:text-primary',
+                    'inline-flex h-6 w-6 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white',
                     iconBtnInteractive,
                     focusRingInteractive
                   )}
