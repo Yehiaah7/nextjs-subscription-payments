@@ -10,9 +10,11 @@ type AttemptStatRow = {
 };
 
 type AnswerStatRow = {
+  id: string;
   attempt_id: string;
   question_id: string;
   points_awarded: number | null;
+  is_correct: boolean | null;
   options: { is_correct: boolean } | null;
   attempts: { user_id: string; started_at: string | null } | null;
 };
@@ -78,7 +80,7 @@ export async function getUserProfileStats(
   const { data: answersData, error: answersError } = await db
     .from('answers')
     .select(
-      'attempt_id,question_id,points_awarded,options(is_correct),attempts!inner(user_id,started_at)'
+      'id,attempt_id,question_id,points_awarded,is_correct,options(is_correct),attempts!inner(user_id,started_at)'
     )
     .eq('attempts.user_id', userId);
 
@@ -106,16 +108,18 @@ export async function getUserProfileStats(
       continue;
     }
 
-    if (nextTime === existingTime && answer.attempt_id < existing.attempt_id) {
+    if (nextTime === existingTime && answer.id < existing.id) {
       firstAnswerByQuestion.set(answer.question_id, answer);
     }
   }
 
   const firstAnswers = Array.from(firstAnswerByQuestion.values());
-  const firstTryCorrectCount = firstAnswers.filter(
-    (answer) =>
-      answer.options?.is_correct === true || (answer.points_awarded ?? 0) > 0
-  ).length;
+  const firstTryCorrectCount = firstAnswers.filter((answer) => {
+    if (answer.is_correct !== null) return answer.is_correct;
+    if (answer.options?.is_correct !== undefined) return answer.options.is_correct;
+
+    return (answer.points_awarded ?? 0) > 0;
+  }).length;
 
   const firstTryAccuracy = firstAnswers.length
     ? Math.round((firstTryCorrectCount / firstAnswers.length) * 100)

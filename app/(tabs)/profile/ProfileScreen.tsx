@@ -14,7 +14,6 @@ import { useRouter } from 'next/navigation';
 import {
   CheckCircleFilledIcon,
   FireFilledIcon,
-  CrownFilledIcon,
   TrophyFilledIcon
 } from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
@@ -27,7 +26,7 @@ import { toast } from '@/components/ui/Toasts/use-toast';
 import { cardInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
-import { Camera, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Camera, CircleHelp, Crosshair, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 
@@ -715,42 +714,43 @@ export default function ProfileScreen({
               ) : null}
             </div>
 
-            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
-              <UserStatTile
-                icon={
-                  <TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />
-                }
-                label="Rank"
-                stat={userStats.rank}
-              />
-              <UserStatTile
-                icon={
-                  <CheckCircleFilledIcon className="h-3.5 w-3.5 text-[#22c55e]" />
-                }
-                label="Solved"
-                stat={userStats.solved}
-              />
-              <UserStatTile
-                icon={
-                  <FireFilledIcon className="h-3.5 w-3.5 text-orange-500" />
-                }
-                label="Solving Days"
-                stat={userStats.solvingDays}
-              />
-              <UserStatTile
-                icon={
-                  <CheckCircleFilledIcon className="h-3.5 w-3.5 text-sky-500" />
-                }
-                label="Questions Solved"
-                stat={userStats.questionsSolved}
-              />
-              <UserStatTile
-                icon={
-                  <CrownFilledIcon className="h-3.5 w-3.5 text-violet-500" />
-                }
-                label="First-Try Accuracy"
-                stat={userStats.firstTryAccuracy}
-              />
+            <div className="mt-4 space-y-2">
+              <div className="grid grid-cols-3 gap-2">
+                <UserStatTile
+                  icon={
+                    <TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />
+                  }
+                  label="Rank"
+                  stat={userStats.rank}
+                />
+                <UserStatTile
+                  icon={
+                    <CheckCircleFilledIcon className="h-3.5 w-3.5 text-[#22c55e]" />
+                  }
+                  label="Solved"
+                  stat={userStats.solved}
+                />
+                <UserStatTile
+                  icon={
+                    <FireFilledIcon className="h-3.5 w-3.5 text-orange-500" />
+                  }
+                  label="Solving Days"
+                  stat={userStats.solvingDays}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <UserStatTile
+                  icon={<CircleHelp className="h-3.5 w-3.5 text-sky-500" />}
+                  label="Questions Solved"
+                  stat={userStats.questionsSolved}
+                />
+                <UserStatTile
+                  icon={<Crosshair className="h-3.5 w-3.5 text-violet-500" />}
+                  label="First-Try Accuracy"
+                  stat={userStats.firstTryAccuracy}
+                />
+                <div aria-hidden className="invisible" />
+              </div>
             </div>
           </MotionCard>
 
