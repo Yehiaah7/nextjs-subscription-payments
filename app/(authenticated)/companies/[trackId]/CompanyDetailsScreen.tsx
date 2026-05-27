@@ -18,10 +18,10 @@ import MotionPage from '@/components/motion/MotionPage';
 import { fadeSlideUp, listVariants, springTransition } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 import {
+  AlarmFilledIcon,
   ArrowPathFilledIcon,
   ChevronLeftFilledIcon,
   ChevronRightFilledIcon,
-  ClockFilledIcon,
   TrophyFilledIcon,
   UsersFilledIcon
 } from '@/components/icons/FilledIcons';
@@ -293,7 +293,7 @@ export default function CompanyDetailsScreen({
                         {challenge.practicingCount} practicing
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <ClockFilledIcon className="h-3.5 w-3.5" />
+                        <AlarmFilledIcon className="h-3.5 w-3.5" />
                         {challenge.duration}
                       </span>
                       <span className="inline-flex items-center gap-1">
