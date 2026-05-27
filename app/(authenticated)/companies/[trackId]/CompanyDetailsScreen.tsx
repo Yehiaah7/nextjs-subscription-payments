@@ -189,41 +189,43 @@ export default function CompanyDetailsScreen({
           />
         </div>
 
-        <div className="app-segment mb-4 grid grid-cols-4 gap-1 text-center">
-          {FILTERS.map((tab) => (
-            <MotionButton
-              key={tab.key}
-              onClick={() => setFilter(tab.key)}
-              className={cn(
-                'relative whitespace-nowrap rounded-pill px-1.5 text-[9px] font-black uppercase tracking-[0.06em]',
-                filter === tab.key ? 'text-primary' : 'text-muted',
-                tabInteractive,
-                focusRingInteractive
-              )}
-              type="button"
-            >
-              {filter === tab.key ? (
-                <motion.span
-                  layoutId="tab-indicator"
-                  transition={springTransition}
-                  className="absolute inset-0 rounded-pill bg-container shadow-button"
-                />
-              ) : null}
-              <span className="relative inline-flex items-center gap-1">
-                <span>{tab.label}</span>
-                <span
-                  className={cn(
-                    'rounded-pill px-1.5 py-0.5 text-[8px] font-black leading-none',
-                    filter === tab.key
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-surface-muted text-muted'
-                  )}
-                >
-                  {tabCounts[tab.key]}
+        <div className="mb-4 overflow-x-auto px-1">
+          <div className="app-segment flex min-w-max items-center gap-1 p-1 text-center">
+            {FILTERS.map((tab) => (
+              <MotionButton
+                key={tab.key}
+                onClick={() => setFilter(tab.key)}
+                className={cn(
+                  'relative shrink-0 whitespace-nowrap rounded-pill px-4 py-3 text-[9px] font-black uppercase tracking-[0.06em]',
+                  filter === tab.key ? 'text-primary' : 'text-muted',
+                  tabInteractive,
+                  focusRingInteractive
+                )}
+                type="button"
+              >
+                {filter === tab.key ? (
+                  <motion.span
+                    layoutId="tab-indicator"
+                    transition={springTransition}
+                    className="absolute inset-0 rounded-pill bg-container shadow-button"
+                  />
+                ) : null}
+                <span className="relative inline-flex items-center gap-1">
+                  <span>{tab.label}</span>
+                  <span
+                    className={cn(
+                      'rounded-pill px-1.5 py-0.5 text-[8px] font-black leading-none',
+                      filter === tab.key
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-surface-muted text-muted'
+                    )}
+                  >
+                    {tabCounts[tab.key]}
+                  </span>
                 </span>
-              </span>
-            </MotionButton>
-          ))}
+              </MotionButton>
+            ))}
+          </div>
         </div>
 
         <motion.div
