@@ -14,9 +14,15 @@ type UserStatTileProps = {
   icon: ReactNode;
   label: string;
   stat: UserProfileStat;
+  showInfoIcon?: boolean;
 };
 
-export default function UserStatTile({ icon, label, stat }: UserStatTileProps) {
+export default function UserStatTile({
+  icon,
+  label,
+  stat,
+  showInfoIcon = true
+}: UserStatTileProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -26,7 +32,7 @@ export default function UserStatTile({ icon, label, stat }: UserStatTileProps) {
       </div>
       <p className="flex items-center justify-center gap-1 text-[9px] font-black tracking-[0.04em] text-[#64748b]">
         <span>{label}</span>
-        {!stat.isAvailable ? (
+        {showInfoIcon && !stat.isAvailable ? (
           <StatInfoIcon label={label} onOpen={() => setIsModalOpen(true)} />
         ) : null}
       </p>

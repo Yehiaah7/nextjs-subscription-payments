@@ -743,11 +743,13 @@ export default function ProfileScreen({
                   icon={<HelpCircle className="h-3.5 w-3.5 text-sky-500" />}
                   label="Questions Solved"
                   stat={userStats.questionsSolved}
+                  showInfoIcon={false}
                 />
                 <UserStatTile
                   icon={<Crosshair className="h-3.5 w-3.5 text-violet-500" />}
                   label="First-Try Accuracy"
                   stat={userStats.firstTryAccuracy}
+                  showInfoIcon={false}
                 />
                 <div aria-hidden className="invisible" />
               </div>
