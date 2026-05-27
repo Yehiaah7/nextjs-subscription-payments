@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Rocket, Sparkles, Target, Trash2, Trophy, Users } from 'lucide-react';
 import {
   ArrowLeftFilledIcon,
   BellFilledIcon
@@ -18,6 +18,7 @@ import {
   focusRingInteractive,
   iconBtnInteractive
 } from '@/components/ui/interactive';
+import { getNotificationIconConfig } from '@/lib/notifications/iconMapping';
 import type { ProductGymNotification } from '@/lib/notifications/types';
 import { cn } from '@/utils/cn';
 
@@ -42,6 +43,15 @@ const formatNotificationTime = (createdAt: string) => {
 
   return relativeTimeFormatter.format(diffDays, 'day');
 };
+
+
+const notificationIcons = {
+  sparkles: Sparkles,
+  target: Target,
+  rocket: Rocket,
+  users: Users,
+  trophy: Trophy
+} as const;
 
 type FormattedNotification = ProductGymNotification & {
   time: string;
@@ -124,14 +134,28 @@ export default function NotificationsScreen() {
 
           {formattedNotifications.length ? (
             <div className="overflow-hidden rounded-[22px] border border-[var(--alerts-card-stroke)] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-              {formattedNotifications.map((notification) => (
-                <article
-                  key={notification.id}
-                  className={cn(
-                    'group flex min-h-[94px] w-full items-start gap-3 border-b border-[#eef2f7] bg-white p-4 transition-colors last:border-b-0'
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
+              {formattedNotifications.map((notification) => {
+                const iconConfig = getNotificationIconConfig(notification.type);
+                const NotificationIcon = notificationIcons[iconConfig.icon];
+
+                return (
+                  <article
+                    key={notification.id}
+                    className={cn(
+                      'group flex min-h-[94px] w-full items-start gap-3 border-b border-[#eef2f7] bg-white p-4 transition-colors last:border-b-0'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full',
+                        iconConfig.chipClassName
+                      )}
+                    >
+                      <NotificationIcon
+                        className={cn('h-4.5 w-4.5', iconConfig.iconClassName)}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <h2 className="min-w-0 text-[14px] font-bold leading-[1.25] tracking-[-0.35px] text-[var(--alerts-heading-color)] group-hover:text-primary">
                         {notification.title}
@@ -157,8 +181,9 @@ export default function NotificationsScreen() {
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <div className="rounded-[var(--alerts-card-radius)] border border-dashed border-[var(--alerts-card-stroke)] bg-white p-6 text-center shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
