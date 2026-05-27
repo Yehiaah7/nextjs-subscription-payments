@@ -26,7 +26,7 @@ import { toast } from '@/components/ui/Toasts/use-toast';
 import { cardInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
-import { Camera, CircleHelp, Crosshair, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Camera, Crosshair, HelpCircle, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 
@@ -740,7 +740,7 @@ export default function ProfileScreen({
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <UserStatTile
-                  icon={<CircleHelp className="h-3.5 w-3.5 text-sky-500" />}
+                  icon={<HelpCircle className="h-3.5 w-3.5 text-sky-500" />}
                   label="Questions Solved"
                   stat={userStats.questionsSolved}
                 />
