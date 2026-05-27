@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   CheckCircleFilledIcon
 } from '@/components/icons/FilledIcons';
@@ -75,15 +75,11 @@ export default function ProGymPassCard({
   const isTrial = subscriptionState === 'trial';
   const isPro = subscriptionState === 'pro';
   const hasExpiredTrial = subscriptionState === 'expired';
-  const calculatedTrialDaysLeft = useMemo(
-    () =>
-      calculateTrialDaysLeft({
-        trialEndAt,
-        trialStartedAt,
-        trialDurationDays: trialDaysLeft
-      }),
-    [trialDaysLeft, trialEndAt, trialStartedAt]
-  );
+  const calculatedTrialDaysLeft = calculateTrialDaysLeft({
+    trialEndAt,
+    trialStartedAt,
+    trialDurationDays: trialDaysLeft
+  });
   const trialDaysLabel = formatTrialCountdownLabel(calculatedTrialDaysLeft);
 
   return (
