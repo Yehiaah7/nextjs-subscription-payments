@@ -664,7 +664,7 @@ export default function ProfileScreen({
                   initialsClassName="text-2xl"
                 />
 
-                <span className="absolute -right-0.5 -top-0.5 grid h-6 w-6 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[#2563eb]">
+                <span className="absolute -right-0.5 -top-0.5 grid h-6 w-6 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[var(--color-brand-blue)]">
                   <TrophyFilledIcon className="h-3.5 w-3.5" />
                 </span>
 
@@ -690,7 +690,7 @@ export default function ProfileScreen({
               <p className="mt-4 text-center text-[16px] font-bold tracking-[-0.3px] text-[#0f172b]">
                 {fullName}
               </p>
-              <p className="mt-1 text-[10px] font-black tracking-[0.04em] text-[#2563eb]">
+              <p className="mt-1 text-[10px] font-black tracking-[0.04em] text-[var(--color-brand-blue)]">
                 Product Gym member
               </p>
               {isAvatarActionPending ? (
@@ -732,7 +732,7 @@ export default function ProfileScreen({
                 />
                 <UserStatTile
                   icon={
-                    <FireFilledIcon className="h-3.5 w-3.5 text-orange-500" />
+                    <FireFilledIcon className="h-3.5 w-3.5 text-ritual-orange" />
                   }
                   label="Solving Days"
                   stat={userStats.solvingDays}
@@ -775,12 +775,12 @@ export default function ProfileScreen({
                 Preferences & Security
               </p>
             </div>
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#eff6ff] text-xl text-[#94a3b8]">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#EAF6FE] text-xl text-[#8C9AA3]">
               ›
             </span>
           </Link>
 
-          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.6px] text-[#94a3b8]">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.6px] text-[#8C9AA3]">
             Product Gym V2.4.0
           </p>
         </section>
@@ -906,7 +906,7 @@ function ProfilePhotoActionsModal({
             type="button"
             onClick={onChangePhoto}
             disabled={isActionPending}
-            className="flex h-12 w-full items-center gap-3 rounded-[14px] bg-[#eff6ff] px-4 text-left text-[13px] font-bold text-[#2563eb] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-12 w-full items-center gap-3 rounded-[14px] bg-[#EAF6FE] px-4 text-left text-[13px] font-bold text-[var(--color-brand-blue)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Camera className="h-4 w-4" />
             Change photo
@@ -1035,7 +1035,7 @@ function ProfilePhotoActionTrigger({
       aria-label="Open profile photo actions"
       aria-haspopup="dialog"
       aria-expanded={isOpen}
-      className="grid h-8 w-8 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[#2563eb] shadow-md transition hover:bg-[#eff6ff] disabled:cursor-not-allowed disabled:opacity-60"
+      className="grid h-8 w-8 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[var(--color-brand-blue)] shadow-md transition hover:bg-[#EAF6FE] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <Camera className="h-4 w-4" />
     </button>
@@ -1197,7 +1197,7 @@ function AvatarEditorModal({
             type="button"
             onClick={onApply}
             disabled={isSaving}
-            className="h-11 rounded-[14px] bg-[#2563eb] text-[13px] font-bold text-white shadow-sm disabled:opacity-60"
+            className="h-11 rounded-[14px] bg-[var(--color-brand-blue)] text-[13px] font-bold text-white shadow-sm disabled:opacity-60"
           >
             {isSaving ? 'Saving...' : 'Save photo'}
           </button>

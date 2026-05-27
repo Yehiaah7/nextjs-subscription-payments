@@ -15,7 +15,7 @@
 }
 
 *:focus-visible {
-  @apply ring-2 ring-blue-500/40 ring-offset-2 ring-offset-transparent;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-blue) 35%, transparent);
 }
 
 html {
@@ -120,7 +120,7 @@ body.mobile-app-page main#skip {
     max-width: 100%;
     height: 39px;
     border-radius: var(--radius-pill);
-    background: #ffffff;
+    background: var(--color-surface);
     border: 0;
   }
 
