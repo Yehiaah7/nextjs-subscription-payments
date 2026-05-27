@@ -10,6 +10,7 @@ import {
   ChevronLeftFilledIcon,
   ChevronRightFilledIcon
 } from '@/components/icons/FilledIcons';
+import { toast } from '@/components/ui/Toasts/use-toast';
 import { MotionButton } from '@/components/motion';
 import {
   btnInteractive,
@@ -62,6 +63,7 @@ type AttemptState = {
   isSolved: boolean;
   wrongAttemptsCount: number;
   pointsAwarded: number;
+  needsReview: boolean;
 };
 
 type AnswerPayload = {
@@ -126,7 +128,8 @@ const emptyAttemptState: AttemptState = {
   lastSelectedOptionId: null,
   isSolved: false,
   wrongAttemptsCount: 0,
-  pointsAwarded: 0
+  pointsAwarded: 0,
+  needsReview: false
 };
 
 const getSavedAnsweredQuestionIds = (
@@ -383,6 +386,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           wrongAttemptsCount?: number;
           lastSelectedOptionId?: string;
           solvedOptionId?: string;
+          needsReview?: boolean;
         } = {};
         if (answer.text_answer) {
           try {
@@ -402,7 +406,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             answer.option_id,
           isSolved: Boolean(solvedOptionId),
           wrongAttemptsCount: Number(parsedMeta?.wrongAttemptsCount ?? 0),
-          pointsAwarded: answer.points_awarded ?? 0
+          pointsAwarded: answer.points_awarded ?? 0,
+          needsReview:
+            Boolean(parsedMeta?.needsReview) ||
+            (Boolean(solvedOptionId) &&
+              Number(parsedMeta?.wrongAttemptsCount ?? 0) >= 2)
         };
       }
 
@@ -504,17 +512,25 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       option.is_correct || hasBeenSolved
         ? previousState.wrongAttemptsCount
         : previousState.wrongAttemptsCount + 1;
+    const solvedOnAttemptNumber = option.is_correct
+      ? previousState.wrongAttemptsCount + 1
+      : null;
+    const solvedLate =
+      solvedOnAttemptNumber !== null && solvedOnAttemptNumber > 2;
     const pointsAwarded = hasBeenSolved
       ? previousState.pointsAwarded
       : option.is_correct
-        ? question.points
+        ? solvedLate
+          ? 0
+          : question.points
         : previousState.pointsAwarded;
     const nextStateForQuestion: AttemptState = {
       solvedOptionId,
       lastSelectedOptionId: option.id,
       isSolved: Boolean(solvedOptionId),
       wrongAttemptsCount,
-      pointsAwarded
+      pointsAwarded,
+      needsReview: previousState.needsReview || Boolean(solvedLate)
     };
 
     setAttemptStates((current) => ({
@@ -531,6 +547,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }, 220);
     }
 
+    if (solvedLate && !previousState.needsReview) {
+      toast({
+        title: 'Marked for review',
+        description:
+          'Nice recovery — review this question later because it took more than 2 attempts.'
+      });
+    }
+
     const answerPayload: AnswerPayload = {
       attempt_id: attemptId,
       question_id: question.id,
@@ -539,7 +563,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       text_answer: JSON.stringify({
         wrongAttemptsCount: nextStateForQuestion.wrongAttemptsCount,
         solvedOptionId: nextStateForQuestion.solvedOptionId,
-        lastSelectedOptionId: nextStateForQuestion.lastSelectedOptionId
+        lastSelectedOptionId: nextStateForQuestion.lastSelectedOptionId,
+        needsReview: nextStateForQuestion.needsReview
       })
     };
 
@@ -774,12 +799,19 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         </section>
 
         <section className="w-full rounded-2xl border border-[#d8efe1] bg-[#f8fdf9] p-3">
-          {currentState.isSolved ? (
-            <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-green-800">
-              <CheckCircleFilledIcon className="h-3 w-3" />
-              Solved
-            </div>
-          ) : null}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {currentState.isSolved ? (
+              <div className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-green-800">
+                <CheckCircleFilledIcon className="h-3 w-3" />
+                Solved
+              </div>
+            ) : null}
+            {currentState.needsReview ? (
+              <div className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-amber-700">
+                Needs review
+              </div>
+            ) : null}
+          </div>
           <p className="text-sm font-normal leading-5 text-[#45556c]">
             {currentQuestion.prompt}
           </p>

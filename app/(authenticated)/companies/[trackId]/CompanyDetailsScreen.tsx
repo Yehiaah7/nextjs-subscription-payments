@@ -22,6 +22,7 @@ import {
   ChevronLeftFilledIcon,
   ChevronRightFilledIcon,
   ClockFilledIcon,
+  TrophyFilledIcon,
   UsersFilledIcon
 } from '@/components/icons/FilledIcons';
 import { motion } from 'framer-motion';
@@ -294,6 +295,7 @@ export default function CompanyDetailsScreen({
                         {challenge.duration}
                       </span>
                       <span className="inline-flex items-center gap-1">
+                        <TrophyFilledIcon className="h-3.5 w-3.5" />
                         Score: {challenge.score}%
                       </span>
                     </div>
