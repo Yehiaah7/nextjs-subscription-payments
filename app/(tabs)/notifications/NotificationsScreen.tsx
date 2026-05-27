@@ -44,7 +44,6 @@ const formatNotificationTime = (createdAt: string) => {
   return relativeTimeFormatter.format(diffDays, 'day');
 };
 
-
 const notificationIcons = {
   hand: Hand,
   target: Target,
@@ -56,6 +55,11 @@ const notificationIcons = {
 type FormattedNotification = ProductGymNotification & {
   time: string;
   isHighlighted: boolean;
+};
+
+type NotificationSection = {
+  label: 'Today' | 'Most recent';
+  items: FormattedNotification[];
 };
 
 export default function NotificationsScreen() {
@@ -96,6 +100,33 @@ export default function NotificationsScreen() {
     [highlightedNotificationIds, notifications]
   );
 
+  const notificationSections = useMemo<NotificationSection[]>(() => {
+    const todayItems: FormattedNotification[] = [];
+    const mostRecentItems: FormattedNotification[] = [];
+
+    const now = new Date();
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    ).getTime();
+
+    formattedNotifications.forEach((notification) => {
+      const createdAt = new Date(notification.createdAt).getTime();
+
+      if (createdAt >= startOfToday) {
+        todayItems.push(notification);
+      } else {
+        mostRecentItems.push(notification);
+      }
+    });
+
+    return [
+      { label: 'Today', items: todayItems },
+      { label: 'Most recent', items: mostRecentItems }
+    ].filter((section) => section.items.length > 0);
+  }, [formattedNotifications]);
+
   const confirmDeleteNotification = () => {
     if (!notificationToDelete) return;
 
@@ -133,56 +164,75 @@ export default function NotificationsScreen() {
           </header>
 
           {formattedNotifications.length ? (
-            <div className="overflow-hidden rounded-[22px] border border-[var(--alerts-card-stroke)] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-              {formattedNotifications.map((notification) => {
-                const iconConfig = getNotificationIconConfig(notification.type);
-                const NotificationIcon = notificationIcons[iconConfig.icon];
+            <div className="space-y-6">
+              {notificationSections.map((section) => (
+                <section key={section.label} aria-label={section.label}>
+                  <h2 className="mb-2 px-1 text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#506176]">
+                    {section.label}
+                  </h2>
+                  <div className="overflow-hidden border-y border-[#e9eef5] bg-white">
+                    {section.items.map((notification, index) => {
+                      const iconConfig = getNotificationIconConfig(
+                        notification.type
+                      );
+                      const NotificationIcon =
+                        notificationIcons[iconConfig.icon];
 
-                return (
-                  <article
-                    key={notification.id}
-                    className={cn(
-                      'group flex min-h-[94px] w-full items-start gap-3 border-b border-[#eef2f7] bg-white p-4 transition-colors last:border-b-0'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf3ff] shadow-[inset_0_0_0_1px_rgba(81,162,255,0.16)]'
-                      )}
-                    >
-                      <NotificationIcon
-                        className={cn('h-4.5 w-4.5', iconConfig.iconClassName)}
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <h2 className="min-w-0 text-[14px] font-bold leading-[1.25] tracking-[-0.35px] text-[var(--alerts-heading-color)] group-hover:text-primary">
-                        {notification.title}
-                      </h2>
-                      <p className="shrink-0 pt-0.5 text-[10px] font-bold text-[var(--alerts-time-color)]">
-                        {notification.time}
-                      </p>
-                    </div>
-                    <p className="mt-1.5 text-[12px] font-medium leading-[1.45] text-[var(--alerts-body-color)]">
-                      {notification.body}
-                    </p>
+                      return (
+                        <article
+                          key={notification.id}
+                          className={cn(
+                            'group flex w-full items-start gap-3.5 px-1 py-4',
+                            index < section.items.length - 1 &&
+                              'border-b border-[#edf2f8]'
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              'mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf3ff] shadow-[inset_0_0_0_1px_rgba(81,162,255,0.16)]'
+                            )}
+                          >
+                            <NotificationIcon
+                              className={cn(
+                                'h-4.5 w-4.5',
+                                iconConfig.iconClassName
+                              )}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-3">
+                              <h3 className="min-w-0 text-[14px] font-bold leading-[1.3] tracking-[-0.2px] text-[var(--alerts-heading-color)]">
+                                {notification.title}
+                              </h3>
+                              <p className="shrink-0 pt-0.5 text-[11px] font-semibold text-[var(--alerts-time-color)]">
+                                {notification.time}
+                              </p>
+                            </div>
+                            <p className="mt-1.5 text-[12px] font-medium leading-[1.5] text-[var(--alerts-body-color)]">
+                              {notification.body}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setNotificationToDelete(notification)
+                            }
+                            className={cn(
+                              'mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#8da0b7] hover:bg-[#f2f6fb] hover:text-red-600',
+                              btnInteractive,
+                              btnInteractiveNeutral,
+                              focusRingInteractive
+                            )}
+                            aria-label={`Delete ${notification.title}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </article>
+                      );
+                    })}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setNotificationToDelete(notification)}
-                    className={cn(
-                      'mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-red-100 bg-white text-red-600',
-                      btnInteractive,
-                      btnInteractiveNeutral,
-                      focusRingInteractive
-                    )}
-                    aria-label={`Delete ${notification.title}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                  </article>
-                );
-              })}
+                </section>
+              ))}
             </div>
           ) : (
             <div className="rounded-[var(--alerts-card-radius)] border border-dashed border-[var(--alerts-card-stroke)] bg-white p-6 text-center shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
