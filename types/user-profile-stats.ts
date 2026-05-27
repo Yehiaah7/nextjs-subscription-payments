@@ -1,4 +1,9 @@
-export type UserProfileStatKey = 'rank' | 'solved' | 'solvingDays';
+export type UserProfileStatKey =
+  | 'rank'
+  | 'solved'
+  | 'solvingDays'
+  | 'questionsSolved'
+  | 'firstTryAccuracy';
 
 export type UserProfileStat = {
   value: string;
