@@ -764,16 +764,16 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
           />
         </div>
 
-        <section>
-          <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">
+        <section className="w-full rounded-2xl border border-[#bfe7d1] bg-[#f3fbf6] p-3">
+          <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2f8a5d]">
             {quiz.modules?.title ?? 'Challenge'}
           </p>
-          <h1 className="mt-2 text-base font-bold leading-6 text-[#0f172b]">
+          <h1 className="mt-2 text-base font-bold leading-6 text-[#124a2f]">
             {quiz.title}
           </h1>
         </section>
 
-        <section className="w-full rounded-2xl bg-white p-3">
+        <section className="w-full rounded-2xl border border-[#d8efe1] bg-[#f8fdf9] p-3">
           {currentState.isSolved ? (
             <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-green-800">
               <CheckCircleFilledIcon className="h-3 w-3" />
