@@ -121,10 +121,12 @@ export default function NotificationsScreen() {
       }
     });
 
-    return [
+    const sections: NotificationSection[] = [
       { label: 'Today', items: todayItems },
       { label: 'Most recent', items: mostRecentItems }
-    ].filter((section) => section.items.length > 0);
+    ];
+
+    return sections.filter((section) => section.items.length > 0);
   }, [formattedNotifications]);
 
   const confirmDeleteNotification = () => {
