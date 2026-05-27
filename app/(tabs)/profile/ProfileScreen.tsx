@@ -26,7 +26,7 @@ import { toast } from '@/components/ui/Toasts/use-toast';
 import { cardInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
-import { Camera, Crosshair, HelpCircle, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Camera, Clock3, Crosshair, HelpCircle, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 
@@ -751,7 +751,12 @@ export default function ProfileScreen({
                   stat={userStats.firstTryAccuracy}
                   showInfoIcon={false}
                 />
-                <div aria-hidden className="invisible" />
+                <UserStatTile
+                  icon={<Clock3 className="h-3.5 w-3.5 text-indigo-500" />}
+                  label="Practice Time"
+                  stat={userStats.practiceTime}
+                  showInfoIcon={false}
+                />
               </div>
             </div>
           </MotionCard>
