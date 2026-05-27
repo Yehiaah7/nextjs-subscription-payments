@@ -665,7 +665,7 @@ export default function ProfileScreen({
                 />
 
                 <span className="absolute -right-0.5 -top-0.5 grid h-6 w-6 place-items-center rounded-full border border-[#bfdbfe] bg-white text-[#2563eb]">
-                  <CrownFilledIcon className="h-3.5 w-3.5" />
+                  <TrophyFilledIcon className="h-3.5 w-3.5" />
                 </span>
 
                 <div className="absolute -bottom-1 -right-1">
