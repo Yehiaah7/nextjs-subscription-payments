@@ -715,7 +715,7 @@ export default function ProfileScreen({
               ) : null}
             </div>
 
-            <div className="mt-4 grid grid-cols-3 gap-2">
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
               <UserStatTile
                 icon={
                   <TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />
@@ -736,6 +736,20 @@ export default function ProfileScreen({
                 }
                 label="Solving Days"
                 stat={userStats.solvingDays}
+              />
+              <UserStatTile
+                icon={
+                  <CheckCircleFilledIcon className="h-3.5 w-3.5 text-sky-500" />
+                }
+                label="Questions Solved"
+                stat={userStats.questionsSolved}
+              />
+              <UserStatTile
+                icon={
+                  <CrownFilledIcon className="h-3.5 w-3.5 text-violet-500" />
+                }
+                label="First-Try Accuracy"
+                stat={userStats.firstTryAccuracy}
               />
             </div>
           </MotionCard>
