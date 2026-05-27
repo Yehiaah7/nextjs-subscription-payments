@@ -756,7 +756,7 @@ export default function ProfileScreen({
             </div>
           </MotionCard>
 
-          <ProGymPassCard variant="profile" managePlansLabel="Manage Plans" />
+          <ProGymPassCard variant="profile" />
 
           <Link
             href="/profile/settings"

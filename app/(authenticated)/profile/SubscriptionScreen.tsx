@@ -32,7 +32,7 @@ export default function SubscriptionScreen() {
           <p className="mt-1 text-[11px] font-bold">You are currently enjoying a Pro Trial.</p>
         </section>
 
-        <ProGymPassCard id="pro" variant="plans" showViewPlans={false} />
+        <ProGymPassCard id="pro" variant="plans" />
 
         <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3">
           <div className="flex items-center gap-2">
