@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   CheckCircleFilledIcon
 } from '@/components/icons/FilledIcons';
@@ -10,12 +10,15 @@ import LoadingButton from '@/components/ui/LoadingButton';
 import { getStripe } from '@/utils/stripe/client';
 import { checkoutWithDefaultPrice } from '@/utils/stripe/server';
 import { getErrorRedirect } from '@/utils/helpers';
+import { calculateTrialDaysLeft, formatTrialCountdownLabel } from '@/utils/trial';
 
 type ProGymPassCardProps = {
   onUpgrade?: () => void;
   variant?: 'profile' | 'plans';
   subscriptionState?: 'trial' | 'expired' | 'pro';
   trialDaysLeft?: number;
+  trialEndAt?: string | Date | null;
+  trialStartedAt?: string | Date | null;
   id?: string;
 };
 
@@ -24,6 +27,8 @@ export default function ProGymPassCard({
   variant = 'profile',
   subscriptionState = 'trial',
   trialDaysLeft = 7,
+  trialEndAt,
+  trialStartedAt,
   id
 }: ProGymPassCardProps) {
   const router = useRouter();
@@ -70,7 +75,16 @@ export default function ProGymPassCard({
   const isTrial = subscriptionState === 'trial';
   const isPro = subscriptionState === 'pro';
   const hasExpiredTrial = subscriptionState === 'expired';
-  const trialDaysLabel = `${Math.max(0, Math.round(trialDaysLeft))} days left`;
+  const calculatedTrialDaysLeft = useMemo(
+    () =>
+      calculateTrialDaysLeft({
+        trialEndAt,
+        trialStartedAt,
+        trialDurationDays: trialDaysLeft
+      }),
+    [trialDaysLeft, trialEndAt, trialStartedAt]
+  );
+  const trialDaysLabel = formatTrialCountdownLabel(calculatedTrialDaysLeft);
 
   return (
     <section id={id} className="rounded-[16px] border border-[#166534] bg-[#15803d] p-3 text-white">
@@ -88,33 +102,24 @@ export default function ProGymPassCard({
             </p>
           </div>
         </div>
-        {isTrial ? (
+        {isTrial || hasExpiredTrial ? (
           <span className="rounded-full bg-white/20 px-2 py-1 text-[10px] font-black uppercase tracking-[1px] text-white">
             {trialDaysLabel}
           </span>
         ) : null}
       </div>
       {isTrial ? (
-        <p className="mt-3 text-[12px] font-medium leading-4 text-[#f0fdf4]">You&apos;re on a 7-day free trial.</p>
-      ) : null}
-      {hasExpiredTrial ? (
-        <div className="mt-3 space-y-1 text-[12px] font-medium leading-4 text-[#f0fdf4]">
-          <p>Your free trial has ended.</p>
-          <p>Upgrade to Pro to unlock all company assignments and continue practicing.</p>
-        </div>
-      ) : null}
-      {isTrial ? (
         <div className="mt-3">
-          <p className="text-[11px] font-bold uppercase tracking-[1px] text-[#dcfce7]">Included in your trial:</p>
+          <p className="text-[11px] font-bold uppercase tracking-[1px] text-[#dcfce7]">Included in your 7-day free trial:</p>
           <ul className="mt-2 space-y-2 text-[12px] font-medium leading-4 text-[#f0fdf4]">
             <li className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white">
                 <Image src="/airbnb.svg" alt="Airbnb" width={20} height={20} className="h-5 w-5 object-contain" />
               </span>
               <span>Airbnb unlocked</span>
             </li>
             <li className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white">
                 <Image src="/Uber.svg" alt="Uber" width={20} height={20} className="h-5 w-5 object-contain" />
               </span>
               <span>Uber unlocked</span>
