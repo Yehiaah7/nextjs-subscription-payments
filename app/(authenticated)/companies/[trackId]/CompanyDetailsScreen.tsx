@@ -112,7 +112,7 @@ export default function CompanyDetailsScreen({
     window.localStorage.setItem(SENIORITY_STORAGE_KEY, selectedSeniority);
   }, [selectedSeniority]);
 
-  const filteredChallenges = useMemo(
+  const levelFilteredChallenges = useMemo(
     () =>
       challenges
         .filter((challenge) =>
@@ -120,6 +120,32 @@ export default function CompanyDetailsScreen({
             ? true
             : challenge.seniority === selectedSeniority
         )
+        .sort((a, b) =>
+          a.categorySortOrder === b.categorySortOrder
+            ? a.title.localeCompare(b.title)
+            : a.categorySortOrder - b.categorySortOrder
+        ),
+    [challenges, selectedSeniority]
+  );
+
+  const tabCounts = useMemo(() => {
+    const counts: Record<FilterTab, number> = {
+      all: levelFilteredChallenges.length,
+      'in-progress': 0,
+      'not-solved': 0,
+      solved: 0
+    };
+
+    levelFilteredChallenges.forEach((challenge) => {
+      counts[challenge.tabClassification] += 1;
+    });
+
+    return counts;
+  }, [levelFilteredChallenges]);
+
+  const filteredChallenges = useMemo(
+    () =>
+      levelFilteredChallenges
         .filter((challenge) =>
           filter === 'all' ? true : challenge.tabClassification === filter
         )
@@ -128,7 +154,7 @@ export default function CompanyDetailsScreen({
             ? a.title.localeCompare(b.title)
             : a.categorySortOrder - b.categorySortOrder
         ),
-    [challenges, filter, selectedSeniority]
+    [levelFilteredChallenges, filter]
   );
 
   return (
@@ -182,7 +208,19 @@ export default function CompanyDetailsScreen({
                   className="absolute inset-0 rounded-pill bg-container shadow-button"
                 />
               ) : null}
-              <span className="relative">{tab.label}</span>
+              <span className="relative inline-flex items-center gap-1">
+                <span>{tab.label}</span>
+                <span
+                  className={cn(
+                    'rounded-pill px-1.5 py-0.5 text-[8px] font-black leading-none',
+                    filter === tab.key
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-surface-muted text-muted'
+                  )}
+                >
+                  {tabCounts[tab.key]}
+                </span>
+              </span>
             </MotionButton>
           ))}
         </div>
