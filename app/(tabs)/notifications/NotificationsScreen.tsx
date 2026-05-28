@@ -196,15 +196,11 @@ export default function NotificationsScreen() {
                         >
                           <div
                             className={cn(
-                              'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_rgba(81,162,255,0.16)]',
-                              iconConfig.chipClassName
+                              'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-productGym-yellowSoft text-amber-700'
                             )}
                           >
                             <NotificationIcon
-                              className={cn(
-                                'h-4 w-4 shrink-0',
-                                iconConfig.iconClassName
-                              )}
+                              className="h-4 w-4 shrink-0"
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -244,7 +240,7 @@ export default function NotificationsScreen() {
             </div>
           ) : (
             <div className="rounded-[var(--alerts-card-radius)] border border-dashed border-[var(--alerts-card-stroke)] bg-white p-6 text-center shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-productGym-yellowSoft text-amber-700">
                 <BellFilledIcon className="h-5 w-5" />
               </div>
               <h2 className="mt-4 text-[15px] font-bold tracking-[-0.35px] text-[var(--alerts-heading-color)]">

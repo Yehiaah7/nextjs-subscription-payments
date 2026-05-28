@@ -91,7 +91,7 @@ export default function ProGymPassCard({
   return (
     <section
       id={id}
-      className="rounded-[16px] border border-black/10 bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5"
+      className="rounded-[16px] bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
