@@ -443,6 +443,8 @@ export default function HomeScreen({
         }}
         selectedSkillPathId={selectedSkillPathId}
         selectedProductId={selectedProductId}
+        selectedSeniority={selectedSeniority}
+        onSelectSeniority={setSelectedSeniority}
         filteredCompanyTracks={filteredCompanyTracks}
         selectedCompanyTrack={selectedCompanyTrack}
         skillPathCategories={skillPathCategories}
@@ -470,6 +472,8 @@ function DesktopHomeLayout({
   onSelectProduct,
   selectedSkillPathId,
   selectedProductId,
+  selectedSeniority,
+  onSelectSeniority,
   filteredCompanyTracks,
   selectedCompanyTrack,
   skillPathCategories,
@@ -492,6 +496,8 @@ function DesktopHomeLayout({
   onSelectProduct: (productId: string) => void;
   selectedSkillPathId: string | null;
   selectedProductId: string | null;
+  selectedSeniority: SeniorityFilter;
+  onSelectSeniority: (seniority: SeniorityFilter) => void;
   filteredCompanyTracks: HomeTrack[];
   selectedCompanyTrack: HomeTrack | null;
   skillPathCategories: SkillPathCategory[];
@@ -542,8 +548,8 @@ function DesktopHomeLayout({
         className={cn(
           'grid min-h-0 flex-1 overflow-hidden',
           isHomeSection
-            ? 'grid-cols-[76px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[76px_320px_minmax(0,1fr)_360px]'
-            : 'grid-cols-[76px_minmax(0,1fr)]'
+            ? 'grid-cols-[88px_minmax(268px,308px)_minmax(0,1fr)_300px] xl:grid-cols-[88px_332px_minmax(0,1fr)_360px]'
+            : 'grid-cols-[88px_minmax(0,1fr)]'
         )}
       >
         <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-2 py-3">
@@ -592,7 +598,7 @@ function DesktopHomeLayout({
               />
             </button>
             <div
-              className="invisible fixed bottom-5 left-[68px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
+              className="invisible fixed bottom-5 left-[80px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
               role="menu"
             >
               <Link
@@ -618,8 +624,31 @@ function DesktopHomeLayout({
 
         {isHomeSection ? (
           <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-4 py-5">
-            <h1 className="text-[16px] font-medium tracking-[-0.02em] text-[var(--color-ink)]">
-              Browse Product Gym practice
+            <h1 className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[16px] font-medium tracking-[-0.02em] text-[var(--color-ink)]">
+              <span>Practice</span>
+              <span className="relative inline-flex">
+                <select
+                  value={selectedSeniority}
+                  onChange={(event) =>
+                    onSelectSeniority(event.target.value as SeniorityFilter)
+                  }
+                  className={cn(
+                    'appearance-none rounded-pill bg-primary-soft py-0.5 pl-2 pr-6 text-[14px] font-semibold text-primary',
+                    btnInteractive,
+                    btnInteractiveNeutral,
+                    focusRingInteractive
+                  )}
+                  aria-label="Filter interview questions by level"
+                >
+                  {SENIORITY_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {SENIORITY_FILTER_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+                <ChevronRightFilledIcon className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-primary" />
+              </span>
+              <span>PM Interview Questions.</span>
             </h1>
 
             <div className="app-segment mt-3 h-9 p-0.5">
@@ -933,7 +962,7 @@ function DesktopNavButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2.5 text-[8px] font-black uppercase tracking-[0.01em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2.5 text-[9px] font-black uppercase tracking-[0.01em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         active
           ? 'bg-primary-soft text-primary'
           : 'text-muted hover:bg-surface-soft',
@@ -990,10 +1019,10 @@ function DesktopNotificationsWorkspace({
   return (
     <section className="mx-auto flex h-full w-full max-w-3xl flex-col pt-10 xl:pt-12">
       <div className="mb-5 text-left">
-        <h1 className="text-[30px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
+        <h1 className="text-[26px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
           Notifications
         </h1>
-        <p className="mt-2 text-sm font-semibold text-muted">
+        <p className="mt-1 text-sm font-semibold text-muted">
           Recent practice, challenge, and subscription updates.
         </p>
       </div>
@@ -1098,10 +1127,10 @@ function DesktopSettingsWorkspace({
   return (
     <section className="mx-auto flex h-full w-full max-w-3xl flex-col pt-10 xl:pt-12">
       <header className="mb-5 max-w-xl text-left">
-        <h1 className="text-[30px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
+        <h1 className="text-[26px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
           Settings
         </h1>
-        <p className="mt-2 text-sm font-semibold leading-6 text-muted">
+        <p className="mt-1 text-sm font-semibold leading-6 text-muted">
           Manage your account preferences and Product Gym experience.
         </p>
       </header>
@@ -1159,10 +1188,10 @@ function DesktopLeaderboardWorkspace({
     <section className="mx-auto flex h-full w-full max-w-3xl flex-col pt-10 xl:pt-12">
       <header className="mb-5 flex flex-wrap items-start justify-between gap-4 text-left">
         <div className="min-w-0 max-w-xl">
-          <h1 className="text-[30px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
+          <h1 className="text-[26px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
             Leaderboard
           </h1>
-          <p className="mt-2 text-sm font-semibold leading-6 text-muted">
+          <p className="mt-1 text-sm font-semibold leading-6 text-muted">
             Track your ranking and compare your progress with other Product Gym
             members.
           </p>
