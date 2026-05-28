@@ -1,7 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CalendarFilledIcon } from '@/components/icons/FilledIcons';
+import {
+  ArrowLeftFilledIcon,
+  CalendarFilledIcon
+} from '@/components/icons/FilledIcons';
 import MobileScreen from '@/components/mobile/MobileScreen';
 import MotionPage from '@/components/motion/MotionPage';
 import {
@@ -20,8 +24,18 @@ export default function LeaderboardScreen() {
   return (
     <MobileScreen>
       <MotionPage>
-        <section className="mx-auto w-full max-w-[361px]">
-          <header className="mb-4">
+        <section className="mx-auto w-full max-w-[361px] lg:max-w-3xl">
+          <header className="mb-4 flex items-center gap-2">
+            <Link
+              href="/home"
+              aria-label="Back to Home"
+              className={cn(
+                'hidden h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-muted lg:inline-flex',
+                focusRingInteractive
+              )}
+            >
+              <ArrowLeftFilledIcon className="h-4 w-4" />
+            </Link>
             <h1 className="text-[var(--lb-title-size)] font-bold leading-[var(--lb-title-line)] tracking-[var(--lb-title-track)] text-[var(--lb-title-color)]">
               Leaderboard
             </h1>
