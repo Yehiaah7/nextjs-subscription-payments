@@ -2,23 +2,22 @@
 
 import Link from 'next/link';
 import {
+  BellFilledIcon,
   CheckCircleFilledIcon,
   ChevronRightFilledIcon,
   FireFilledIcon,
+  HomeFilledIcon,
   RocketFilledIcon,
   TrophyFilledIcon,
   UsersFilledIcon
 } from '@/components/icons/FilledIcons';
 import {
-  Bell,
   Clock3,
   Crosshair,
   HelpCircle,
-  Home,
   LogOut,
   Package,
   Settings,
-  Trophy,
   X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -490,28 +489,28 @@ function DesktopHomeLayout({
   const { handleUpgrade, isUpgrading } = useLemonSqueezyUpgrade();
 
   return (
-    <div className="hidden min-h-dvh flex-col bg-[#f6f8fb] text-text lg:flex">
+    <div className="hidden h-screen overflow-hidden bg-[#f6f8fb] text-text lg:flex lg:flex-col">
       <DesktopTopNavbar onUpgrade={handleUpgrade} isUpgrading={isUpgrading} />
-      <section className="grid min-h-[calc(100dvh-72px)] flex-1 grid-cols-[88px_minmax(280px,320px)_minmax(0,1fr)] xl:grid-cols-[88px_320px_minmax(0,1fr)_360px]">
-        <aside className="sticky top-0 flex h-[calc(100dvh-72px)] flex-col items-center justify-between border-r border-primary-soft bg-white px-3 py-5">
+      <section className="grid min-h-0 flex-1 grid-cols-[88px_minmax(260px,300px)_minmax(0,1fr)_300px] overflow-hidden xl:grid-cols-[88px_320px_minmax(0,1fr)_360px]">
+        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-3 py-5">
           <nav
             className="flex w-full flex-col gap-2"
             aria-label="Desktop primary"
           >
             <DesktopNavButton
-              icon={<Home className="h-5 w-5" />}
+              icon={<HomeFilledIcon className="h-5 w-5" />}
               label="Home"
               active={selectedDesktopSection === 'home'}
               onClick={() => onSelectDesktopSection('home')}
             />
             <DesktopNavButton
-              icon={<Bell className="h-5 w-5" />}
+              icon={<BellFilledIcon className="h-5 w-5" />}
               label="Notifications"
               active={selectedDesktopSection === 'notifications'}
               onClick={() => onSelectDesktopSection('notifications')}
             />
             <DesktopNavButton
-              icon={<Trophy className="h-5 w-5" />}
+              icon={<TrophyFilledIcon className="h-5 w-5" />}
               label="Leaderboard"
               active={selectedDesktopSection === 'leaderboard'}
               onClick={() => onSelectDesktopSection('leaderboard')}
@@ -539,7 +538,7 @@ function DesktopHomeLayout({
               />
             </button>
             <div
-              className="invisible absolute bottom-0 left-[72px] z-20 w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-xl shadow-slate-900/10 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
+              className="invisible fixed bottom-5 left-[80px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
               role="menu"
             >
               <Link
@@ -562,11 +561,11 @@ function DesktopHomeLayout({
           </div>
         </aside>
 
-        <aside className="border-r border-primary-soft bg-white/85 px-5 py-6">
+        <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-5 py-6">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-primary">
             Browse
           </p>
-          <h1 className="mt-1 text-[28px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
+          <h1 className="mt-1 text-[22px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
             Product Gym
           </h1>
 
@@ -590,7 +589,7 @@ function DesktopHomeLayout({
             </div>
           </div>
 
-          <div className="mt-5 space-y-3 overflow-y-auto pb-4 lg:max-h-[calc(100dvh-170px)]">
+          <div className="mt-5 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
             {selectedContentTab === 'companies' ? (
               filteredCompanyTracks.length === 0 ? (
                 <EmptyState message="No challenges for this level yet." />
@@ -653,7 +652,7 @@ function DesktopHomeLayout({
           </div>
         </aside>
 
-        <main className="min-w-0 overflow-y-auto px-6 py-6">
+        <main className="min-h-0 min-w-0 overflow-y-auto px-6 py-6">
           {selectedDesktopSection === 'home' ? (
             selectedCompanyTrack ? (
               <CompanyDetailsScreen
@@ -682,23 +681,8 @@ function DesktopHomeLayout({
           )}
         </main>
 
-        <aside className="hidden border-l border-primary-soft bg-white/70 px-5 py-6 xl:block">
-          <div className="sticky top-6 space-y-4">
-            <UserStatsProfileCard
-              userName={userName}
-              userFirstName={userFirstName}
-              userLastName={userLastName}
-              userEmail={userEmail}
-              userStats={userStats}
-              userAvatarUrl={userAvatarUrl}
-              avatar={avatar}
-            />
-            <ProGymPassCard />
-          </div>
-        </aside>
-
-        <aside className="col-start-2 col-end-4 border-t border-primary-soft bg-white/70 px-5 py-5 xl:hidden">
-          <div className="grid gap-4 md:grid-cols-2">
+        <aside className="min-h-0 overflow-y-auto border-l border-primary-soft bg-white/70 px-5 py-6">
+          <div className="space-y-4">
             <UserStatsProfileCard
               userName={userName}
               userFirstName={userFirstName}
@@ -836,8 +820,20 @@ function DesktopCompanyBrowseCard({
             {track.companySummary.name}
           </h3>
           <p className="truncate text-[11px] font-semibold text-[#9a7a30]">
-            {track.companySummary.focus || 'PM practice'}
+            {track.companySummary.focus
+              ? `Focus: ${track.companySummary.focus}`
+              : 'PM practice'}
           </p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold tracking-[0.04em] text-[#5D6B74]">
+            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+              <TrophyFilledIcon className="h-3.5 w-3.5" />
+              {track.companySummary.challengesCount} Challenges
+            </span>
+            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+              <UsersFilledIcon className="h-3.5 w-3.5" />
+              {track.companySummary.practicingCount} Practicing
+            </span>
+          </div>
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2">
@@ -903,7 +899,7 @@ function UserStatsProfileCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <UserStatTile
           icon={<TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />}
           label="Rank"

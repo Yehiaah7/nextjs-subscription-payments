@@ -74,14 +74,14 @@ export default function ProGymPassCard({
               {isPro ? 'Pro Active' : 'Free Trial'}
             </p>
             {isTrial || hasExpiredTrial ? (
-              <p className="mt-1 text-[11px] font-black uppercase tracking-[1px] text-productGym-ink">
+              <p className="mt-1 inline-flex rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-ink shadow-sm shadow-black/10">
                 {trialDaysLabel}
               </p>
             ) : null}
           </div>
         </div>
 
-        <div className="shrink-0 rounded-full bg-white px-3 py-1.5 text-right text-[15px] font-black leading-none tracking-[-0.03em] text-productGym-ink shadow-sm shadow-black/10">
+        <div className="shrink-0 pt-1 text-right text-[15px] font-black leading-none tracking-[-0.03em] text-productGym-ink">
           {PRODUCT_GYM_MONTHLY_PRICE_LABEL}
         </div>
       </div>
