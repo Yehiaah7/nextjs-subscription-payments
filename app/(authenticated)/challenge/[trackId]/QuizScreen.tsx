@@ -197,6 +197,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   const [persistedAnsweredQuestionIds, setPersistedAnsweredQuestionIds] =
     useState<Set<string>>(new Set());
   const pendingSaveRef = useRef<Promise<SaveAnswerResult> | null>(null);
+  const autoAdvanceTimerRef = useRef<number | null>(null);
+  const attemptStatesRef = useRef<Record<string, AttemptState>>({});
   const loadQuizKeyRef = useRef<string | null>(null);
   const [wrongAnimatingOptionId, setWrongAnimatingOptionId] = useState<
     string | null
@@ -219,8 +221,13 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     setResult(null);
     setNextChallengeId(null);
     setAttemptStates({});
+    attemptStatesRef.current = {};
     setPersistedAnsweredQuestionIds(new Set());
     pendingSaveRef.current = null;
+    if (autoAdvanceTimerRef.current) {
+      window.clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
     setWrongAnimatingOptionId(null);
 
     const loadQuiz = async () => {
@@ -413,6 +420,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       }
 
       setAttemptStates(nextStates);
+      attemptStatesRef.current = nextStates;
       setPersistedAnsweredQuestionIds(persistedAnsweredIds);
 
       const firstPending = normalizedQuiz.questions.findIndex(
@@ -436,11 +444,20 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     };
 
     loadQuiz().finally(() => setLoading(false));
-  }, [challengeId, searchParams, supabase]);
+  }, [challengeId, companyId, searchParams, supabase]);
+
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimerRef.current) {
+        window.clearTimeout(autoAdvanceTimerRef.current);
+      }
+    };
+  }, []);
 
   const finalizeAttempt = async () => {
     if (!attemptId || !quiz) return;
 
+    const latestAttemptStates = attemptStatesRef.current;
     const selectedQuestionIds = new Set<string>();
     let awarded = 0;
     const totalPossible = quiz.questions.reduce(
@@ -449,7 +466,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     );
 
     for (const question of quiz.questions) {
-      const questionState = attemptStates[question.id] ?? emptyAttemptState;
+      const questionState =
+        latestAttemptStates[question.id] ?? emptyAttemptState;
       if (questionState.lastSelectedOptionId) {
         selectedQuestionIds.add(question.id);
       }
@@ -495,7 +513,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   };
 
   const onSelectOption = async (question: Question, optionId: string) => {
-    if (!attemptId) return;
+    if (!attemptId || !quiz) return;
 
     const option = question.options.find((item) => item.id === optionId);
     if (!option) return;
@@ -531,10 +549,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       needsReview: previousState.needsReview || Boolean(solvedLate)
     };
 
-    setAttemptStates((current) => ({
-      ...current,
-      [question.id]: nextStateForQuestion
-    }));
+    setAttemptStates((current) => {
+      const next = {
+        ...current,
+        [question.id]: nextStateForQuestion
+      };
+      attemptStatesRef.current = next;
+      return next;
+    });
 
     if (!option.is_correct) {
       setWrongAnimatingOptionId(option.id);
@@ -612,6 +634,31 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
       `[RuntimeProof] quiz attempt id=${attemptId} optimistic answers count=${savedCount} in-quiz progress=${inQuizProgressValue}% after question=${savedCount}`
     );
     markCompanyChallengeListStale(companyId);
+
+    if (option.is_correct) {
+      if (autoAdvanceTimerRef.current) {
+        window.clearTimeout(autoAdvanceTimerRef.current);
+      }
+      const selectedQuestionIndex = quiz.questions.findIndex(
+        (item) => item.id === question.id
+      );
+      autoAdvanceTimerRef.current = window.setTimeout(() => {
+        autoAdvanceTimerRef.current = null;
+        setActiveIndex((currentIndex) => {
+          if (currentIndex !== selectedQuestionIndex) {
+            return currentIndex;
+          }
+
+          if (selectedQuestionIndex >= quiz.questions.length - 1) {
+            void finalizeAttempt();
+            return currentIndex;
+          }
+
+          return selectedQuestionIndex + 1;
+        });
+      }, 650);
+    }
+
     if (pendingSaveRef.current === savePromise) {
       pendingSaveRef.current = null;
     }
@@ -674,7 +721,10 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
     markCompanyChallengeListStale(companyId);
     const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
-    router.push(isDesktop ? '/home' : returnToTrackHref);
+    const desktopReturnHref = companyId
+      ? `/home?company=${encodeURIComponent(companyId)}`
+      : '/home';
+    router.push(isDesktop ? desktopReturnHref : returnToTrackHref);
     pendingSaveRef.current?.catch((error) => {
       console.error(
         '[QuizTrace] background answer sync failed before leaving',
@@ -769,13 +819,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               type="button"
               onClick={goBackToTrack}
               className={cn(
-                'inline-flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[#0f172b]',
+                'inline-flex h-8 items-center justify-center gap-1.5 rounded-[8px] bg-white px-2.5 text-[11px] font-black text-[#0f172b]',
                 iconBtnInteractive,
                 focusRingInteractive
               )}
-              aria-label="Back"
+              aria-label="Back to company"
             >
               <ChevronLeftFilledIcon className="h-4 w-4" />
+              <span>Back to company</span>
             </button>
             <p className="text-xs font-black uppercase tracking-[0.08em] text-primary">
               Step {activeIndex + 1}/{quiz.questions.length}
@@ -800,7 +851,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             </h1>
           </section>
 
-          <section className="w-full rounded-2xl border border-[#d8efe1] bg-[#f8fdf9] p-3 lg:p-5">
+          <section className="w-full rounded-2xl border border-[#d8efe1] bg-[#f8fdf9] p-2.5 lg:p-4">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               {currentState.isSolved ? (
                 <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand-green-soft)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-productGym-greenDark">
