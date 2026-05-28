@@ -37,13 +37,12 @@ const availableStat = (value: number | string) => ({
   isAvailable: true
 });
 
-
 const formatPracticeTime = (seconds: number | null | undefined) => {
   if (!seconds || seconds <= 0) return '-';
   if (seconds < 60) return '<1m';
 
   const totalMinutes = Math.floor(seconds / 60);
-  if (totalMinutes <= 60) return `${totalMinutes}m`;
+  if (totalMinutes < 60) return `${totalMinutes}m`;
 
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
@@ -140,7 +139,8 @@ export async function getUserProfileStats(
   const firstAnswers = Array.from(firstAnswerByQuestion.values());
   const firstTryCorrectCount = firstAnswers.filter((answer) => {
     if (answer.is_correct !== null) return answer.is_correct;
-    if (answer.options?.is_correct !== undefined) return answer.options.is_correct;
+    if (answer.options?.is_correct !== undefined)
+      return answer.options.is_correct;
 
     return (answer.points_awarded ?? 0) > 0;
   }).length;
@@ -161,6 +161,10 @@ export async function getUserProfileStats(
       : availableStat(`${firstTryAccuracy}%`),
     practiceTime: profileError
       ? unavailableStat()
-      : availableStat(formatPracticeTime((profileData as ProfilePracticeRow | null)?.practice_time_seconds))
+      : availableStat(
+          formatPracticeTime(
+            (profileData as ProfilePracticeRow | null)?.practice_time_seconds
+          )
+        )
   };
 }
