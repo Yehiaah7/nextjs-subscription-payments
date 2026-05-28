@@ -99,6 +99,7 @@ body.mobile-app-page main#skip {
 
   .app-shell-nav {
     padding-bottom: calc(64px + 24px + env(safe-area-inset-bottom));
+    @apply lg:pb-0;
   }
 
   .app-shell-page {
