@@ -26,7 +26,7 @@ export default function UserStatTile({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <article className="rounded-xl bg-[#eff6ff] px-2 py-2 text-center">
+    <article className="rounded-xl bg-[var(--color-background)] px-2 py-2 text-center">
       <div className="mb-1 inline-flex items-center justify-center rounded-full bg-white p-1">
         {icon}
       </div>
