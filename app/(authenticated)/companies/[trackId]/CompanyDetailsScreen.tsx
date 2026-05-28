@@ -74,11 +74,13 @@ const STATUS_STYLES: Record<ChallengeStatus, string> = {
 export default function CompanyDetailsScreen({
   companySummary,
   challenges,
-  companyId
+  companyId,
+  displayMode = 'page'
 }: {
   companySummary: CompanySummary;
   companyId: string;
   challenges: CompanyChallenge[];
+  displayMode?: 'page' | 'embedded';
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -158,9 +160,9 @@ export default function CompanyDetailsScreen({
     [levelFilteredChallenges, filter]
   );
 
-  return (
-    <MotionPage>
-      <section>
+  const content = (
+    <section>
+      {displayMode === 'page' ? (
         <header className="mb-4 flex items-center gap-3">
           <Link
             href="/home"
@@ -175,153 +177,156 @@ export default function CompanyDetailsScreen({
           </Link>
           <h1 className="t-title">Home</h1>
         </header>
+      ) : null}
 
-        <CompanySummaryCard
-          company={companySummary}
-          className="app-card mb-5"
+      <CompanySummaryCard company={companySummary} className="app-card mb-5" />
+
+      <div className="mb-4 flex items-center gap-2">
+        <span className="t-card-title">PM interview practice</span>
+        <SeniorityDropdown
+          selected={selectedSeniority}
+          onSelect={setSelectedSeniority}
         />
+      </div>
 
-        <div className="mb-4 flex items-center gap-2">
-          <span className="t-card-title">PM interview practice</span>
-          <SeniorityDropdown
-            selected={selectedSeniority}
-            onSelect={setSelectedSeniority}
-          />
-        </div>
-
-        <div className="mb-4 overflow-x-auto px-1">
-          <div className="app-segment flex min-w-max flex-nowrap items-center gap-1 p-1 text-center">
-            {FILTERS.map((tab) => (
-              <MotionButton
-                key={tab.key}
-                onClick={() => setFilter(tab.key)}
-                className={cn(
-                  'relative shrink-0 whitespace-nowrap rounded-pill px-4 py-3 text-[9px] font-black uppercase tracking-[0.06em]',
-                  filter === tab.key ? 'text-primary' : 'text-muted',
-                  tabInteractive,
-                  focusRingInteractive
-                )}
-                type="button"
-              >
-                {filter === tab.key ? (
-                  <motion.span
-                    layoutId="tab-indicator"
-                    transition={springTransition}
-                    className="absolute inset-0 rounded-pill bg-container shadow-button"
-                  />
-                ) : null}
-                <span className="relative inline-flex items-center gap-1">
-                  <span>{tab.label}</span>
-                  <span
-                    className={cn(
-                      'rounded-pill px-1.5 py-0.5 text-[8px] font-black leading-none',
-                      filter === tab.key
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-surface-muted text-muted'
-                    )}
-                  >
-                    {tabCounts[tab.key]}
-                  </span>
+      <div className="mb-4 overflow-x-auto px-1">
+        <div className="app-segment flex min-w-max flex-nowrap items-center gap-1 p-1 text-center">
+          {FILTERS.map((tab) => (
+            <MotionButton
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={cn(
+                'relative shrink-0 whitespace-nowrap rounded-pill px-4 py-3 text-[9px] font-black uppercase tracking-[0.06em]',
+                filter === tab.key ? 'text-primary' : 'text-muted',
+                tabInteractive,
+                focusRingInteractive
+              )}
+              type="button"
+            >
+              {filter === tab.key ? (
+                <motion.span
+                  layoutId="tab-indicator"
+                  transition={springTransition}
+                  className="absolute inset-0 rounded-pill bg-container shadow-button"
+                />
+              ) : null}
+              <span className="relative inline-flex items-center gap-1">
+                <span>{tab.label}</span>
+                <span
+                  className={cn(
+                    'rounded-pill px-1.5 py-0.5 text-[8px] font-black leading-none',
+                    filter === tab.key
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-surface-muted text-muted'
+                  )}
+                >
+                  {tabCounts[tab.key]}
                 </span>
-              </MotionButton>
-            ))}
-          </div>
+              </span>
+            </MotionButton>
+          ))}
         </div>
+      </div>
 
-        <motion.div
-          className="space-y-3 pb-8"
-          variants={listVariants}
-          initial="initial"
-          animate="animate"
-        >
-          {filteredChallenges.length === 0 ? (
-            <p className="app-card t-body-muted">
-              No challenges for this level yet.
-            </p>
-          ) : (
-            filteredChallenges.map((challenge) => (
-              <motion.div key={challenge.id} variants={fadeSlideUp}>
-                <MotionCard>
-                  <Link
-                    href={`/challenge/${challenge.id}?company=${companyId}${challenge.attemptId ? `&attempt=${challenge.attemptId}` : ''}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
-                    onClick={() =>
-                      console.log('[proof] challenge card clicked', {
-                        challengeId: challenge.id,
-                        companyId
-                      })
-                    }
-                    className={cn(
-                      'app-card block cursor-pointer',
-                      cardInteractive,
-                      focusRingInteractive
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">
-                            {challenge.category}
-                          </p>
-                          <h3 className="t-card-title">{challenge.title}</h3>
-                        </div>
-                        <span
-                          className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
-                            STATUS_STYLES[challenge.tabClassification]
-                          }`}
-                        >
-                          {challenge.solvedBadgeValue}
-                        </span>
-                        {challenge.retake ? (
-                          <ArrowPathFilledIcon
-                            className="h-4 w-4 text-amber-500"
-                            aria-label="Retake"
-                          />
-                        ) : null}
+      <motion.div
+        className="space-y-3 pb-8"
+        variants={listVariants}
+        initial="initial"
+        animate="animate"
+      >
+        {filteredChallenges.length === 0 ? (
+          <p className="app-card t-body-muted">
+            No challenges for this level yet.
+          </p>
+        ) : (
+          filteredChallenges.map((challenge) => (
+            <motion.div key={challenge.id} variants={fadeSlideUp}>
+              <MotionCard>
+                <Link
+                  href={`/challenge/${challenge.id}?company=${companyId}${challenge.attemptId ? `&attempt=${challenge.attemptId}` : ''}${challenge.reviewAvailable ? '&review=1' : ''}${challenge.retake ? '&retry=1' : ''}`}
+                  onClick={() =>
+                    console.log('[proof] challenge card clicked', {
+                      challengeId: challenge.id,
+                      companyId
+                    })
+                  }
+                  className={cn(
+                    'app-card block cursor-pointer',
+                    cardInteractive,
+                    focusRingInteractive
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">
+                          {challenge.category}
+                        </p>
+                        <h3 className="t-card-title">{challenge.title}</h3>
                       </div>
                       <span
-                        className={cn(
-                          'grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted',
-                          iconBtnInteractive
-                        )}
+                        className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
+                          STATUS_STYLES[challenge.tabClassification]
+                        }`}
                       >
-                        <ChevronRightFilledIcon className="h-4 w-4" />
+                        {challenge.solvedBadgeValue}
                       </span>
-                    </div>
-                    <div className="t-label mt-2 flex items-center gap-3 text-muted">
-                      <span className="inline-flex items-center gap-1">
-                        <UsersFilledIcon className="h-3.5 w-3.5" />
-                        {challenge.practicingCount} practicing
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <AlarmFilledIcon className="h-3.5 w-3.5" />
-                        {challenge.duration}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <TargetFilledIcon className="h-3.5 w-3.5" />
-                        Score: {challenge.score}%
-                      </span>
-                    </div>
-                    <div className="mt-3">
-                      <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
-                        {challenge.completedSteps}/{challenge.totalSteps} steps
-                        answered
-                      </div>
-                      <div className="h-2 rounded-pill bg-surface-soft">
-                        <div
-                          className="h-full rounded-pill bg-primary"
-                          style={{
-                            width: `${challenge.progressPercent}%`
-                          }}
+                      {challenge.retake ? (
+                        <ArrowPathFilledIcon
+                          className="h-4 w-4 text-amber-500"
+                          aria-label="Retake"
                         />
-                      </div>
+                      ) : null}
                     </div>
-                  </Link>
-                </MotionCard>
-              </motion.div>
-            ))
-          )}
-        </motion.div>
-      </section>
-    </MotionPage>
+                    <span
+                      className={cn(
+                        'grid h-8 w-8 place-items-center rounded-pill bg-surface-muted text-muted',
+                        iconBtnInteractive
+                      )}
+                    >
+                      <ChevronRightFilledIcon className="h-4 w-4" />
+                    </span>
+                  </div>
+                  <div className="t-label mt-2 flex items-center gap-3 text-muted">
+                    <span className="inline-flex items-center gap-1">
+                      <UsersFilledIcon className="h-3.5 w-3.5" />
+                      {challenge.practicingCount} practicing
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <AlarmFilledIcon className="h-3.5 w-3.5" />
+                      {challenge.duration}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <TargetFilledIcon className="h-3.5 w-3.5" />
+                      Score: {challenge.score}%
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="mb-1 text-[10px] font-black uppercase tracking-[0.08em] text-muted">
+                      {challenge.completedSteps}/{challenge.totalSteps} steps
+                      answered
+                    </div>
+                    <div className="h-2 rounded-pill bg-surface-soft">
+                      <div
+                        className="h-full rounded-pill bg-primary"
+                        style={{
+                          width: `${challenge.progressPercent}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </MotionCard>
+            </motion.div>
+          ))
+        )}
+      </motion.div>
+    </section>
   );
+
+  if (displayMode === 'embedded') {
+    return content;
+  }
+
+  return <MotionPage>{content}</MotionPage>;
 }

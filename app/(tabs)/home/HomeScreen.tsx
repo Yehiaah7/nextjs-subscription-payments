@@ -9,7 +9,7 @@ import {
   TrophyFilledIcon,
   UsersFilledIcon
 } from '@/components/icons/FilledIcons';
-import { X } from 'lucide-react';
+import { Bell, Home, LogOut, Package, Settings, Trophy, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ReactNode, useEffect, useState } from 'react';
 import { MotionButton, MotionCard } from '@/components/motion';
@@ -43,8 +43,13 @@ import { useNotifications } from '@/components/notifications/NotificationsProvid
 import { ensureCompanyProgressReminder } from '@/lib/notifications/store';
 import UserStatTile from '@/components/ui/UserStatTile';
 import type { UserProfileStats } from '@/types/user-profile-stats';
+import ProGymPassCard from '@/components/ProGymPassCard';
+import CompanyDetailsScreen, {
+  type CompanyChallenge
+} from '@/app/(authenticated)/companies/[trackId]/CompanyDetailsScreen';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
+type DesktopSection = 'home' | 'notifications' | 'leaderboard';
 
 export type HomeTrack = {
   companySummary: CompanySummary;
@@ -77,7 +82,8 @@ export default function HomeScreen({
   userLastName,
   userAvatarUrl,
   userEmail,
-  userStats
+  userStats,
+  challengesByCompany
 }: {
   companyTracks: HomeTrack[];
   skillPathCategories: SkillPathCategory[];
@@ -89,10 +95,24 @@ export default function HomeScreen({
   userAvatarUrl?: string | null;
   userEmail?: string | null;
   userStats: UserProfileStats;
+  challengesByCompany: Record<string, CompanyChallenge[]>;
 }) {
   const { avatar } = useUserAvatar();
   const { refreshNotifications } = useNotifications();
   const [tab, setTab] = useState<MainTab>('companies');
+  const [selectedDesktopSection, setSelectedDesktopSection] =
+    useState<DesktopSection>('home');
+  const [selectedContentTab, setSelectedContentTab] =
+    useState<MainTab>('companies');
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
+    null
+  );
+  const [selectedSkillPathId, setSelectedSkillPathId] = useState<string | null>(
+    null
+  );
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
   const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
   const [selectedSeniority, setSelectedSeniority] =
     useState<SeniorityFilter>('all');
@@ -149,6 +169,12 @@ export default function HomeScreen({
     window.localStorage.setItem(SENIORITY_STORAGE_KEY, selectedSeniority);
   }, [selectedSeniority]);
 
+  const selectedCompanyTrack = selectedCompanyId
+    ? (filteredCompanyTracks.find(
+        (track) => track.companySummary.id === selectedCompanyId
+      ) ?? null)
+    : null;
+
   useEffect(() => {
     ensureCompanyProgressReminder({
       userId,
@@ -164,7 +190,7 @@ export default function HomeScreen({
 
   return (
     <MotionPage>
-      <section className="text-text">
+      <section className="text-text lg:hidden">
         <header className="mb-4 flex items-start justify-between gap-3">
           <h1 className="t-title">Product Gym Floor</h1>
           <NotificationsBellButton />
@@ -225,7 +251,7 @@ export default function HomeScreen({
         >
           <div className="mb-3 flex items-center gap-3">
             <UserAvatar
-              imageUrl={avatar.imageUrl}
+              imageUrl={avatar.imageUrl ?? userAvatarUrl}
               firstName={avatar.firstName ?? userFirstName}
               lastName={avatar.lastName ?? userLastName}
               fullName={avatar.fullName ?? userName}
@@ -257,7 +283,9 @@ export default function HomeScreen({
               stat={userStats.solved}
             />
             <UserStatTile
-              icon={<FireFilledIcon className="h-3.5 w-3.5 text-productGym-pink" />}
+              icon={
+                <FireFilledIcon className="h-3.5 w-3.5 text-productGym-pink" />
+              }
               label="Solving Days"
               stat={userStats.solvingDays}
             />
@@ -348,7 +376,509 @@ export default function HomeScreen({
           </div>
         )}
       </section>
+
+      <DesktopHomeLayout
+        selectedDesktopSection={selectedDesktopSection}
+        onSelectDesktopSection={setSelectedDesktopSection}
+        selectedContentTab={selectedContentTab}
+        onSelectContentTab={(nextTab) => {
+          setSelectedContentTab(nextTab);
+          setSelectedCompanyId(null);
+          setSelectedSkillPathId(null);
+          setSelectedProductId(null);
+        }}
+        selectedCompanyId={selectedCompanyId}
+        onSelectCompany={(companyId) => {
+          setSelectedCompanyId(companyId);
+          setSelectedSkillPathId(null);
+          setSelectedProductId(null);
+        }}
+        onSelectSkillPath={(skillPathId) => {
+          setSelectedSkillPathId(skillPathId);
+          setSelectedCompanyId(null);
+          setSelectedProductId(null);
+        }}
+        onSelectProduct={(productId) => {
+          setSelectedProductId(productId);
+          setSelectedCompanyId(null);
+          setSelectedSkillPathId(null);
+        }}
+        selectedSkillPathId={selectedSkillPathId}
+        selectedProductId={selectedProductId}
+        filteredCompanyTracks={filteredCompanyTracks}
+        selectedCompanyTrack={selectedCompanyTrack}
+        skillPathCategories={skillPathCategories}
+        challengesByCompany={challengesByCompany}
+        userName={userName}
+        userFirstName={userFirstName}
+        userLastName={userLastName}
+        userEmail={userEmail}
+        userStats={userStats}
+        userAvatarUrl={userAvatarUrl}
+        avatar={avatar}
+      />
     </MotionPage>
+  );
+}
+
+function DesktopHomeLayout({
+  selectedDesktopSection,
+  onSelectDesktopSection,
+  selectedContentTab,
+  onSelectContentTab,
+  selectedCompanyId,
+  onSelectCompany,
+  onSelectSkillPath,
+  onSelectProduct,
+  selectedSkillPathId,
+  selectedProductId,
+  filteredCompanyTracks,
+  selectedCompanyTrack,
+  skillPathCategories,
+  challengesByCompany,
+  userName,
+  userFirstName,
+  userLastName,
+  userEmail,
+  userStats,
+  userAvatarUrl,
+  avatar
+}: {
+  selectedDesktopSection: DesktopSection;
+  onSelectDesktopSection: (section: DesktopSection) => void;
+  selectedContentTab: MainTab;
+  onSelectContentTab: (tab: MainTab) => void;
+  selectedCompanyId: string | null;
+  onSelectCompany: (companyId: string) => void;
+  onSelectSkillPath: (skillPathId: string) => void;
+  onSelectProduct: (productId: string) => void;
+  selectedSkillPathId: string | null;
+  selectedProductId: string | null;
+  filteredCompanyTracks: HomeTrack[];
+  selectedCompanyTrack: HomeTrack | null;
+  skillPathCategories: SkillPathCategory[];
+  challengesByCompany: Record<string, CompanyChallenge[]>;
+  userName: string;
+  userFirstName?: string | null;
+  userLastName?: string | null;
+  userEmail?: string | null;
+  userStats: UserProfileStats;
+  userAvatarUrl?: string | null;
+  avatar: {
+    imageUrl?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    fullName?: string | null;
+    email?: string | null;
+  };
+}) {
+  const selectedCompanyChallenges = selectedCompanyId
+    ? (challengesByCompany[selectedCompanyId] ?? [])
+    : [];
+
+  return (
+    <section className="hidden min-h-dvh grid-cols-[88px_minmax(280px,320px)_minmax(0,1fr)] bg-[#f6f8fb] text-text lg:grid xl:grid-cols-[88px_320px_minmax(0,1fr)_360px]">
+      <aside className="sticky top-0 flex h-dvh flex-col items-center justify-between border-r border-primary-soft bg-white px-3 py-5">
+        <nav
+          className="flex w-full flex-col gap-2"
+          aria-label="Desktop primary"
+        >
+          <DesktopNavButton
+            icon={<Home className="h-5 w-5" />}
+            label="Home"
+            active={selectedDesktopSection === 'home'}
+            onClick={() => onSelectDesktopSection('home')}
+          />
+          <DesktopNavButton
+            icon={<Bell className="h-5 w-5" />}
+            label="Notifications"
+            active={selectedDesktopSection === 'notifications'}
+            onClick={() => onSelectDesktopSection('notifications')}
+          />
+          <DesktopNavButton
+            icon={<Trophy className="h-5 w-5" />}
+            label="Leaderboard"
+            active={selectedDesktopSection === 'leaderboard'}
+            onClick={() => onSelectDesktopSection('leaderboard')}
+          />
+        </nav>
+
+        <div className="group relative flex w-full justify-center">
+          <button
+            type="button"
+            className={cn(
+              'rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+              iconBtnInteractive
+            )}
+            aria-label="Open profile menu"
+            aria-haspopup="menu"
+          >
+            <UserAvatar
+              imageUrl={avatar.imageUrl ?? userAvatarUrl}
+              firstName={avatar.firstName ?? userFirstName}
+              lastName={avatar.lastName ?? userLastName}
+              fullName={avatar.fullName ?? userName}
+              email={avatar.email ?? userEmail}
+              className="h-14 w-14 shadow-sm shadow-black/15"
+              initialsClassName="text-base"
+            />
+          </button>
+          <div
+            className="invisible absolute bottom-0 left-[72px] z-20 w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-xl shadow-slate-900/10 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
+            role="menu"
+          >
+            <Link
+              href="/profile/settings"
+              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              role="menuitem"
+            >
+              <Settings className="h-4 w-4" />
+              Settings
+            </Link>
+            <Link
+              href="/logout"
+              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              role="menuitem"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Link>
+          </div>
+        </div>
+      </aside>
+
+      <aside className="border-r border-primary-soft bg-white/85 px-5 py-6">
+        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-primary">
+          Browse
+        </p>
+        <h1 className="mt-1 text-[28px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
+          Product Gym
+        </h1>
+
+        <div className="app-segment mt-5">
+          <div className="grid h-full grid-cols-3 gap-1">
+            <TabButton
+              label="Companies"
+              active={selectedContentTab === 'companies'}
+              onClick={() => onSelectContentTab('companies')}
+            />
+            <TabButton
+              label="Skill Path"
+              active={selectedContentTab === 'skill-paths'}
+              onClick={() => onSelectContentTab('skill-paths')}
+            />
+            <TabButton
+              label="Products"
+              active={selectedContentTab === 'products'}
+              onClick={() => onSelectContentTab('products')}
+            />
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-3 overflow-y-auto pb-4 lg:max-h-[calc(100dvh-170px)]">
+          {selectedContentTab === 'companies' ? (
+            filteredCompanyTracks.length === 0 ? (
+              <EmptyState message="No challenges for this level yet." />
+            ) : (
+              filteredCompanyTracks.map((track) => (
+                <DesktopCompanyBrowseCard
+                  key={track.companySummary.id}
+                  track={track}
+                  active={selectedCompanyId === track.companySummary.id}
+                  onClick={() => onSelectCompany(track.companySummary.id)}
+                />
+              ))
+            )
+          ) : null}
+
+          {selectedContentTab === 'skill-paths' ? (
+            skillPathCategories.length ? (
+              skillPathCategories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => onSelectSkillPath(category.id)}
+                  className={cn(
+                    'app-card w-full border text-left',
+                    selectedSkillPathId === category.id
+                      ? 'border-primary bg-primary-soft'
+                      : 'border-primary-soft bg-white',
+                    cardInteractive,
+                    focusRingInteractive
+                  )}
+                >
+                  <p className="t-card-title">{category.title}</p>
+                  <p className="t-body-muted mt-1">Skill path challenges</p>
+                </button>
+              ))
+            ) : (
+              <EmptyState message="Skill paths are coming soon." />
+            )
+          ) : null}
+
+          {selectedContentTab === 'products' ? (
+            <button
+              type="button"
+              onClick={() => onSelectProduct('product-practice')}
+              className={cn(
+                'app-card w-full border text-left',
+                selectedProductId === 'product-practice'
+                  ? 'border-primary bg-primary-soft'
+                  : 'border-primary-soft bg-white',
+                cardInteractive,
+                focusRingInteractive
+              )}
+            >
+              <p className="t-card-title">Product practice</p>
+              <p className="t-body-muted mt-1">
+                Product tracks are coming soon.
+              </p>
+            </button>
+          ) : null}
+        </div>
+      </aside>
+
+      <main className="min-w-0 overflow-y-auto px-6 py-6">
+        {selectedDesktopSection === 'home' ? (
+          selectedCompanyTrack ? (
+            <CompanyDetailsScreen
+              companySummary={selectedCompanyTrack.companySummary}
+              companyId={selectedCompanyTrack.companySummary.id}
+              challenges={selectedCompanyChallenges}
+              displayMode="embedded"
+            />
+          ) : selectedSkillPathId || selectedProductId ? (
+            <DesktopEmptyState
+              title="Coming soon"
+              message="This practice area is being prepared for Product Gym members."
+            />
+          ) : (
+            <DesktopEmptyState message="Choose a company, skill path, or product to start elevating your PM skills." />
+          )
+        ) : (
+          <DesktopEmptyState
+            title={
+              selectedDesktopSection === 'notifications'
+                ? 'Notifications'
+                : 'Leaderboard'
+            }
+            message="This desktop view is coming soon. Head back home to keep practicing."
+          />
+        )}
+      </main>
+
+      <aside className="hidden border-l border-primary-soft bg-white/70 px-5 py-6 xl:block">
+        <div className="sticky top-6 space-y-4">
+          <UserStatsProfileCard
+            userName={userName}
+            userFirstName={userFirstName}
+            userLastName={userLastName}
+            userEmail={userEmail}
+            userStats={userStats}
+            userAvatarUrl={userAvatarUrl}
+            avatar={avatar}
+          />
+          <ProGymPassCard />
+        </div>
+      </aside>
+
+      <aside className="col-start-2 col-end-4 border-t border-primary-soft bg-white/70 px-5 py-5 xl:hidden">
+        <div className="grid gap-4 md:grid-cols-2">
+          <UserStatsProfileCard
+            userName={userName}
+            userFirstName={userFirstName}
+            userLastName={userLastName}
+            userEmail={userEmail}
+            userStats={userStats}
+            userAvatarUrl={userAvatarUrl}
+            avatar={avatar}
+          />
+          <ProGymPassCard />
+        </div>
+      </aside>
+    </section>
+  );
+}
+
+function DesktopNavButton({
+  icon,
+  label,
+  active,
+  onClick
+}: {
+  icon: ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={cn(
+        'flex flex-col items-center gap-1 rounded-2xl px-2 py-3 text-[10px] font-black uppercase tracking-[0.04em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        active
+          ? 'bg-primary-soft text-primary'
+          : 'text-muted hover:bg-surface-soft',
+        btnInteractive
+      )}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function DesktopCompanyBrowseCard({
+  track,
+  active,
+  onClick
+}: {
+  track: HomeTrack;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const boundedProgress = Math.max(
+    0,
+    Math.min(100, track.companySummary.progress)
+  );
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'w-full rounded-[18px] border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        active
+          ? 'border-primary bg-primary-soft shadow-sm shadow-primary/10'
+          : 'border-primary-soft bg-white hover:border-primary/40 hover:bg-surface-soft',
+        cardInteractive
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <CompanyThumbnail
+          companyId={track.companySummary.id}
+          companyName={track.companySummary.name}
+          companyLogoSrc={track.companySummary.logo}
+          className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-white"
+        />
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-[15px] font-black text-[var(--color-ink)]">
+            {track.companySummary.name}
+          </h3>
+          <p className="truncate text-[11px] font-semibold text-[#9a7a30]">
+            {track.companySummary.focus || 'PM practice'}
+          </p>
+        </div>
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <div className="h-1.5 flex-1 rounded-pill bg-[var(--color-border)]">
+          <div
+            className="h-full rounded-pill bg-primary"
+            style={{ width: `${boundedProgress}%` }}
+          />
+        </div>
+        <span className="text-[10px] font-black text-primary">
+          {boundedProgress}%
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function UserStatsProfileCard({
+  userName,
+  userFirstName,
+  userLastName,
+  userEmail,
+  userStats,
+  userAvatarUrl,
+  avatar
+}: {
+  userName: string;
+  userFirstName?: string | null;
+  userLastName?: string | null;
+  userEmail?: string | null;
+  userStats: UserProfileStats;
+  userAvatarUrl?: string | null;
+  avatar: {
+    imageUrl?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    fullName?: string | null;
+    email?: string | null;
+  };
+}) {
+  return (
+    <MotionCard
+      className={cn('app-card border', cardInteractive)}
+      style={{ backgroundColor: '#ffffff', borderColor: '#dbeafe' }}
+    >
+      <div className="mb-3 flex items-center gap-3">
+        <UserAvatar
+          imageUrl={avatar.imageUrl ?? userAvatarUrl}
+          firstName={avatar.firstName ?? userFirstName}
+          lastName={avatar.lastName ?? userLastName}
+          fullName={avatar.fullName ?? userName}
+          email={avatar.email ?? userEmail}
+          className="h-11 w-11"
+          initialsClassName="text-sm"
+        />
+        <div>
+          <h2 className="text-[16px] font-bold leading-[1.35] text-[var(--color-ink)]">
+            {userName}
+          </h2>
+          <p className="text-[10px] font-black tracking-[0.04em] text-primary">
+            Product Gym member
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        <UserStatTile
+          icon={<TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />}
+          label="Rank"
+          stat={userStats.rank}
+        />
+        <UserStatTile
+          icon={
+            <CheckCircleFilledIcon className="h-3.5 w-3.5 text-[#22c55e]" />
+          }
+          label="Solved"
+          stat={userStats.solved}
+        />
+        <UserStatTile
+          icon={<FireFilledIcon className="h-3.5 w-3.5 text-productGym-pink" />}
+          label="Solving Days"
+          stat={userStats.solvingDays}
+        />
+      </div>
+    </MotionCard>
+  );
+}
+
+function DesktopEmptyState({
+  title = 'Ready when you are',
+  message
+}: {
+  title?: string;
+  message: string;
+}) {
+  return (
+    <div className="flex min-h-[calc(100dvh-48px)] items-center justify-center">
+      <div className="max-w-md rounded-[28px] border border-primary-soft bg-white p-8 text-center shadow-sm shadow-slate-900/5">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
+          <Package className="h-7 w-7" />
+        </div>
+        <h2 className="mt-5 text-[24px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
+          {title}
+        </h2>
+        <p className="mt-2 text-[15px] font-medium leading-6 text-muted">
+          {message}
+        </p>
+      </div>
+    </div>
   );
 }
 
