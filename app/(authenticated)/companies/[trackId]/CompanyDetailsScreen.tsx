@@ -22,7 +22,7 @@ import {
   ArrowPathFilledIcon,
   ChevronLeftFilledIcon,
   ChevronRightFilledIcon,
-  TrophyFilledIcon,
+  TargetFilledIcon,
   UsersFilledIcon
 } from '@/components/icons/FilledIcons';
 import { motion } from 'framer-motion';
@@ -190,7 +190,7 @@ export default function CompanyDetailsScreen({
         </div>
 
         <div className="mb-4 overflow-x-auto px-1">
-          <div className="app-segment flex min-w-max items-center gap-1 p-1 text-center">
+          <div className="app-segment flex min-w-max flex-nowrap items-center gap-1 p-1 text-center">
             {FILTERS.map((tab) => (
               <MotionButton
                 key={tab.key}
@@ -297,7 +297,7 @@ export default function CompanyDetailsScreen({
                         {challenge.duration}
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <TrophyFilledIcon className="h-3.5 w-3.5" />
+                        <TargetFilledIcon className="h-3.5 w-3.5" />
                         Score: {challenge.score}%
                       </span>
                     </div>

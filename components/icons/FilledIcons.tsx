@@ -128,6 +128,14 @@ export function ClockFilledIcon(props: IconProps) {
   );
 }
 
+export function TargetFilledIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M12 2.75A9.25 9.25 0 1 0 12 21.25 9.25 9.25 0 0 0 12 2.75Zm0 2A7.25 7.25 0 1 1 12 19.25 7.25 7.25 0 0 1 12 4.75Zm0 2.8A4.45 4.45 0 1 0 12 16.45 4.45 4.45 0 0 0 12 7.55Zm0 2.15a2.3 2.3 0 1 1 0 4.6 2.3 2.3 0 0 1 0-4.6Z" />
+    </svg>
+  );
+}
+
 
 export function AlarmFilledIcon(props: IconProps) {
   return (
