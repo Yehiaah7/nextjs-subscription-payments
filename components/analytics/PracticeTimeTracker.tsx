@@ -9,71 +9,100 @@ type PracticeTimeTrackerProps = {
 
 const IDLE_TIMEOUT_MS = 60_000;
 const FLUSH_INTERVAL_MS = 30_000;
+const PRACTICE_TIME_ENDPOINT = '/api/profile/practice-time';
 
 export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps) {
   const pathname = usePathname();
+
   const activeStartedAtRef = useRef<number | null>(null);
   const lastActivityAtRef = useRef<number>(Date.now());
   const pendingSecondsRef = useRef(0);
   const isIdleRef = useRef(false);
+  const isFlushingRef = useRef(false);
 
   const isTrackableNow = useCallback(() => {
-    if (typeof document === 'undefined' || typeof window === 'undefined') return false;
+    if (typeof document === 'undefined' || typeof window === 'undefined') {
+      return false;
+    }
 
     return document.visibilityState === 'visible' && document.hasFocus() && !isIdleRef.current;
   }, []);
 
+  const persistPracticeTime = useCallback(async (secondsToAdd: number, sync = false) => {
+    const payload = JSON.stringify({ secondsToAdd });
+
+    if (sync && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      const queued = navigator.sendBeacon(PRACTICE_TIME_ENDPOINT, blob);
+
+      if (queued) {
+        return;
+      }
+    }
+
+    const response = await fetch(PRACTICE_TIME_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: payload,
+      keepalive: sync
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to persist practice time');
+    }
+  }, []);
+
   const flush = useCallback(
     async (sync = false) => {
+      if (isFlushingRef.current) {
+        return;
+      }
+
       const pending = Math.floor(pendingSecondsRef.current);
-      if (!Number.isInteger(pending) || pending <= 0) return;
+
+      if (!Number.isInteger(pending) || pending <= 0) {
+        return;
+      }
 
       pendingSecondsRef.current = 0;
+      isFlushingRef.current = true;
 
       try {
-        if (sync && typeof navigator !== 'undefined' && navigator.sendBeacon) {
-          navigator.sendBeacon(
-            '/api/profile/practice-time',
-            JSON.stringify({ secondsToAdd: pending })
-          );
-          return;
-        }
-
-        const response = await fetch('/api/profile/practice-time', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            secondsToAdd: pending
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to persist practice time');
-        }
+        await persistPracticeTime(pending, sync);
       } catch {
         pendingSecondsRef.current += pending;
+      } finally {
+        isFlushingRef.current = false;
       }
     },
-    []
+    [persistPracticeTime]
   );
 
   const stopActiveWindow = useCallback(() => {
-    if (activeStartedAtRef.current === null) return;
+    if (activeStartedAtRef.current === null) {
+      return;
+    }
 
     const elapsedMs = Date.now() - activeStartedAtRef.current;
     activeStartedAtRef.current = null;
 
     const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
     if (elapsedSeconds > 0) {
       pendingSecondsRef.current += elapsedSeconds;
     }
   }, []);
 
   const startActiveWindow = useCallback(() => {
-    if (activeStartedAtRef.current !== null) return;
-    if (!isTrackableNow()) return;
+    if (activeStartedAtRef.current !== null) {
+      return;
+    }
+
+    if (!isTrackableNow()) {
+      return;
+    }
 
     activeStartedAtRef.current = Date.now();
   }, [isTrackableNow]);
@@ -88,15 +117,18 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
   }, [startActiveWindow]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      return;
+    }
 
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         stopActiveWindow();
-        void flush();
+        void flush(true);
         return;
       }
 
+      markActivity();
       startActiveWindow();
     };
 
@@ -133,12 +165,15 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
     window.addEventListener('beforeunload', onBeforeUnload);
 
     const idleInterval = window.setInterval(() => {
-      if (Date.now() - lastActivityAtRef.current > IDLE_TIMEOUT_MS) {
+      const isIdle = Date.now() - lastActivityAtRef.current > IDLE_TIMEOUT_MS;
+
+      if (isIdle) {
         if (!isIdleRef.current) {
           isIdleRef.current = true;
           stopActiveWindow();
           void flush();
         }
+
         return;
       }
 
@@ -158,13 +193,16 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
 
     return () => {
       stopActiveWindow();
-      void flush();
+      void flush(true);
+
       window.clearInterval(idleInterval);
       window.clearInterval(flushInterval);
+
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('focus', onWindowFocus);
       window.removeEventListener('blur', onWindowBlur);
       window.removeEventListener('beforeunload', onBeforeUnload);
+
       activityEvents.forEach((eventName) => {
         window.removeEventListener(eventName, markActivity);
       });
@@ -172,11 +210,15 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
   }, [flush, isTrackableNow, markActivity, startActiveWindow, stopActiveWindow, userId]);
 
   useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
     markActivity();
     stopActiveWindow();
     void flush();
     startActiveWindow();
-  }, [pathname, flush, markActivity, startActiveWindow, stopActiveWindow]);
+  }, [pathname, flush, markActivity, startActiveWindow, stopActiveWindow, userId]);
 
   return null;
 }
