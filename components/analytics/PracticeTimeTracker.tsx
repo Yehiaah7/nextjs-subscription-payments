@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';
-import { createClient } from '@/utils/supabase/client';
 
 type PracticeTimeTrackerProps = {
   userId: string;
@@ -13,7 +12,6 @@ const FLUSH_INTERVAL_MS = 30_000;
 
 export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps) {
   const pathname = usePathname();
-  const supabase = createClient();
   const activeStartedAtRef = useRef<number | null>(null);
   const lastActivityAtRef = useRef<number>(Date.now());
   const pendingSecondsRef = useRef(0);
@@ -27,25 +25,38 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
 
   const flush = useCallback(
     async (sync = false) => {
-      const pending = pendingSecondsRef.current;
-      if (pending <= 0) return;
+      const pending = Math.floor(pendingSecondsRef.current);
+      if (!Number.isInteger(pending) || pending <= 0) return;
 
       pendingSecondsRef.current = 0;
 
       try {
         if (sync && typeof navigator !== 'undefined' && navigator.sendBeacon) {
-          navigator.sendBeacon('/api/profile/practice-time', JSON.stringify({ seconds: pending }));
+          navigator.sendBeacon(
+            '/api/profile/practice-time',
+            JSON.stringify({ secondsToAdd: pending })
+          );
           return;
         }
 
-        await (supabase as any).rpc('increment_practice_time', {
-          seconds_to_add: pending
+        const response = await fetch('/api/profile/practice-time', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            secondsToAdd: pending
+          })
         });
+
+        if (!response.ok) {
+          throw new Error('Failed to persist practice time');
+        }
       } catch {
         pendingSecondsRef.current += pending;
       }
     },
-    [supabase]
+    []
   );
 
   const stopActiveWindow = useCallback(() => {
