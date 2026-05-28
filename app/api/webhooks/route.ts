@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import Stripe from 'stripe';
 import { stripe } from '@/utils/stripe/config';
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from '@/utils/supabase/env';
 import {
   upsertProductRecord,
   upsertPriceRecord,
@@ -25,15 +26,8 @@ const relevantEvents = new Set([
 ]);
 
 export async function POST(req: Request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
-    return Response.json(
-      { error: 'Missing Supabase server configuration' },
-      { status: 500 }
-    );
-  }
+  getSupabaseUrl();
+  getSupabaseServiceRoleKey();
 
   const body = await req.text();
   const sig = req.headers.get('stripe-signature') as string;

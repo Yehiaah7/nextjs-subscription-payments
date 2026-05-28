@@ -1,6 +1,7 @@
 import { toDateTime } from '@/utils/helpers';
 import { stripe } from '@/utils/stripe/config';
 import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from '@/utils/supabase/env';
 import Stripe from 'stripe';
 import type { Database, Tables, TablesInsert } from 'types_db';
 
@@ -11,12 +12,8 @@ type Price = Tables<'prices'>;
 const TRIAL_PERIOD_DAYS = 0;
 
 export const createSupabaseAdminClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
-    throw new Error('Missing Supabase server configuration');
-  }
+  const supabaseUrl = getSupabaseUrl();
+  const supabaseServiceRoleKey = getSupabaseServiceRoleKey();
 
   // Note: supabaseAdmin uses the SERVICE_ROLE_KEY which you must only use in a secure server-side context
   // as it has admin privileges and overwrites RLS policies!
