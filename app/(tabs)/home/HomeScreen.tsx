@@ -542,11 +542,11 @@ function DesktopHomeLayout({
         className={cn(
           'grid min-h-0 flex-1 overflow-hidden',
           isHomeSection
-            ? 'grid-cols-[64px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[64px_320px_minmax(0,1fr)_360px]'
-            : 'grid-cols-[64px_minmax(0,1fr)]'
+            ? 'grid-cols-[76px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[76px_320px_minmax(0,1fr)_360px]'
+            : 'grid-cols-[76px_minmax(0,1fr)]'
         )}
       >
-        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-1 py-3">
+        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-2 py-3">
           <nav
             className="flex w-full flex-col gap-1.5"
             aria-label="Desktop primary"
@@ -592,7 +592,7 @@ function DesktopHomeLayout({
               />
             </button>
             <div
-              className="invisible fixed bottom-5 left-[56px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
+              className="invisible fixed bottom-5 left-[68px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
               role="menu"
             >
               <Link
@@ -933,7 +933,7 @@ function DesktopNavButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'flex w-full flex-col items-center gap-0.5 rounded-xl px-0.5 py-2 text-[7px] font-black uppercase tracking-[0.01em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2.5 text-[8px] font-black uppercase tracking-[0.01em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         active
           ? 'bg-primary-soft text-primary'
           : 'text-muted hover:bg-surface-soft',
@@ -1254,7 +1254,7 @@ function DesktopCompanyBrowseCard({
       type="button"
       onClick={onClick}
       className={cn(
-        'w-full rounded-[18px] border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'group w-full rounded-[18px] border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         active
           ? 'border-primary bg-primary-soft shadow-sm shadow-primary/10'
           : 'border-primary-soft bg-white hover:border-primary/40 hover:bg-surface-soft',
@@ -1299,7 +1299,7 @@ function DesktopCompanyBrowseCard({
         <span className="shrink-0 text-[10px] font-black text-primary">
           {boundedProgress}%
         </span>
-        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20">
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-primary shadow-sm shadow-primary/10 transition-colors group-hover:bg-primary/15 group-focus-visible:bg-primary/15">
           {boundedProgress > 0 ? 'Continue' : 'Start'}
           <ChevronRightFilledIcon className="h-3.5 w-3.5" />
         </span>
