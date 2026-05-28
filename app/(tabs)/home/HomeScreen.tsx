@@ -501,13 +501,13 @@ function DesktopHomeLayout({
         className={cn(
           'grid min-h-0 flex-1 overflow-hidden',
           isHomeSection
-            ? 'grid-cols-[112px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[112px_320px_minmax(0,1fr)_360px]'
-            : 'grid-cols-[112px_minmax(0,1fr)]'
+            ? 'grid-cols-[104px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[104px_320px_minmax(0,1fr)_360px]'
+            : 'grid-cols-[104px_minmax(0,1fr)]'
         )}
       >
-        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-3 py-5">
+        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-2 py-4">
           <nav
-            className="flex w-full flex-col gap-2"
+            className="flex w-full flex-col gap-1.5"
             aria-label="Desktop primary"
           >
             <DesktopNavButton
@@ -575,12 +575,12 @@ function DesktopHomeLayout({
         </aside>
 
         {isHomeSection ? (
-          <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-5 py-6">
-            <h1 className="text-[19px] font-black tracking-[-0.035em] text-[var(--color-ink)]">
+          <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-4 py-5">
+            <h1 className="text-[17px] font-medium tracking-[-0.025em] text-[var(--color-ink)]">
               Browse Product Gym
             </h1>
 
-            <div className="app-segment mt-5">
+            <div className="app-segment mt-3 h-9 p-0.5">
               <div className="grid h-full grid-cols-3 gap-1">
                 <TabButton
                   label="Companies"
@@ -600,7 +600,7 @@ function DesktopHomeLayout({
               </div>
             </div>
 
-            <div className="mt-5 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
+            <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
               {selectedContentTab === 'companies' ? (
                 filteredCompanyTracks.length === 0 ? (
                   <EmptyState message="No challenges for this level yet." />
@@ -787,7 +787,7 @@ function DesktopNavButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'flex w-full flex-col items-center gap-1 rounded-2xl px-1.5 py-3 text-[9px] font-black uppercase tracking-[0.02em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-[9px] font-black uppercase tracking-[0.02em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         active
           ? 'bg-primary-soft text-primary'
           : 'text-muted hover:bg-surface-soft',
