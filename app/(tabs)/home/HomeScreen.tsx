@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   BadgeCheckFilledIcon,
   BellFilledIcon,
@@ -116,6 +117,7 @@ export default function HomeScreen({
   userStats: UserProfileStats;
   challengesByCompany: Record<string, CompanyChallenge[]>;
 }) {
+  const searchParams = useSearchParams();
   const { avatar } = useUserAvatar();
   const { refreshNotifications } = useNotifications();
   const [tab, setTab] = useState<MainTab>('companies');
@@ -123,8 +125,9 @@ export default function HomeScreen({
     useState<DesktopSection>('home');
   const [selectedContentTab, setSelectedContentTab] =
     useState<MainTab>('companies');
+  const initialCompanyId = searchParams.get('company');
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
-    null
+    initialCompanyId
   );
   const [selectedSkillPathId, setSelectedSkillPathId] = useState<string | null>(
     null
@@ -176,6 +179,22 @@ export default function HomeScreen({
       acc.push(track);
       return acc;
     }, []);
+
+  useEffect(() => {
+    const requestedCompanyId = searchParams.get('company');
+    if (!requestedCompanyId) return;
+
+    const companyExists = companyTracks.some(
+      (track) => track.companySummary.id === requestedCompanyId
+    );
+    if (!companyExists) return;
+
+    setSelectedDesktopSection('home');
+    setSelectedContentTab('companies');
+    setSelectedCompanyId(requestedCompanyId);
+    setSelectedSkillPathId(null);
+    setSelectedProductId(null);
+  }, [companyTracks, searchParams]);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(SENIORITY_STORAGE_KEY);
@@ -853,7 +872,7 @@ function DesktopTopNavbar({
   isUpgrading: boolean;
 }) {
   return (
-    <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-primary-soft bg-white px-6">
+    <header className="flex h-[64px] shrink-0 items-center justify-between border-b border-primary-soft bg-white px-6">
       <div className="flex items-center gap-3" aria-label="Product Gym">
         <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-[15px] font-black tracking-[-0.04em] text-white shadow-sm shadow-primary/20">
           PG
