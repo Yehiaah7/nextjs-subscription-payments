@@ -112,7 +112,7 @@ export default function SettingsScreen({
 
   return (
     <MobileScreen>
-      <section className="mx-auto w-full max-w-[361px] space-y-4">
+      <section className="mx-auto w-full max-w-[361px] space-y-4 md:max-w-4xl md:px-6 md:py-6">
         <header className="flex items-center gap-3">
           <Link
             href="/profile"
@@ -125,12 +125,12 @@ export default function SettingsScreen({
           </h1>
         </header>
 
-        <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3">
-          <p className="mb-3 text-[12px] font-bold tracking-[-0.3px] text-[#0f172b]">
+        <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3 md:p-5">
+          <p className="mb-3 text-[12px] font-bold tracking-[-0.3px] text-[#0f172b] md:text-[14px]">
             Account Preferences
           </p>
           <form action={updateAccountPreferences} className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
               <Field
                 label="First name"
                 name="first_name"
@@ -149,52 +149,54 @@ export default function SettingsScreen({
               />
             </div>
 
-            <PhoneField
-              phoneCountry={formValues.phone_country}
-              phoneDialCode={formValues.phone_country_code}
-              phoneNational={formValues.phone_national}
-              onCountryChange={(countryCode) => {
-                const selectedCountry =
-                  COUNTRY_OPTIONS.find(
-                    (option) => option.code === countryCode
-                  ) ?? COUNTRY_OPTIONS[0];
-                setFormValues((prev) => ({
-                  ...prev,
-                  phone_country: selectedCountry.code,
-                  phone_country_code: selectedCountry.dialCode
-                }));
-              }}
-              onNationalChange={(value) =>
-                setFormValues((prev) => ({ ...prev, phone_national: value }))
-              }
-            />
+            <div className="space-y-3 md:grid md:grid-cols-3 md:gap-3 md:space-y-0">
+              <PhoneField
+                phoneCountry={formValues.phone_country}
+                phoneDialCode={formValues.phone_country_code}
+                phoneNational={formValues.phone_national}
+                onCountryChange={(countryCode) => {
+                  const selectedCountry =
+                    COUNTRY_OPTIONS.find(
+                      (option) => option.code === countryCode
+                    ) ?? COUNTRY_OPTIONS[0];
+                  setFormValues((prev) => ({
+                    ...prev,
+                    phone_country: selectedCountry.code,
+                    phone_country_code: selectedCountry.dialCode
+                  }));
+                }}
+                onNationalChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, phone_national: value }))
+                }
+              />
 
-            <Field
-              label="Email"
-              name="email"
-              value={formValues.email}
-              onChange={(value) =>
-                setFormValues((prev) => ({ ...prev, email: value }))
-              }
-              type="email"
-              required
-            />
-            <Field
-              label="Username"
-              name="username"
-              value={formValues.username}
-              onChange={(value) =>
-                setFormValues((prev) => ({
-                  ...prev,
-                  username: value.toLowerCase()
-                }))
-              }
-              required
-              minLength={3}
-              maxLength={20}
-              pattern="[A-Za-z0-9_]{3,20}"
-              title="3-20 chars: letters, numbers, underscore"
-            />
+              <Field
+                label="Email"
+                name="email"
+                value={formValues.email}
+                onChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, email: value }))
+                }
+                type="email"
+                required
+              />
+              <Field
+                label="Username"
+                name="username"
+                value={formValues.username}
+                onChange={(value) =>
+                  setFormValues((prev) => ({
+                    ...prev,
+                    username: value.toLowerCase()
+                  }))
+                }
+                required
+                minLength={3}
+                maxLength={20}
+                pattern="[A-Za-z0-9_]{3,20}"
+                title="3-20 chars: letters, numbers, underscore"
+              />
+            </div>
 
             {status && (
               <p className="text-xs font-medium text-emerald-600">{status}</p>
@@ -244,35 +246,37 @@ export default function SettingsScreen({
           </form>
         </section>
 
-        <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3">
-          <p className="mb-3 text-[12px] font-bold tracking-[-0.3px] text-[#0f172b]">
+        <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3 md:p-5">
+          <p className="mb-3 text-[12px] font-bold tracking-[-0.3px] text-[#0f172b] md:text-[14px]">
             Security
           </p>
           <form action={changePassword} className="space-y-3">
-            <Field
-              label="Current password"
-              name="currentPassword"
-              defaultValue=""
-              type="password"
-              required
-              minLength={8}
-            />
-            <Field
-              label="New password"
-              name="password"
-              defaultValue=""
-              type="password"
-              required
-              minLength={8}
-            />
-            <Field
-              label="Confirm password"
-              name="passwordConfirm"
-              defaultValue=""
-              type="password"
-              required
-              minLength={8}
-            />
+            <div className="space-y-3 md:grid md:grid-cols-3 md:gap-3 md:space-y-0">
+              <Field
+                label="Current password"
+                name="currentPassword"
+                defaultValue=""
+                type="password"
+                required
+                minLength={8}
+              />
+              <Field
+                label="New password"
+                name="password"
+                defaultValue=""
+                type="password"
+                required
+                minLength={8}
+              />
+              <Field
+                label="Confirm password"
+                name="passwordConfirm"
+                defaultValue=""
+                type="password"
+                required
+                minLength={8}
+              />
+            </div>
             <div className="flex justify-end pt-1">
               <FormLoadingButton
                 className={cn(compactPrimaryCtaButton, 'min-w-[151px]')}
@@ -333,12 +337,14 @@ export default function SettingsScreen({
 }
 
 function PhoneField({
+  className = '',
   phoneCountry,
   phoneDialCode,
   phoneNational,
   onCountryChange,
   onNationalChange
 }: {
+  className?: string;
   phoneCountry: string;
   phoneDialCode: string;
   phoneNational: string;
@@ -346,7 +352,7 @@ function PhoneField({
   onNationalChange: (value: string) => void;
 }) {
   return (
-    <div>
+    <div className={className}>
       <p className="mb-1 text-[9px] font-black uppercase tracking-[1px] text-[#94a3b8]">
         Phone
       </p>

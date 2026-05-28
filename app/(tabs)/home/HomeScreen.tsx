@@ -576,15 +576,14 @@ function DesktopHomeLayout({
               className="invisible fixed bottom-5 left-[80px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
               role="menu"
             >
-              <button
-                type="button"
-                onClick={() => onSelectDesktopSection('settings')}
+              <Link
+                href="/profile/settings"
                 className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 role="menuitem"
               >
                 <Settings className="h-4 w-4" />
                 Settings
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirmation(true)}
@@ -1272,18 +1271,16 @@ function DesktopCompanyBrowseCard({
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2">
-        <div className="h-1.5 flex-1 rounded-pill bg-[var(--color-border)]">
+        <div className="h-1.5 min-w-0 flex-1 rounded-pill bg-[var(--color-border)]">
           <div
             className="h-full rounded-pill bg-primary"
             style={{ width: `${boundedProgress}%` }}
           />
         </div>
-        <span className="text-[10px] font-black text-primary">
+        <span className="shrink-0 text-[10px] font-black text-primary">
           {boundedProgress}%
         </span>
-      </div>
-      <div className="mt-3 flex justify-end">
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20">
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20">
           {boundedProgress > 0 ? 'Continue' : 'Start'}
           <ChevronRightFilledIcon className="h-3.5 w-3.5" />
         </span>
