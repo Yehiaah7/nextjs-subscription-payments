@@ -28,6 +28,15 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font -- Red Hat Display is the Product Gym brand font, and next/font cannot fetch Google fonts in this build environment. */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@300..900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="font-sans">
         <main id="skip" className="min-h-dvh">
           {children}

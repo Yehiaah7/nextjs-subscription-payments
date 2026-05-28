@@ -67,8 +67,8 @@ export default function ProGymPassCard({
 
   const primaryButtonClassName =
     variant === 'plans'
-      ? 'mt-3 inline-flex h-[49px] w-full items-center justify-center rounded-full bg-white px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[var(--color-brand-green-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-brand-green-strong)]'
-      : 'mt-3 inline-flex h-[43px] w-full items-center justify-center rounded-full bg-white text-[10px] font-black uppercase tracking-[1px] text-[var(--color-brand-green-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-brand-green-strong)]';
+      ? 'mt-3 inline-flex h-[49px] w-full items-center justify-center rounded-full bg-white px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-productGym-greenDark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-greenDark'
+      : 'mt-3 inline-flex h-[43px] w-full items-center justify-center rounded-full bg-white text-[10px] font-black uppercase tracking-[1px] text-productGym-greenDark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-greenDark';
 
   const isTrial = subscriptionState === 'trial';
   const isPro = subscriptionState === 'pro';
@@ -83,7 +83,7 @@ export default function ProGymPassCard({
   const trialDaysLabel = formatTrialCountdownLabel(calculatedTrialDaysLeft);
 
   return (
-    <section id={id} className="rounded-[16px] border border-[#18833D] bg-[var(--color-brand-green-strong)] p-3 text-white">
+    <section id={id} className="rounded-[16px] border border-productGym-greenDark bg-productGym-greenDark p-3 text-white">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-[rgba(255,255,255,0.2)] text-white">
@@ -94,7 +94,7 @@ export default function ProGymPassCard({
 
           <div>
             <h2 className="text-[16px] font-bold tracking-[-0.4px]">Pro Gym Pass</h2>
-            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[1px] text-[#E6F8DE]">
+            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[1px] text-productGym-greenSoft">
               {isPro ? 'Pro Active' : 'Free Trial'}
             </p>
           </div>
@@ -109,7 +109,7 @@ export default function ProGymPassCard({
 
       {isTrial ? (
         <div className="mt-3">
-          <p className="text-[11px] font-bold uppercase tracking-[1px] text-[#E6F8DE]">
+          <p className="text-[11px] font-bold uppercase tracking-[1px] text-productGym-greenSoft">
             Included in your 7-day free trial:
           </p>
 
@@ -131,7 +131,7 @@ export default function ProGymPassCard({
         </div>
       ) : null}
 
-      <p className="mt-3 text-[11px] font-bold uppercase tracking-[1px] text-[#E6F8DE]">
+      <p className="mt-3 text-[11px] font-bold uppercase tracking-[1px] text-productGym-greenSoft">
         {isPro ? 'Pro benefits:' : 'Upgrade to Pro to unlock:'}
       </p>
 
@@ -162,7 +162,7 @@ export default function ProGymPassCard({
             Upgrade to Pro
           </LoadingButton>
 
-          <p className="mt-2 text-center text-[10px] font-medium text-[#E6F8DE]">Cancel anytime</p>
+          <p className="mt-2 text-center text-[10px] font-medium text-productGym-greenSoft">Cancel anytime</p>
         </>
       )}
     </section>
