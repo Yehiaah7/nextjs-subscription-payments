@@ -173,7 +173,7 @@ export default function HomeScreen({
         {showFreeTrialCard ? (
           <MotionCard
             className={cn(
-              'mb-4 rounded-[16px] border border-black/10 bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5',
+              'mb-4 rounded-[16px] bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5',
               cardInteractive
             )}
           >
