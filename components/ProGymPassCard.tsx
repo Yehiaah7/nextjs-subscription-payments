@@ -94,9 +94,9 @@ export default function ProGymPassCard({
       id={id}
       className="rounded-[16px] bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-productGym-ink shadow-sm shadow-black/10">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white text-productGym-ink shadow-sm shadow-black/10">
             <svg
               viewBox="0 0 20 20"
               fill="currentColor"
@@ -107,24 +107,26 @@ export default function ProGymPassCard({
             </svg>
           </span>
 
-          <div>
+          <div className="min-w-0">
             <h2 className="text-[16px] font-bold tracking-[-0.4px]">
               Pro Gym Pass
             </h2>
             <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[1px] text-productGym-ink/80">
               {isPro ? 'Pro Active' : 'Free Trial'}
             </p>
-            <p className="mt-1 text-[11px] font-black uppercase tracking-[1px] text-productGym-ink">
-              {PRODUCT_GYM_MONTHLY_PRICE_LABEL}
-            </p>
+            {isTrial || hasExpiredTrial ? (
+              <p className="mt-1 inline-flex rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-ink shadow-sm shadow-black/10">
+                {trialDaysLabel}
+              </p>
+            ) : null}
           </div>
         </div>
 
-        {isTrial || hasExpiredTrial ? (
-          <span className="rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-ink shadow-sm shadow-black/10">
-            {trialDaysLabel}
-          </span>
-        ) : null}
+        <div className="shrink-0 rounded-[12px] bg-white px-3 py-2 text-right shadow-sm shadow-black/10">
+          <p className="text-[18px] font-black leading-none tracking-[-0.5px] text-productGym-ink">
+            {PRODUCT_GYM_MONTHLY_PRICE_LABEL}
+          </p>
+        </div>
       </div>
 
       {isTrial ? (
