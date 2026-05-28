@@ -54,6 +54,7 @@ import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 import NotificationsBellButton from '@/components/notifications/NotificationsBellButton';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
 import { toast } from '@/components/ui/Toasts/use-toast';
+import { logout } from '@/app/auth/actions';
 import { ensureCompanyProgressReminder } from '@/lib/notifications/store';
 import { getNotificationIconConfig } from '@/lib/notifications/iconMapping';
 import type { ProductGymNotification } from '@/lib/notifications/types';
@@ -66,7 +67,7 @@ import CompanyDetailsScreen, {
 } from '@/app/(authenticated)/companies/[trackId]/CompanyDetailsScreen';
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
-type DesktopSection = 'home' | 'notifications' | 'leaderboard';
+type DesktopSection = 'home' | 'notifications' | 'leaderboard' | 'settings';
 type BoardTab = 'weekly' | 'all-time';
 
 export type HomeTrack = {
@@ -498,6 +499,7 @@ function DesktopHomeLayout({
     useNotifications();
   const [desktopNotificationToDelete, setDesktopNotificationToDelete] =
     useState<ProductGymNotification | null>(null);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const [desktopLeaderboardTab, setDesktopLeaderboardTab] =
     useState<BoardTab>('weekly');
   const isHomeSection = selectedDesktopSection === 'home';
@@ -574,30 +576,32 @@ function DesktopHomeLayout({
               className="invisible fixed bottom-5 left-[80px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
               role="menu"
             >
-              <Link
-                href="/profile/settings"
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              <button
+                type="button"
+                onClick={() => onSelectDesktopSection('settings')}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 role="menuitem"
               >
                 <Settings className="h-4 w-4" />
                 Settings
-              </Link>
-              <Link
-                href="/logout"
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirmation(true)}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                 role="menuitem"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4 text-red-600" />
                 Logout
-              </Link>
+              </button>
             </div>
           </div>
         </aside>
 
         {isHomeSection ? (
           <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-4 py-5">
-            <h1 className="text-[17px] font-medium tracking-[-0.025em] text-[var(--color-ink)]">
-              Browse Product Gym
+            <h1 className="text-[16px] font-medium tracking-[-0.02em] text-[var(--color-ink)]">
+              Browse Product Gym practice
             </h1>
 
             <div className="app-segment mt-3 h-9 p-0.5">
@@ -713,10 +717,15 @@ function DesktopHomeLayout({
               highlightedNotificationIds={highlightedNotificationIds}
               onRequestDelete={setDesktopNotificationToDelete}
             />
-          ) : (
+          ) : selectedDesktopSection === 'leaderboard' ? (
             <DesktopLeaderboardWorkspace
               tab={desktopLeaderboardTab}
               onTabChange={setDesktopLeaderboardTab}
+            />
+          ) : (
+            <DesktopSettingsWorkspace
+              userName={userName}
+              userEmail={userEmail}
             />
           )}
         </main>
@@ -763,6 +772,54 @@ function DesktopHomeLayout({
                 >
                   Delete
                 </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {showLogoutConfirmation ? (
+          <div
+            className="fixed inset-0 z-[110] grid place-items-center bg-slate-950/35 px-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="desktop-logout-title"
+          >
+            <div className="w-full max-w-[329px] rounded-3xl bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+              <h2
+                id="desktop-logout-title"
+                className="text-base font-bold tracking-[-0.35px] text-[#0f172b]"
+              >
+                Log out?
+              </h2>
+              <p className="mt-2 text-sm font-medium leading-5 text-[#45556c]">
+                Are you sure you want to log out of Product Gym?
+              </p>
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLogoutConfirmation(false)}
+                  className={cn(
+                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                    btnInteractive,
+                    btnInteractiveNeutral,
+                    focusRingInteractive
+                  )}
+                >
+                  Cancel
+                </button>
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    className={cn(
+                      'inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-red-500 bg-red-500 px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white',
+                      btnInteractive,
+                      btnInteractiveColored,
+                      focusRingInteractive
+                    )}
+                  >
+                    Log out
+                  </button>
+                </form>
               </div>
             </div>
           </div>
@@ -991,6 +1048,88 @@ function DesktopNotificationsWorkspace({
   );
 }
 
+function DesktopSettingsWorkspace({
+  userName,
+  userEmail
+}: {
+  userName: string;
+  userEmail?: string | null;
+}) {
+  const settingsSections = [
+    {
+      title: 'Profile',
+      description:
+        'Review the account identity Product Gym uses across your practice workspace.',
+      detail: userEmail ?? 'No email on file'
+    },
+    {
+      title: 'Preferences',
+      description:
+        'Keep your practice reminders, difficulty filters, and workspace preferences organized.',
+      detail:
+        'Practice defaults can be managed from your full profile settings.'
+    },
+    {
+      title: 'Security',
+      description:
+        'Manage session safety and password updates from the dedicated settings page.',
+      detail: 'Use the profile settings page for account changes.'
+    }
+  ];
+
+  return (
+    <section className="mx-auto flex h-full w-full max-w-3xl flex-col pt-10 xl:pt-12">
+      <header className="mb-5 max-w-xl text-left">
+        <h1 className="text-[30px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
+          Settings
+        </h1>
+        <p className="mt-2 text-sm font-semibold leading-6 text-muted">
+          Manage your account preferences and Product Gym experience.
+        </p>
+      </header>
+
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6">
+        <div className="space-y-3">
+          {settingsSections.map((section) => (
+            <section
+              key={section.title}
+              className="rounded-[24px] border border-primary-soft bg-white p-5 text-left shadow-sm shadow-slate-900/5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-[17px] font-black tracking-[-0.03em] text-[var(--color-ink)]">
+                    {section.title}
+                  </h2>
+                  <p className="mt-1 text-sm font-medium leading-6 text-muted">
+                    {section.description}
+                  </p>
+                </div>
+                <span className="rounded-full bg-primary-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-primary">
+                  {section.title === 'Profile' ? 'Account' : 'Coming soon'}
+                </span>
+              </div>
+              <p className="mt-4 rounded-2xl bg-surface-soft px-4 py-3 text-sm font-semibold text-[#45556c]">
+                {section.detail}
+              </p>
+            </section>
+          ))}
+        </div>
+
+        <Link
+          href="/profile/settings"
+          className={cn(
+            'mt-4 inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-[12px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+            btnInteractive,
+            btnInteractiveColored
+          )}
+        >
+          Open full settings
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 function DesktopLeaderboardWorkspace({
   tab,
   onTabChange
@@ -1141,6 +1280,12 @@ function DesktopCompanyBrowseCard({
         </div>
         <span className="text-[10px] font-black text-primary">
           {boundedProgress}%
+        </span>
+      </div>
+      <div className="mt-3 flex justify-end">
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20">
+          {boundedProgress > 0 ? 'Continue' : 'Start'}
+          <ChevronRightFilledIcon className="h-3.5 w-3.5" />
         </span>
       </div>
     </button>
