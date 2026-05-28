@@ -173,18 +173,20 @@ export default function HomeScreen({
         {showFreeTrialCard ? (
           <MotionCard
             className={cn(
-              'mb-4 rounded-[16px] border border-productGym-greenDark bg-productGym-greenDark p-3 text-white',
+              'mb-4 rounded-[16px] border border-productGym-blue bg-productGym-yellow p-3 text-productGym-ink',
               cardInteractive
             )}
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex items-center gap-2">
-                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/20 text-white">
+                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/70 text-productGym-blue shadow-sm shadow-productGym-blue/10">
                   <RocketFilledIcon className="h-3.5 w-3.5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="t-label text-white">Free Trial Active</p>
-                  <p className="text-[11px] font-semibold text-productGym-greenSoft">
+                  <p className="t-label text-productGym-ink">
+                    Free Trial Active
+                  </p>
+                  <p className="text-[11px] font-semibold text-productGym-ink/75">
                     {freeTrialCopy}
                   </p>
                 </div>
@@ -192,7 +194,7 @@ export default function HomeScreen({
               <div className="flex shrink-0 items-center gap-1">
                 <MotionButton
                   className={cn(
-                    'rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-greenDark',
+                    'rounded-full bg-productGym-blue px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-white',
                     btnInteractive,
                     focusRingInteractive
                   )}
@@ -204,7 +206,7 @@ export default function HomeScreen({
                   onClick={() => setShowFreeTrialCard(false)}
                   aria-label="Dismiss free trial card"
                   className={cn(
-                    'inline-flex h-6 w-6 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white',
+                    'inline-flex h-6 w-6 items-center justify-center rounded-full text-productGym-blue/80 hover:bg-white/30 hover:text-productGym-blue',
                     iconBtnInteractive,
                     focusRingInteractive
                   )}
