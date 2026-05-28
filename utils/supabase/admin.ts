@@ -258,10 +258,19 @@ const copyBillingDetailsToCustomer = async (
     return;
   }
 
+  const stripeAddress = {
+    city: address.city ?? undefined,
+    country: address.country ?? undefined,
+    line1: address.line1 ?? undefined,
+    line2: address.line2 ?? undefined,
+    postal_code: address.postal_code ?? undefined,
+    state: address.state ?? undefined
+  };
+
   await stripe.customers.update(customer, {
     name,
     phone,
-    address
+    address: stripeAddress
   });
 
   const { error: updateError } = await supabaseAdmin
@@ -306,7 +315,7 @@ const manageSubscriptionStatusChange = async (
     metadata: subscription.metadata,
     status: subscription.status,
     price_id: subscription.items.data[0].price.id,
-    quantity: subscription.quantity,
+    quantity: subscription.items.data[0]?.quantity ?? null,
     cancel_at_period_end: subscription.cancel_at_period_end,
     cancel_at: subscription.cancel_at
       ? toDateTime(subscription.cancel_at).toISOString()
