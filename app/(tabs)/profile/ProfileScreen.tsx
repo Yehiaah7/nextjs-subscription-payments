@@ -26,7 +26,17 @@ import { toast } from '@/components/ui/Toasts/use-toast';
 import { cardInteractive } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 import { createClient } from '@/utils/supabase/client';
-import { Camera, Clock3, Crosshair, HelpCircle, Minus, Pencil, Plus, Trash2, X } from 'lucide-react';
+import {
+  Camera,
+  Clock3,
+  Crosshair,
+  HelpCircle,
+  Minus,
+  Pencil,
+  Plus,
+  Trash2,
+  X
+} from 'lucide-react';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 

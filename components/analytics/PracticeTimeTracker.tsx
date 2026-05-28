@@ -11,12 +11,15 @@ const IDLE_TIMEOUT_MS = 60_000;
 const FLUSH_INTERVAL_MS = 30_000;
 const PRACTICE_TIME_ENDPOINT = '/api/profile/practice-time';
 
-export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps) {
+export default function PracticeTimeTracker({
+  userId
+}: PracticeTimeTrackerProps) {
   const pathname = usePathname();
 
   const activeStartedAtRef = useRef<number | null>(null);
   const lastActivityAtRef = useRef<number>(Date.now());
   const pendingSecondsRef = useRef(0);
+  const hasInteractedRef = useRef(false);
   const isIdleRef = useRef(false);
   const isFlushingRef = useRef(false);
 
@@ -25,37 +28,56 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
       return false;
     }
 
-    return document.visibilityState === 'visible' && document.hasFocus() && !isIdleRef.current;
+    const hasRecentActivity =
+      hasInteractedRef.current &&
+      Date.now() - lastActivityAtRef.current <= IDLE_TIMEOUT_MS;
+
+    return (
+      document.visibilityState === 'visible' &&
+      document.hasFocus() &&
+      hasRecentActivity &&
+      !isIdleRef.current
+    );
   }, []);
 
-  const persistPracticeTime = useCallback(async (secondsToAdd: number, sync = false) => {
-    const payload = JSON.stringify({ secondsToAdd });
+  const persistPracticeTime = useCallback(
+    async (
+      secondsToAdd: number,
+      options: { keepalive?: boolean; useBeacon?: boolean } = {}
+    ) => {
+      const payload = JSON.stringify({ secondsToAdd });
 
-    if (sync && typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      const blob = new Blob([payload], { type: 'application/json' });
-      const queued = navigator.sendBeacon(PRACTICE_TIME_ENDPOINT, blob);
+      if (
+        options.useBeacon &&
+        typeof navigator !== 'undefined' &&
+        navigator.sendBeacon
+      ) {
+        const blob = new Blob([payload], { type: 'application/json' });
+        const queued = navigator.sendBeacon(PRACTICE_TIME_ENDPOINT, blob);
 
-      if (queued) {
-        return;
+        if (queued) {
+          return;
+        }
       }
-    }
 
-    const response = await fetch(PRACTICE_TIME_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: payload,
-      keepalive: sync
-    });
+      const response = await fetch(PRACTICE_TIME_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: payload,
+        keepalive: options.keepalive
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to persist practice time');
-    }
-  }, []);
+      if (!response.ok) {
+        throw new Error('Failed to persist practice time');
+      }
+    },
+    []
+  );
 
   const flush = useCallback(
-    async (sync = false) => {
+    async (options: { keepalive?: boolean; useBeacon?: boolean } = {}) => {
       if (isFlushingRef.current) {
         return;
       }
@@ -70,7 +92,7 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
       isFlushingRef.current = true;
 
       try {
-        await persistPracticeTime(pending, sync);
+        await persistPracticeTime(pending, options);
       } catch {
         pendingSecondsRef.current += pending;
       } finally {
@@ -108,6 +130,7 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
   }, [isTrackableNow]);
 
   const markActivity = useCallback(() => {
+    hasInteractedRef.current = true;
     lastActivityAtRef.current = Date.now();
 
     if (isIdleRef.current) {
@@ -124,7 +147,7 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         stopActiveWindow();
-        void flush(true);
+        void flush({ keepalive: true });
         return;
       }
 
@@ -134,7 +157,7 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
 
     const onWindowBlur = () => {
       stopActiveWindow();
-      void flush();
+      void flush({ keepalive: true });
     };
 
     const onWindowFocus = () => {
@@ -144,7 +167,7 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
 
     const onBeforeUnload = () => {
       stopActiveWindow();
-      void flush(true);
+      void flush({ keepalive: true, useBeacon: true });
     };
 
     const activityEvents: (keyof WindowEventMap)[] = [
@@ -171,7 +194,7 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
         if (!isIdleRef.current) {
           isIdleRef.current = true;
           stopActiveWindow();
-          void flush();
+          void flush({ keepalive: true });
         }
 
         return;
@@ -184,16 +207,13 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
 
     const flushInterval = window.setInterval(() => {
       stopActiveWindow();
-      void flush();
+      void flush({ keepalive: true });
       startActiveWindow();
     }, FLUSH_INTERVAL_MS);
 
-    markActivity();
-    startActiveWindow();
-
     return () => {
       stopActiveWindow();
-      void flush(true);
+      void flush({ keepalive: true, useBeacon: true });
 
       window.clearInterval(idleInterval);
       window.clearInterval(flushInterval);
@@ -207,18 +227,24 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
         window.removeEventListener(eventName, markActivity);
       });
     };
-  }, [flush, isTrackableNow, markActivity, startActiveWindow, stopActiveWindow, userId]);
+  }, [
+    flush,
+    isTrackableNow,
+    markActivity,
+    startActiveWindow,
+    stopActiveWindow,
+    userId
+  ]);
 
   useEffect(() => {
     if (!userId) {
       return;
     }
 
-    markActivity();
     stopActiveWindow();
-    void flush();
+    void flush({ keepalive: true });
     startActiveWindow();
-  }, [pathname, flush, markActivity, startActiveWindow, stopActiveWindow, userId]);
+  }, [pathname, flush, startActiveWindow, stopActiveWindow, userId]);
 
   return null;
 }
