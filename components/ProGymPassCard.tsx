@@ -5,9 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { CheckCircleFilledIcon } from '@/components/icons/FilledIcons';
 import LoadingButton from '@/components/ui/LoadingButton';
-import { getStripe } from '@/utils/stripe/client';
-import { checkoutWithDefaultPrice } from '@/utils/stripe/server';
-import { getErrorRedirect } from '@/utils/helpers';
 import {
   calculateTrialDaysLeft,
   formatTrialCountdownLabel
@@ -35,6 +32,7 @@ export default function ProGymPassCard({
   const router = useRouter();
   const currentPath = usePathname();
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const paymentProvider = 'lemonsqueezy';
 
   const handleUpgrade = async () => {
     if (onUpgrade) {
@@ -44,29 +42,33 @@ export default function ProGymPassCard({
 
     setIsUpgrading(true);
 
-    const { errorRedirect, sessionId } =
-      await checkoutWithDefaultPrice(currentPath);
+    try {
+      const response = await fetch('/api/lemonsqueezy/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ paymentProvider })
+      });
+      const data = (await response.json().catch(() => null)) as {
+        url?: string;
+        error?: string;
+      } | null;
 
-    if (errorRedirect) {
-      setIsUpgrading(false);
-      return router.push(errorRedirect);
-    }
+      if (!response.ok || !data?.url) {
+        throw new Error(data?.error ?? 'Unable to create checkout.');
+      }
 
-    if (!sessionId) {
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Unable to create Lemon Squeezy checkout:', error);
       setIsUpgrading(false);
-      return router.push(
-        getErrorRedirect(
-          currentPath,
-          'An unknown error occurred.',
-          'Please try again later or contact a system administrator.'
-        )
+      router.push(
+        `${currentPath}?error=${encodeURIComponent(
+          'Unable to start checkout. Please try again.'
+        )}`
       );
     }
-
-    const stripe = await getStripe();
-    await stripe?.redirectToCheckout({ sessionId });
-
-    setIsUpgrading(false);
   };
 
   const primaryButtonClassName =

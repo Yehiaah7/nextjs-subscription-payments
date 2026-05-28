@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import ProfileScreen from './ProfileScreen';
 import { getUserDisplayName } from '@/utils/user-avatar';
 import { getUserProfileStats } from '@/lib/user-profile-stats';
+import { getHasProSubscription } from '@/utils/supabase/queries';
 
 type ProfileRecord = {
   name: string | null;
@@ -34,7 +35,10 @@ export default async function ProfilePage() {
 
   const profile = (profileData ?? null) as ProfileRecord | null;
   const userRecord = (userData ?? null) as UserRecord | null;
-  const userStats = await getUserProfileStats(user.id);
+  const [userStats, hasProSubscription] = await Promise.all([
+    getUserProfileStats(user.id),
+    getHasProSubscription(supabase)
+  ]);
 
   const fullName = getUserDisplayName({
     firstName: profile?.first_name,
@@ -55,6 +59,7 @@ export default async function ProfilePage() {
       lastName={profile?.last_name}
       avatarUrl={profile?.avatar_url ?? null}
       userStats={userStats}
+      subscriptionState={hasProSubscription ? 'pro' : 'trial'}
     />
   );
 }

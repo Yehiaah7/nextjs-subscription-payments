@@ -11,11 +11,20 @@ import {
 import MobileScreen from '@/components/mobile/MobileScreen';
 import ProGymPassCard from '@/components/ProGymPassCard';
 
-export default function SubscriptionScreen() {
+type SubscriptionScreenProps = {
+  subscriptionState?: 'trial' | 'expired' | 'pro';
+};
+
+export default function SubscriptionScreen({
+  subscriptionState = 'trial'
+}: SubscriptionScreenProps) {
   const searchParams = useSearchParams();
+  const isPro = subscriptionState === 'pro';
   useEffect(() => {
     if (searchParams.get('focus') === 'pro') {
-      document.getElementById('pro')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document
+        .getElementById('pro')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [searchParams]);
 
@@ -23,31 +32,63 @@ export default function SubscriptionScreen() {
     <MobileScreen>
       <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4">
         <header className="flex items-center gap-3">
-          <Link href="/profile" className="grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff]"><ChevronLeftFilledIcon className="h-4 w-4" /></Link>
-          <h1 className="text-[24px] font-bold tracking-[-0.6px] text-[#0f172b]">Gym Pass</h1>
+          <Link
+            href="/profile"
+            className="grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff]"
+          >
+            <ChevronLeftFilledIcon className="h-4 w-4" />
+          </Link>
+          <h1 className="text-[24px] font-bold tracking-[-0.6px] text-[#0f172b]">
+            Gym Pass
+          </h1>
         </header>
 
         <section className="h-[57px] rounded-[16px] border border-[#2b7fff] bg-[#155dfc] p-3 text-white">
-          <p className="text-[10px] font-black uppercase leading-[1] tracking-[1px] text-white">Trial in progress</p>
-          <p className="mt-1 text-[11px] font-bold">You are currently enjoying a Pro Trial.</p>
+          <p className="text-[10px] font-black uppercase leading-[1] tracking-[1px] text-white">
+            {isPro ? 'Pro active' : 'Trial in progress'}
+          </p>
+          <p className="mt-1 text-[11px] font-bold">
+            {isPro
+              ? 'Your Pro Gym Pass subscription is active.'
+              : 'You are currently enjoying a Pro Trial.'}
+          </p>
         </section>
 
-        <ProGymPassCard id="pro" variant="plans" />
+        <ProGymPassCard
+          id="pro"
+          variant="plans"
+          subscriptionState={subscriptionState}
+        />
 
         <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3">
           <div className="flex items-center gap-2">
             <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eff6ff] text-[#2563eb]">
               <ShieldCheckFilledIcon className="h-4 w-4" />
             </span>
-            <h2 className="text-[16px] font-bold tracking-[-0.4px] text-[var(--profile-title-color)]">Standard</h2>
+            <h2 className="text-[16px] font-bold tracking-[-0.4px] text-[var(--profile-title-color)]">
+              Standard
+            </h2>
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-[1px] text-[#94a3b8]">Foundation Level</p>
+          <p className="text-[10px] font-bold uppercase tracking-[1px] text-[#94a3b8]">
+            Foundation Level
+          </p>
           <ul className="mt-3 space-y-1 text-[12px] font-medium leading-4 text-[#45556c]">
-            <li className="flex items-start gap-2"><CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2563eb]" />1 mock assignment open at once</li>
-            <li className="flex items-start gap-2"><CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2563eb]" />1 challenge every 2 days</li>
-            <li className="flex items-start gap-2"><CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2563eb]" />Public global ranking</li>
+            <li className="flex items-start gap-2">
+              <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2563eb]" />
+              1 mock assignment open at once
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2563eb]" />
+              1 challenge every 2 days
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2563eb]" />
+              Public global ranking
+            </li>
           </ul>
-          <button className="mt-3 h-[49px] w-full rounded-[16px] border border-[#dbeafe] bg-white px-[72px] py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[var(--profile-title-color)]">Current Plan</button>
+          <button className="mt-3 h-[49px] w-full rounded-[16px] border border-[#dbeafe] bg-white px-[72px] py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[var(--profile-title-color)]">
+            Current Plan
+          </button>
         </section>
       </section>
     </MobileScreen>
