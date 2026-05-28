@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import {
+  BadgeCheckFilledIcon,
   BellFilledIcon,
+  CalendarFilledIcon,
   CheckCircleFilledIcon,
   ChevronRightFilledIcon,
   FireFilledIcon,
@@ -18,6 +20,7 @@ import {
   LogOut,
   Package,
   Settings,
+  Trash2,
   X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -50,6 +53,7 @@ import UserAvatar from '@/components/ui/UserAvatar';
 import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 import NotificationsBellButton from '@/components/notifications/NotificationsBellButton';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
+import { toast } from '@/components/ui/Toasts/use-toast';
 import { ensureCompanyProgressReminder } from '@/lib/notifications/store';
 import { getNotificationIconConfig } from '@/lib/notifications/iconMapping';
 import type { ProductGymNotification } from '@/lib/notifications/types';
@@ -63,6 +67,7 @@ import CompanyDetailsScreen, {
 
 type MainTab = 'companies' | 'skill-paths' | 'products';
 type DesktopSection = 'home' | 'notifications' | 'leaderboard';
+type BoardTab = 'weekly' | 'all-time';
 
 export type HomeTrack = {
   companySummary: CompanySummary;
@@ -489,10 +494,25 @@ function DesktopHomeLayout({
     ? (challengesByCompany[selectedCompanyId] ?? [])
     : [];
   const { handleUpgrade, isUpgrading } = useLemonSqueezyUpgrade();
-  const { notifications, highlightedNotificationIds } = useNotifications();
+  const { notifications, highlightedNotificationIds, deleteNotificationById } =
+    useNotifications();
+  const [desktopNotificationToDelete, setDesktopNotificationToDelete] =
+    useState<ProductGymNotification | null>(null);
+  const [desktopLeaderboardTab, setDesktopLeaderboardTab] =
+    useState<BoardTab>('weekly');
   const isHomeSection = selectedDesktopSection === 'home';
   const hasScrollableMainContent =
     isHomeSection && Boolean(selectedCompanyTrack);
+
+  const confirmDeleteDesktopNotification = () => {
+    if (!desktopNotificationToDelete) return;
+
+    deleteNotificationById(desktopNotificationToDelete.id);
+    setDesktopNotificationToDelete(null);
+    toast({
+      title: 'Notification deleted successfully'
+    });
+  };
 
   return (
     <div className="hidden h-screen overflow-hidden bg-[#f6f8fb] text-text lg:flex lg:flex-col">
@@ -668,7 +688,7 @@ function DesktopHomeLayout({
           className={cn(
             'min-h-0 min-w-0 px-6 py-6',
             hasScrollableMainContent ? 'overflow-y-auto' : 'overflow-hidden',
-            !isHomeSection && 'flex items-center justify-center px-10 xl:px-16'
+            !isHomeSection && 'overflow-hidden px-10 py-0 xl:px-16'
           )}
         >
           {isHomeSection ? (
@@ -691,11 +711,62 @@ function DesktopHomeLayout({
             <DesktopNotificationsWorkspace
               notifications={notifications}
               highlightedNotificationIds={highlightedNotificationIds}
+              onRequestDelete={setDesktopNotificationToDelete}
             />
           ) : (
-            <DesktopLeaderboardWorkspace />
+            <DesktopLeaderboardWorkspace
+              tab={desktopLeaderboardTab}
+              onTabChange={setDesktopLeaderboardTab}
+            />
           )}
         </main>
+
+        {desktopNotificationToDelete ? (
+          <div
+            className="fixed inset-0 z-50 grid place-items-center bg-slate-950/35 px-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="desktop-delete-notification-title"
+          >
+            <div className="w-full max-w-[329px] rounded-3xl bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+              <h2
+                id="desktop-delete-notification-title"
+                className="text-base font-bold tracking-[-0.35px] text-[#0f172b]"
+              >
+                Delete notification?
+              </h2>
+              <p className="mt-2 text-sm font-medium leading-5 text-[#45556c]">
+                This notification will be removed from your list.
+              </p>
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDesktopNotificationToDelete(null)}
+                  className={cn(
+                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                    btnInteractive,
+                    btnInteractiveNeutral,
+                    focusRingInteractive
+                  )}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteDesktopNotification}
+                  className={cn(
+                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-red-500 bg-red-500 px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white',
+                    btnInteractive,
+                    btnInteractiveColored,
+                    focusRingInteractive
+                  )}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {isHomeSection ? (
           <aside className="min-h-0 overflow-y-auto border-l border-primary-soft bg-white/70 px-5 py-6">
@@ -825,7 +896,7 @@ const formatDesktopNotificationTime = (createdAt: string) => {
 };
 
 const desktopNotificationIcons = {
-  hand: BellFilledIcon,
+  hand: BadgeCheckFilledIcon,
   target: CheckCircleFilledIcon,
   rocket: RocketFilledIcon,
   users: UsersFilledIcon,
@@ -834,18 +905,17 @@ const desktopNotificationIcons = {
 
 function DesktopNotificationsWorkspace({
   notifications,
-  highlightedNotificationIds
+  highlightedNotificationIds,
+  onRequestDelete
 }: {
   notifications: ProductGymNotification[];
   highlightedNotificationIds: Set<string>;
+  onRequestDelete: (notification: ProductGymNotification) => void;
 }) {
   return (
-    <section className="w-full max-w-3xl">
-      <div className="mb-6 text-center">
-        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-primary">
-          Product Gym updates
-        </p>
-        <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
+    <section className="mx-auto flex h-full w-full max-w-3xl flex-col pt-10 xl:pt-12">
+      <div className="mb-5 text-left">
+        <h1 className="text-[30px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
           Notifications
         </h1>
         <p className="mt-2 text-sm font-semibold text-muted">
@@ -854,7 +924,7 @@ function DesktopNotificationsWorkspace({
       </div>
 
       {notifications.length ? (
-        <div className="max-h-[calc(100vh-220px)] space-y-3 overflow-y-auto pr-2">
+        <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-2">
           {notifications.map((notification) => {
             const iconConfig = getNotificationIconConfig(notification.type);
             const NotificationIcon = desktopNotificationIcons[iconConfig.icon];
@@ -866,47 +936,52 @@ function DesktopNotificationsWorkspace({
               <article
                 key={notification.id}
                 className={cn(
-                  'flex items-start gap-4 rounded-[24px] border bg-white p-5 text-left shadow-sm shadow-slate-900/5',
-                  isHighlighted
-                    ? 'border-primary bg-primary-soft/60'
-                    : 'border-primary-soft'
+                  'group flex items-start gap-3.5 rounded-[22px] border-none bg-white px-4 py-3.5 text-left shadow-sm shadow-slate-900/5',
+                  isHighlighted && 'bg-primary-soft/45'
                 )}
               >
-                <div
-                  className={cn(
-                    'grid h-11 w-11 shrink-0 place-items-center rounded-2xl',
-                    iconConfig.chipClassName,
-                    iconConfig.iconClassName
-                  )}
-                >
-                  <NotificationIcon className="h-5 w-5" />
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+                  <NotificationIcon className="h-4 w-4 shrink-0" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-4">
-                    <h2 className="text-[16px] font-black leading-snug tracking-[-0.02em] text-[var(--color-ink)]">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="min-w-0 text-[15px] font-bold leading-[1.3] tracking-[-0.2px] text-[var(--alerts-heading-color)]">
                       {notification.title}
                     </h2>
-                    <p className="shrink-0 text-[12px] font-bold text-muted">
+                    <p className="shrink-0 pt-0.5 text-[11px] font-semibold text-[var(--alerts-time-color)]">
                       {formatDesktopNotificationTime(notification.createdAt)}
                     </p>
                   </div>
-                  <p className="mt-2 text-sm font-medium leading-6 text-muted">
+                  <p className="mt-1.5 text-[13px] font-medium leading-[1.5] text-[var(--alerts-body-color)]">
                     {notification.body}
                   </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => onRequestDelete(notification)}
+                  className={cn(
+                    'mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#8da0b7] hover:bg-[#f2f6fb] hover:text-red-600',
+                    btnInteractive,
+                    btnInteractiveNeutral,
+                    focusRingInteractive
+                  )}
+                  aria-label={`Delete ${notification.title}`}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </article>
             );
           })}
         </div>
       ) : (
-        <div className="rounded-[28px] border border-dashed border-primary-soft bg-white p-10 text-center shadow-sm shadow-slate-900/5">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
-            <BellFilledIcon className="h-6 w-6" />
+        <div className="rounded-[24px] border border-dashed border-[var(--alerts-card-stroke)] bg-white p-8 text-center shadow-sm shadow-slate-900/5">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-productGym-yellowSoft text-amber-700">
+            <BellFilledIcon className="h-5 w-5" />
           </div>
-          <h2 className="mt-5 text-[24px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
+          <h2 className="mt-4 text-[18px] font-bold tracking-[-0.35px] text-[var(--alerts-heading-color)]">
             No notifications yet
           </h2>
-          <p className="mx-auto mt-2 max-w-md text-[15px] font-medium leading-6 text-muted">
+          <p className="mx-auto mt-2 max-w-md text-[13px] font-medium leading-[1.45] text-[var(--alerts-body-color)]">
             You’ll see updates about your progress, challenges, and subscription
             here.
           </p>
@@ -916,25 +991,90 @@ function DesktopNotificationsWorkspace({
   );
 }
 
-function DesktopLeaderboardWorkspace() {
+function DesktopLeaderboardWorkspace({
+  tab,
+  onTabChange
+}: {
+  tab: BoardTab;
+  onTabChange: (tab: BoardTab) => void;
+}) {
   return (
-    <section className="w-full max-w-3xl">
-      <div className="rounded-[28px] border border-primary-soft bg-white p-10 text-center shadow-sm shadow-slate-900/5">
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
-          <TrophyFilledIcon className="h-7 w-7" />
+    <section className="mx-auto flex h-full w-full max-w-3xl flex-col pt-10 xl:pt-12">
+      <header className="mb-5 flex flex-wrap items-start justify-between gap-4 text-left">
+        <div className="min-w-0 max-w-xl">
+          <h1 className="text-[30px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
+            Leaderboard
+          </h1>
+          <p className="mt-2 text-sm font-semibold leading-6 text-muted">
+            Track your ranking and compare your progress with other Product Gym
+            members.
+          </p>
         </div>
-        <p className="mt-6 text-[11px] font-black uppercase tracking-[0.14em] text-primary">
-          Rankings
-        </p>
-        <h1 className="mt-2 text-[28px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
-          Leaderboard coming soon
-        </h1>
-        <p className="mx-auto mt-3 max-w-md text-[15px] font-medium leading-6 text-muted">
-          Track your ranking and compare your progress with other Product Gym
-          members.
-        </p>
+        <div className="app-segment h-10 w-[220px] shrink-0 p-0.5">
+          <div className="grid h-full grid-cols-2 gap-1">
+            <DesktopLeaderboardSegmentButton
+              label="Weekly"
+              active={tab === 'weekly'}
+              onClick={() => onTabChange('weekly')}
+            />
+            <DesktopLeaderboardSegmentButton
+              label="All Time"
+              active={tab === 'all-time'}
+              onClick={() => onTabChange('all-time')}
+            />
+          </div>
+        </div>
+      </header>
+
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="rounded-[24px] border-none bg-white p-8 text-center shadow-sm shadow-slate-900/5">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-[#51a2ff] shadow-[inset_0_0_0_1px_rgba(81,162,255,0.14)]">
+            <CalendarFilledIcon className="h-7 w-7" />
+          </div>
+          <p className="mt-6 text-[10px] font-black uppercase leading-[1.4] tracking-[0.5px] text-[var(--lb-meta-color)]">
+            GLOBAL RANKING
+          </p>
+          <h2 className="mx-auto mt-2 max-w-md text-[18px] font-bold leading-[1.25] tracking-[-0.3px] text-[var(--lb-title-color)]">
+            Solve challenges for 30 days to unlock rankings.
+          </h2>
+          <p className="mx-auto mt-2 max-w-[240px] t-body-muted">
+            Keep your streak going to join the competition.
+          </p>
+        </div>
       </div>
     </section>
+  );
+}
+
+function DesktopLeaderboardSegmentButton({
+  label,
+  active,
+  onClick
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      type="button"
+      className={cn(
+        'relative h-full whitespace-nowrap rounded-pill px-2 t-label',
+        active ? 'text-white' : 'text-muted',
+        tabInteractive,
+        focusRingInteractive
+      )}
+    >
+      {active ? (
+        <motion.span
+          layoutId="desktop-leaderboard-tab-indicator"
+          transition={springTransition}
+          className="absolute inset-0 rounded-pill bg-primary shadow-button"
+        />
+      ) : null}
+      <span className="relative">{label}</span>
+    </button>
   );
 }
 
