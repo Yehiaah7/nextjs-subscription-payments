@@ -1,10 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { CheckCircleFilledIcon } from '@/components/icons/FilledIcons';
 import LoadingButton from '@/components/ui/LoadingButton';
+import { useLemonSqueezyUpgrade } from '@/components/useLemonSqueezyUpgrade';
 import { PRODUCT_GYM_MONTHLY_PRICE_LABEL } from '@/utils/pricing-display';
 import {
   calculateTrialDaysLeft,
@@ -30,47 +29,7 @@ export default function ProGymPassCard({
   trialStartedAt,
   id
 }: ProGymPassCardProps) {
-  const router = useRouter();
-  const currentPath = usePathname();
-  const [isUpgrading, setIsUpgrading] = useState(false);
-  const paymentProvider = 'lemonsqueezy';
-
-  const handleUpgrade = async () => {
-    if (onUpgrade) {
-      onUpgrade();
-      return;
-    }
-
-    setIsUpgrading(true);
-
-    try {
-      const response = await fetch('/api/lemonsqueezy/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ paymentProvider })
-      });
-      const data = (await response.json().catch(() => null)) as {
-        url?: string;
-        error?: string;
-      } | null;
-
-      if (!response.ok || !data?.url) {
-        throw new Error(data?.error ?? 'Unable to create checkout.');
-      }
-
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Unable to create Lemon Squeezy checkout:', error);
-      setIsUpgrading(false);
-      router.push(
-        `${currentPath}?error=${encodeURIComponent(
-          'Unable to start checkout. Please try again.'
-        )}`
-      );
-    }
-  };
+  const { handleUpgrade, isUpgrading } = useLemonSqueezyUpgrade(onUpgrade);
 
   const primaryButtonClassName =
     variant === 'plans'
@@ -94,9 +53,9 @@ export default function ProGymPassCard({
       id={id}
       className="rounded-[16px] bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-productGym-ink shadow-sm shadow-black/10">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-2">
+          <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white text-productGym-ink shadow-sm shadow-black/10">
             <svg
               viewBox="0 0 20 20"
               fill="currentColor"
@@ -107,24 +66,24 @@ export default function ProGymPassCard({
             </svg>
           </span>
 
-          <div>
+          <div className="min-w-0">
             <h2 className="text-[16px] font-bold tracking-[-0.4px]">
               Pro Gym Pass
             </h2>
             <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[1px] text-productGym-ink/80">
               {isPro ? 'Pro Active' : 'Free Trial'}
             </p>
-            <p className="mt-1 text-[11px] font-black uppercase tracking-[1px] text-productGym-ink">
-              {PRODUCT_GYM_MONTHLY_PRICE_LABEL}
-            </p>
+            {isTrial || hasExpiredTrial ? (
+              <p className="mt-1 text-[11px] font-black uppercase tracking-[1px] text-productGym-ink">
+                {trialDaysLabel}
+              </p>
+            ) : null}
           </div>
         </div>
 
-        {isTrial || hasExpiredTrial ? (
-          <span className="rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-ink shadow-sm shadow-black/10">
-            {trialDaysLabel}
-          </span>
-        ) : null}
+        <div className="shrink-0 rounded-full bg-white px-3 py-1.5 text-right text-[15px] font-black leading-none tracking-[-0.03em] text-productGym-ink shadow-sm shadow-black/10">
+          {PRODUCT_GYM_MONTHLY_PRICE_LABEL}
+        </div>
       </div>
 
       {isTrial ? (

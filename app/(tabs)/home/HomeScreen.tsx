@@ -9,7 +9,18 @@ import {
   TrophyFilledIcon,
   UsersFilledIcon
 } from '@/components/icons/FilledIcons';
-import { Bell, Home, LogOut, Package, Settings, Trophy, X } from 'lucide-react';
+import {
+  Bell,
+  Clock3,
+  Crosshair,
+  HelpCircle,
+  Home,
+  LogOut,
+  Package,
+  Settings,
+  Trophy,
+  X
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ReactNode, useEffect, useState } from 'react';
 import { MotionButton, MotionCard } from '@/components/motion';
@@ -44,6 +55,7 @@ import { ensureCompanyProgressReminder } from '@/lib/notifications/store';
 import UserStatTile from '@/components/ui/UserStatTile';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 import ProGymPassCard from '@/components/ProGymPassCard';
+import { useLemonSqueezyUpgrade } from '@/components/useLemonSqueezyUpgrade';
 import CompanyDetailsScreen, {
   type CompanyChallenge
 } from '@/app/(authenticated)/companies/[trackId]/CompanyDetailsScreen';
@@ -475,228 +487,284 @@ function DesktopHomeLayout({
   const selectedCompanyChallenges = selectedCompanyId
     ? (challengesByCompany[selectedCompanyId] ?? [])
     : [];
+  const { handleUpgrade, isUpgrading } = useLemonSqueezyUpgrade();
 
   return (
-    <section className="hidden min-h-dvh grid-cols-[88px_minmax(280px,320px)_minmax(0,1fr)] bg-[#f6f8fb] text-text lg:grid xl:grid-cols-[88px_320px_minmax(0,1fr)_360px]">
-      <aside className="sticky top-0 flex h-dvh flex-col items-center justify-between border-r border-primary-soft bg-white px-3 py-5">
-        <nav
-          className="flex w-full flex-col gap-2"
-          aria-label="Desktop primary"
-        >
-          <DesktopNavButton
-            icon={<Home className="h-5 w-5" />}
-            label="Home"
-            active={selectedDesktopSection === 'home'}
-            onClick={() => onSelectDesktopSection('home')}
-          />
-          <DesktopNavButton
-            icon={<Bell className="h-5 w-5" />}
-            label="Notifications"
-            active={selectedDesktopSection === 'notifications'}
-            onClick={() => onSelectDesktopSection('notifications')}
-          />
-          <DesktopNavButton
-            icon={<Trophy className="h-5 w-5" />}
-            label="Leaderboard"
-            active={selectedDesktopSection === 'leaderboard'}
-            onClick={() => onSelectDesktopSection('leaderboard')}
-          />
-        </nav>
-
-        <div className="group relative flex w-full justify-center">
-          <button
-            type="button"
-            className={cn(
-              'rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-              iconBtnInteractive
-            )}
-            aria-label="Open profile menu"
-            aria-haspopup="menu"
+    <div className="hidden min-h-dvh flex-col bg-[#f6f8fb] text-text lg:flex">
+      <DesktopTopNavbar onUpgrade={handleUpgrade} isUpgrading={isUpgrading} />
+      <section className="grid min-h-[calc(100dvh-72px)] flex-1 grid-cols-[88px_minmax(280px,320px)_minmax(0,1fr)] xl:grid-cols-[88px_320px_minmax(0,1fr)_360px]">
+        <aside className="sticky top-0 flex h-[calc(100dvh-72px)] flex-col items-center justify-between border-r border-primary-soft bg-white px-3 py-5">
+          <nav
+            className="flex w-full flex-col gap-2"
+            aria-label="Desktop primary"
           >
-            <UserAvatar
-              imageUrl={avatar.imageUrl ?? userAvatarUrl}
-              firstName={avatar.firstName ?? userFirstName}
-              lastName={avatar.lastName ?? userLastName}
-              fullName={avatar.fullName ?? userName}
-              email={avatar.email ?? userEmail}
-              className="h-14 w-14 shadow-sm shadow-black/15"
-              initialsClassName="text-base"
+            <DesktopNavButton
+              icon={<Home className="h-5 w-5" />}
+              label="Home"
+              active={selectedDesktopSection === 'home'}
+              onClick={() => onSelectDesktopSection('home')}
             />
-          </button>
-          <div
-            className="invisible absolute bottom-0 left-[72px] z-20 w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-xl shadow-slate-900/10 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
-            role="menu"
-          >
-            <Link
-              href="/profile/settings"
-              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              role="menuitem"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
-            <Link
-              href="/logout"
-              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              role="menuitem"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Link>
-          </div>
-        </div>
-      </aside>
-
-      <aside className="border-r border-primary-soft bg-white/85 px-5 py-6">
-        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-primary">
-          Browse
-        </p>
-        <h1 className="mt-1 text-[28px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
-          Product Gym
-        </h1>
-
-        <div className="app-segment mt-5">
-          <div className="grid h-full grid-cols-3 gap-1">
-            <TabButton
-              label="Companies"
-              active={selectedContentTab === 'companies'}
-              onClick={() => onSelectContentTab('companies')}
+            <DesktopNavButton
+              icon={<Bell className="h-5 w-5" />}
+              label="Notifications"
+              active={selectedDesktopSection === 'notifications'}
+              onClick={() => onSelectDesktopSection('notifications')}
             />
-            <TabButton
-              label="Skill Path"
-              active={selectedContentTab === 'skill-paths'}
-              onClick={() => onSelectContentTab('skill-paths')}
+            <DesktopNavButton
+              icon={<Trophy className="h-5 w-5" />}
+              label="Leaderboard"
+              active={selectedDesktopSection === 'leaderboard'}
+              onClick={() => onSelectDesktopSection('leaderboard')}
             />
-            <TabButton
-              label="Products"
-              active={selectedContentTab === 'products'}
-              onClick={() => onSelectContentTab('products')}
-            />
-          </div>
-        </div>
+          </nav>
 
-        <div className="mt-5 space-y-3 overflow-y-auto pb-4 lg:max-h-[calc(100dvh-170px)]">
-          {selectedContentTab === 'companies' ? (
-            filteredCompanyTracks.length === 0 ? (
-              <EmptyState message="No challenges for this level yet." />
-            ) : (
-              filteredCompanyTracks.map((track) => (
-                <DesktopCompanyBrowseCard
-                  key={track.companySummary.id}
-                  track={track}
-                  active={selectedCompanyId === track.companySummary.id}
-                  onClick={() => onSelectCompany(track.companySummary.id)}
-                />
-              ))
-            )
-          ) : null}
-
-          {selectedContentTab === 'skill-paths' ? (
-            skillPathCategories.length ? (
-              skillPathCategories.map((category) => (
-                <button
-                  key={category.id}
-                  type="button"
-                  onClick={() => onSelectSkillPath(category.id)}
-                  className={cn(
-                    'app-card w-full border text-left',
-                    selectedSkillPathId === category.id
-                      ? 'border-primary bg-primary-soft'
-                      : 'border-primary-soft bg-white',
-                    cardInteractive,
-                    focusRingInteractive
-                  )}
-                >
-                  <p className="t-card-title">{category.title}</p>
-                  <p className="t-body-muted mt-1">Skill path challenges</p>
-                </button>
-              ))
-            ) : (
-              <EmptyState message="Skill paths are coming soon." />
-            )
-          ) : null}
-
-          {selectedContentTab === 'products' ? (
+          <div className="group relative flex w-full justify-center">
             <button
               type="button"
-              onClick={() => onSelectProduct('product-practice')}
               className={cn(
-                'app-card w-full border text-left',
-                selectedProductId === 'product-practice'
-                  ? 'border-primary bg-primary-soft'
-                  : 'border-primary-soft bg-white',
-                cardInteractive,
-                focusRingInteractive
+                'rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+                iconBtnInteractive
               )}
+              aria-label="Open profile menu"
+              aria-haspopup="menu"
             >
-              <p className="t-card-title">Product practice</p>
-              <p className="t-body-muted mt-1">
-                Product tracks are coming soon.
-              </p>
+              <UserAvatar
+                imageUrl={avatar.imageUrl ?? userAvatarUrl}
+                firstName={avatar.firstName ?? userFirstName}
+                lastName={avatar.lastName ?? userLastName}
+                fullName={avatar.fullName ?? userName}
+                email={avatar.email ?? userEmail}
+                className="h-14 w-14 shadow-sm shadow-black/15"
+                initialsClassName="text-base"
+              />
             </button>
-          ) : null}
-        </div>
-      </aside>
+            <div
+              className="invisible absolute bottom-0 left-[72px] z-20 w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-xl shadow-slate-900/10 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
+              role="menu"
+            >
+              <Link
+                href="/profile/settings"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                role="menuitem"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+              <Link
+                href="/logout"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[var(--color-ink)] hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                role="menuitem"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Link>
+            </div>
+          </div>
+        </aside>
 
-      <main className="min-w-0 overflow-y-auto px-6 py-6">
-        {selectedDesktopSection === 'home' ? (
-          selectedCompanyTrack ? (
-            <CompanyDetailsScreen
-              companySummary={selectedCompanyTrack.companySummary}
-              companyId={selectedCompanyTrack.companySummary.id}
-              challenges={selectedCompanyChallenges}
-              displayMode="embedded"
-            />
-          ) : selectedSkillPathId || selectedProductId ? (
-            <DesktopEmptyState
-              title="Coming soon"
-              message="This practice area is being prepared for Product Gym members."
-            />
+        <aside className="border-r border-primary-soft bg-white/85 px-5 py-6">
+          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-primary">
+            Browse
+          </p>
+          <h1 className="mt-1 text-[28px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
+            Product Gym
+          </h1>
+
+          <div className="app-segment mt-5">
+            <div className="grid h-full grid-cols-3 gap-1">
+              <TabButton
+                label="Companies"
+                active={selectedContentTab === 'companies'}
+                onClick={() => onSelectContentTab('companies')}
+              />
+              <TabButton
+                label="Skill Path"
+                active={selectedContentTab === 'skill-paths'}
+                onClick={() => onSelectContentTab('skill-paths')}
+              />
+              <TabButton
+                label="Products"
+                active={selectedContentTab === 'products'}
+                onClick={() => onSelectContentTab('products')}
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3 overflow-y-auto pb-4 lg:max-h-[calc(100dvh-170px)]">
+            {selectedContentTab === 'companies' ? (
+              filteredCompanyTracks.length === 0 ? (
+                <EmptyState message="No challenges for this level yet." />
+              ) : (
+                filteredCompanyTracks.map((track) => (
+                  <DesktopCompanyBrowseCard
+                    key={track.companySummary.id}
+                    track={track}
+                    active={selectedCompanyId === track.companySummary.id}
+                    onClick={() => onSelectCompany(track.companySummary.id)}
+                  />
+                ))
+              )
+            ) : null}
+
+            {selectedContentTab === 'skill-paths' ? (
+              skillPathCategories.length ? (
+                skillPathCategories.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => onSelectSkillPath(category.id)}
+                    className={cn(
+                      'app-card w-full border text-left',
+                      selectedSkillPathId === category.id
+                        ? 'border-primary bg-primary-soft'
+                        : 'border-primary-soft bg-white',
+                      cardInteractive,
+                      focusRingInteractive
+                    )}
+                  >
+                    <p className="t-card-title">{category.title}</p>
+                    <p className="t-body-muted mt-1">Skill path challenges</p>
+                  </button>
+                ))
+              ) : (
+                <EmptyState message="Skill paths are coming soon." />
+              )
+            ) : null}
+
+            {selectedContentTab === 'products' ? (
+              <button
+                type="button"
+                onClick={() => onSelectProduct('product-practice')}
+                className={cn(
+                  'app-card w-full border text-left',
+                  selectedProductId === 'product-practice'
+                    ? 'border-primary bg-primary-soft'
+                    : 'border-primary-soft bg-white',
+                  cardInteractive,
+                  focusRingInteractive
+                )}
+              >
+                <p className="t-card-title">Product practice</p>
+                <p className="t-body-muted mt-1">
+                  Product tracks are coming soon.
+                </p>
+              </button>
+            ) : null}
+          </div>
+        </aside>
+
+        <main className="min-w-0 overflow-y-auto px-6 py-6">
+          {selectedDesktopSection === 'home' ? (
+            selectedCompanyTrack ? (
+              <CompanyDetailsScreen
+                companySummary={selectedCompanyTrack.companySummary}
+                companyId={selectedCompanyTrack.companySummary.id}
+                challenges={selectedCompanyChallenges}
+                displayMode="embedded"
+              />
+            ) : selectedSkillPathId || selectedProductId ? (
+              <DesktopEmptyState
+                title="Coming soon"
+                message="This practice area is being prepared for Product Gym members."
+              />
+            ) : (
+              <DesktopEmptyState message="Choose a company, skill path, or product to start elevating your PM skills." />
+            )
           ) : (
-            <DesktopEmptyState message="Choose a company, skill path, or product to start elevating your PM skills." />
-          )
-        ) : (
-          <DesktopEmptyState
-            title={
-              selectedDesktopSection === 'notifications'
-                ? 'Notifications'
-                : 'Leaderboard'
-            }
-            message="This desktop view is coming soon. Head back home to keep practicing."
-          />
-        )}
-      </main>
+            <DesktopEmptyState
+              title={
+                selectedDesktopSection === 'notifications'
+                  ? 'Notifications'
+                  : 'Leaderboard'
+              }
+              message="This desktop view is coming soon. Head back home to keep practicing."
+            />
+          )}
+        </main>
 
-      <aside className="hidden border-l border-primary-soft bg-white/70 px-5 py-6 xl:block">
-        <div className="sticky top-6 space-y-4">
-          <UserStatsProfileCard
-            userName={userName}
-            userFirstName={userFirstName}
-            userLastName={userLastName}
-            userEmail={userEmail}
-            userStats={userStats}
-            userAvatarUrl={userAvatarUrl}
-            avatar={avatar}
-          />
-          <ProGymPassCard />
-        </div>
-      </aside>
+        <aside className="hidden border-l border-primary-soft bg-white/70 px-5 py-6 xl:block">
+          <div className="sticky top-6 space-y-4">
+            <UserStatsProfileCard
+              userName={userName}
+              userFirstName={userFirstName}
+              userLastName={userLastName}
+              userEmail={userEmail}
+              userStats={userStats}
+              userAvatarUrl={userAvatarUrl}
+              avatar={avatar}
+            />
+            <ProGymPassCard />
+          </div>
+        </aside>
 
-      <aside className="col-start-2 col-end-4 border-t border-primary-soft bg-white/70 px-5 py-5 xl:hidden">
-        <div className="grid gap-4 md:grid-cols-2">
-          <UserStatsProfileCard
-            userName={userName}
-            userFirstName={userFirstName}
-            userLastName={userLastName}
-            userEmail={userEmail}
-            userStats={userStats}
-            userAvatarUrl={userAvatarUrl}
-            avatar={avatar}
-          />
-          <ProGymPassCard />
+        <aside className="col-start-2 col-end-4 border-t border-primary-soft bg-white/70 px-5 py-5 xl:hidden">
+          <div className="grid gap-4 md:grid-cols-2">
+            <UserStatsProfileCard
+              userName={userName}
+              userFirstName={userFirstName}
+              userLastName={userLastName}
+              userEmail={userEmail}
+              userStats={userStats}
+              userAvatarUrl={userAvatarUrl}
+              avatar={avatar}
+            />
+            <ProGymPassCard />
+          </div>
+        </aside>
+      </section>
+    </div>
+  );
+}
+
+function DesktopTopNavbar({
+  onUpgrade,
+  isUpgrading
+}: {
+  onUpgrade: () => void;
+  isUpgrading: boolean;
+}) {
+  return (
+    <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-primary-soft bg-white px-6">
+      <div className="flex items-center gap-3" aria-label="Product Gym">
+        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-[15px] font-black tracking-[-0.04em] text-white shadow-sm shadow-primary/20">
+          PG
         </div>
-      </aside>
-    </section>
+        <div>
+          <p className="text-[18px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
+            Product Gym
+          </p>
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-primary">
+            PM practice floor
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <MotionButton
+          type="button"
+          onClick={onUpgrade}
+          disabled={isUpgrading}
+          className={cn(
+            'inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-[12px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70',
+            btnInteractive,
+            btnInteractiveColored
+          )}
+        >
+          {isUpgrading ? 'Opening…' : 'Upgrade'}
+        </MotionButton>
+        <MotionButton
+          type="button"
+          title="Feedback flow coming soon"
+          className={cn(
+            'inline-flex h-10 items-center justify-center rounded-full border border-primary-soft bg-white px-5 text-[12px] font-black uppercase tracking-[0.08em] text-[var(--color-ink)] shadow-sm shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+            btnInteractive,
+            btnInteractiveNeutral
+          )}
+        >
+          Send feedback
+        </MotionButton>
+      </div>
+    </header>
   );
 }
 
@@ -835,7 +903,7 @@ function UserStatsProfileCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <UserStatTile
           icon={<TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />}
           label="Rank"
@@ -852,6 +920,24 @@ function UserStatsProfileCard({
           icon={<FireFilledIcon className="h-3.5 w-3.5 text-productGym-pink" />}
           label="Solving Days"
           stat={userStats.solvingDays}
+        />
+        <UserStatTile
+          icon={<HelpCircle className="h-3.5 w-3.5 text-sky-500" />}
+          label="Questions Solved"
+          stat={userStats.questionsSolved}
+          showInfoIcon={false}
+        />
+        <UserStatTile
+          icon={<Crosshair className="h-3.5 w-3.5 text-violet-500" />}
+          label="Accuracy"
+          stat={userStats.firstTryAccuracy}
+          showInfoIcon={false}
+        />
+        <UserStatTile
+          icon={<Clock3 className="h-3.5 w-3.5 text-indigo-500" />}
+          label="Practice Time"
+          stat={userStats.practiceTime}
+          showInfoIcon={false}
         />
       </div>
     </MotionCard>
