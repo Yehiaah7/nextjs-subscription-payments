@@ -38,7 +38,7 @@ export default function PracticeTimeTracker({ userId }: PracticeTimeTrackerProps
           return;
         }
 
-        await supabase.rpc('increment_practice_time', {
+        await (supabase as any).rpc('increment_practice_time', {
           seconds_to_add: pending
         });
       } catch {
