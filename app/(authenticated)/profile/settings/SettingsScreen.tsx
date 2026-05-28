@@ -116,7 +116,15 @@ export default function SettingsScreen({
         <header className="flex items-center gap-3">
           <Link
             href="/profile"
-            className="grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff] transition-colors hover:bg-blue-50 hover:text-blue-600"
+            aria-label="Back to profile"
+            className="grid h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff] transition-colors hover:bg-blue-50 hover:text-blue-600 lg:hidden"
+          >
+            ‹
+          </Link>
+          <Link
+            href="/home"
+            aria-label="Back to desktop home"
+            className="hidden h-8 w-8 place-items-center rounded-full bg-white text-[16px] text-[#51a2ff] transition-colors hover:bg-blue-50 hover:text-blue-600 lg:grid"
           >
             ‹
           </Link>
@@ -289,7 +297,7 @@ export default function SettingsScreen({
 
         <button
           onClick={() => setOpenModal('signout')}
-          className="h-[64px] w-full rounded-[16px] border border-[#ff6467] bg-white p-3 text-left"
+          className="h-[64px] w-full rounded-[16px] border border-[#ff6467] bg-white p-3 text-left lg:hidden"
         >
           <p className="text-[16px] font-bold tracking-[-0.4px] text-[#e7000b]">
             Sign Out

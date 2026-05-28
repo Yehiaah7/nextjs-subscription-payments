@@ -523,11 +523,11 @@ function DesktopHomeLayout({
         className={cn(
           'grid min-h-0 flex-1 overflow-hidden',
           isHomeSection
-            ? 'grid-cols-[80px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[80px_320px_minmax(0,1fr)_360px]'
-            : 'grid-cols-[80px_minmax(0,1fr)]'
+            ? 'grid-cols-[64px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[64px_320px_minmax(0,1fr)_360px]'
+            : 'grid-cols-[64px_minmax(0,1fr)]'
         )}
       >
-        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-1.5 py-3">
+        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-1 py-3">
           <nav
             className="flex w-full flex-col gap-1.5"
             aria-label="Desktop primary"
@@ -568,12 +568,12 @@ function DesktopHomeLayout({
                 lastName={avatar.lastName ?? userLastName}
                 fullName={avatar.fullName ?? userName}
                 email={avatar.email ?? userEmail}
-                className="h-11 w-11 shadow-sm shadow-black/15"
-                initialsClassName="text-sm"
+                className="h-10 w-10 shadow-sm shadow-black/15"
+                initialsClassName="text-xs"
               />
             </button>
             <div
-              className="invisible fixed bottom-5 left-[64px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
+              className="invisible fixed bottom-5 left-[56px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
               role="menu"
             >
               <Link
@@ -591,7 +591,7 @@ function DesktopHomeLayout({
                 role="menuitem"
               >
                 <LogOut className="h-4 w-4 text-red-600" />
-                Logout
+                Sign out
               </button>
             </div>
           </div>
@@ -788,10 +788,10 @@ function DesktopHomeLayout({
                 id="desktop-logout-title"
                 className="text-base font-bold tracking-[-0.35px] text-[#0f172b]"
               >
-                Log out?
+                Sign out?
               </h2>
               <p className="mt-2 text-sm font-medium leading-5 text-[#45556c]">
-                Are you sure you want to log out of Product Gym?
+                Are you sure you want to sign out of Product Gym?
               </p>
               <div className="mt-5 grid grid-cols-2 gap-2">
                 <button
@@ -816,7 +816,7 @@ function DesktopHomeLayout({
                       focusRingInteractive
                     )}
                   >
-                    Log out
+                    Sign out
                   </button>
                 </form>
               </div>
@@ -914,7 +914,7 @@ function DesktopNavButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2 text-[8px] font-black uppercase tracking-[0.02em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'flex w-full flex-col items-center gap-0.5 rounded-xl px-0.5 py-2 text-[7px] font-black uppercase tracking-[0.01em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         active
           ? 'bg-primary-soft text-primary'
           : 'text-muted hover:bg-surface-soft',
