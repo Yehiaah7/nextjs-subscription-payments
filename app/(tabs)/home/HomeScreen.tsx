@@ -173,13 +173,13 @@ export default function HomeScreen({
         {showFreeTrialCard ? (
           <MotionCard
             className={cn(
-              'mb-4 rounded-[16px] border border-productGym-blue bg-productGym-yellow p-3 text-productGym-ink',
+              'mb-4 rounded-[16px] border border-black/10 bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5',
               cardInteractive
             )}
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex items-center gap-2">
-                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/70 text-productGym-blue shadow-sm shadow-productGym-blue/10">
+                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white text-productGym-ink shadow-sm shadow-black/10">
                   <RocketFilledIcon className="h-3.5 w-3.5" />
                 </div>
                 <div className="min-w-0">
@@ -194,9 +194,8 @@ export default function HomeScreen({
               <div className="flex shrink-0 items-center gap-1">
                 <MotionButton
                   className={cn(
-                    'rounded-full bg-productGym-blue px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-white',
                     btnInteractive,
-                    focusRingInteractive
+                    'rounded-full bg-productGym-ink px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-white shadow-sm shadow-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-yellow'
                   )}
                 >
                   Upgrade
@@ -206,9 +205,8 @@ export default function HomeScreen({
                   onClick={() => setShowFreeTrialCard(false)}
                   aria-label="Dismiss free trial card"
                   className={cn(
-                    'inline-flex h-6 w-6 items-center justify-center rounded-full text-productGym-blue/80 hover:bg-white/30 hover:text-productGym-blue',
                     iconBtnInteractive,
-                    focusRingInteractive
+                    'inline-flex h-6 w-6 items-center justify-center rounded-full text-productGym-ink/75 hover:bg-white/45 hover:text-productGym-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/25 focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-yellow'
                   )}
                 >
                   <X className="h-3.5 w-3.5" strokeWidth={2} />
