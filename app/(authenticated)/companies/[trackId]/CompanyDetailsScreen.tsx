@@ -67,8 +67,8 @@ const FILTERS: { key: FilterTab; label: string }[] = [
 
 const STATUS_STYLES: Record<ChallengeStatus, string> = {
   'in-progress': 'bg-amber-100 text-amber-600',
-  'not-solved': 'bg-[color:var(--color-ritual-soft-pink)]/50 text-danger',
-  solved: 'bg-[color:var(--color-ritual-lime)]/25 text-green-600'
+  'not-solved': 'bg-[color:var(--color-brand-pink-soft)] text-danger',
+  solved: 'bg-[color:var(--color-brand-green-soft)] text-green-600'
 };
 
 export default function CompanyDetailsScreen({

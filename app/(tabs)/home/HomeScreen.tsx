@@ -173,7 +173,7 @@ export default function HomeScreen({
         {showFreeTrialCard ? (
           <MotionCard
             className={cn(
-              'mb-4 rounded-[16px] border border-[#18833D] bg-[var(--color-brand-green-strong)] p-3 text-white',
+              'mb-4 rounded-[16px] border border-productGym-greenDark bg-productGym-greenDark p-3 text-white',
               cardInteractive
             )}
           >
@@ -184,7 +184,7 @@ export default function HomeScreen({
                 </div>
                 <div className="min-w-0">
                   <p className="t-label text-white">Free Trial Active</p>
-                  <p className="text-[11px] font-semibold text-[#E6F8DE]">
+                  <p className="text-[11px] font-semibold text-productGym-greenSoft">
                     {freeTrialCopy}
                   </p>
                 </div>
@@ -192,7 +192,7 @@ export default function HomeScreen({
               <div className="flex shrink-0 items-center gap-1">
                 <MotionButton
                   className={cn(
-                    'rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-[var(--color-brand-green-strong)]',
+                    'rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-greenDark',
                     btnInteractive,
                     focusRingInteractive
                   )}
@@ -237,7 +237,7 @@ export default function HomeScreen({
               <h2 className="text-[16px] font-bold leading-[1.35] text-[var(--color-ink)]">
                 {userName}
               </h2>
-              <p className="text-[10px] font-black tracking-[0.04em] text-[var(--color-brand-blue)]">
+              <p className="text-[10px] font-black tracking-[0.04em] text-primary">
                 Product Gym member
               </p>
             </div>
@@ -257,7 +257,7 @@ export default function HomeScreen({
               stat={userStats.solved}
             />
             <UserStatTile
-              icon={<FireFilledIcon className="h-3.5 w-3.5 text-ritual-orange" />}
+              icon={<FireFilledIcon className="h-3.5 w-3.5 text-productGym-pink" />}
               label="Solving Days"
               stat={userStats.solvingDays}
             />
@@ -445,7 +445,7 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="h-1.5 flex-1 rounded-pill bg-[var(--color-border-muted)]">
+            <div className="h-1.5 flex-1 rounded-pill bg-[var(--color-border)]">
               <div
                 className="h-full rounded-pill bg-primary"
                 style={{ width: `${boundedProgress}%` }}

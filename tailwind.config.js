@@ -27,7 +27,7 @@ module.exports = {
         'success-button': 'var(--color-success-button)',
         success: 'var(--color-brand-green)',
         warning: 'var(--color-brand-yellow)',
-        danger: 'var(--color-brand-red)',
+        danger: 'var(--color-danger)',
         ink: 'var(--color-ink)',
         'ink-secondary': 'var(--color-ink-secondary)',
         'surface-muted': 'var(--color-surface-muted)',
@@ -35,22 +35,22 @@ module.exports = {
         border: 'var(--color-border)',
         text: 'var(--color-text-main)',
         muted: 'var(--color-text-subtle)',
-        ritual: {
-          blue: '#1498E8',
-          green: '#55C53B',
-          yellow: '#FFD249',
-          pink: '#F672B5',
-          orange: '#FF9635',
-          red: '#FF443D',
-          charcoal: '#262629',
-          white: '#FFFFFF',
-          offWhite: '#F6F6F4',
-          navy: '#203846',
-          brown: '#8A4A32',
-          softPink: '#FFB8BE',
-          softBlue: '#A9DFFF',
-          lime: '#B9E833',
-          mutedGray: '#EDEDEB'
+        productGym: {
+          blue: 'var(--productGymBlue)',
+          blueDark: 'var(--productGymBlueDark)',
+          blueSoft: 'var(--productGymBlueSoft)',
+          yellow: 'var(--productGymYellow)',
+          yellowSoft: 'var(--productGymYellowSoft)',
+          pink: 'var(--productGymPink)',
+          pinkSoft: 'var(--productGymPinkSoft)',
+          green: 'var(--productGymGreen)',
+          greenDark: 'var(--productGymGreenDark)',
+          greenSoft: 'var(--productGymGreenSoft)',
+          ink: 'var(--productGymInk)',
+          muted: 'var(--productGymMuted)',
+          background: 'var(--productGymBackground)',
+          surface: 'var(--productGymSurface)',
+          border: 'var(--productGymBorder)'
         }
       },
       borderRadius: {
@@ -63,7 +63,7 @@ module.exports = {
         card: 'var(--shadow-card)'
       },
       fontFamily: {
-        sans: ['var(--font-sans)', ...fontFamily.sans]
+        sans: ['var(--font-red-hat-display)', ...fontFamily.sans]
       },
       keyframes: {
         'accordion-down': {
