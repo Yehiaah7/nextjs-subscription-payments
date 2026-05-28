@@ -51,6 +51,8 @@ import { useUserAvatar } from '@/components/ui/UserAvatarContext';
 import NotificationsBellButton from '@/components/notifications/NotificationsBellButton';
 import { useNotifications } from '@/components/notifications/NotificationsProvider';
 import { ensureCompanyProgressReminder } from '@/lib/notifications/store';
+import { getNotificationIconConfig } from '@/lib/notifications/iconMapping';
+import type { ProductGymNotification } from '@/lib/notifications/types';
 import UserStatTile from '@/components/ui/UserStatTile';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 import ProGymPassCard from '@/components/ProGymPassCard';
@@ -487,11 +489,22 @@ function DesktopHomeLayout({
     ? (challengesByCompany[selectedCompanyId] ?? [])
     : [];
   const { handleUpgrade, isUpgrading } = useLemonSqueezyUpgrade();
+  const { notifications, highlightedNotificationIds } = useNotifications();
+  const isHomeSection = selectedDesktopSection === 'home';
+  const hasScrollableMainContent =
+    isHomeSection && Boolean(selectedCompanyTrack);
 
   return (
     <div className="hidden h-screen overflow-hidden bg-[#f6f8fb] text-text lg:flex lg:flex-col">
       <DesktopTopNavbar onUpgrade={handleUpgrade} isUpgrading={isUpgrading} />
-      <section className="grid min-h-0 flex-1 grid-cols-[88px_minmax(260px,300px)_minmax(0,1fr)_300px] overflow-hidden xl:grid-cols-[88px_320px_minmax(0,1fr)_360px]">
+      <section
+        className={cn(
+          'grid min-h-0 flex-1 overflow-hidden',
+          isHomeSection
+            ? 'grid-cols-[112px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[112px_320px_minmax(0,1fr)_360px]'
+            : 'grid-cols-[112px_minmax(0,1fr)]'
+        )}
+      >
         <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-3 py-5">
           <nav
             className="flex w-full flex-col gap-2"
@@ -561,99 +574,104 @@ function DesktopHomeLayout({
           </div>
         </aside>
 
-        <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-5 py-6">
-          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-primary">
-            Browse
-          </p>
-          <h1 className="mt-1 text-[22px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
-            Product Gym
-          </h1>
+        {isHomeSection ? (
+          <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-5 py-6">
+            <h1 className="text-[19px] font-black tracking-[-0.035em] text-[var(--color-ink)]">
+              Browse Product Gym
+            </h1>
 
-          <div className="app-segment mt-5">
-            <div className="grid h-full grid-cols-3 gap-1">
-              <TabButton
-                label="Companies"
-                active={selectedContentTab === 'companies'}
-                onClick={() => onSelectContentTab('companies')}
-              />
-              <TabButton
-                label="Skill Path"
-                active={selectedContentTab === 'skill-paths'}
-                onClick={() => onSelectContentTab('skill-paths')}
-              />
-              <TabButton
-                label="Products"
-                active={selectedContentTab === 'products'}
-                onClick={() => onSelectContentTab('products')}
-              />
+            <div className="app-segment mt-5">
+              <div className="grid h-full grid-cols-3 gap-1">
+                <TabButton
+                  label="Companies"
+                  active={selectedContentTab === 'companies'}
+                  onClick={() => onSelectContentTab('companies')}
+                />
+                <TabButton
+                  label="Skill Path"
+                  active={selectedContentTab === 'skill-paths'}
+                  onClick={() => onSelectContentTab('skill-paths')}
+                />
+                <TabButton
+                  label="Products"
+                  active={selectedContentTab === 'products'}
+                  onClick={() => onSelectContentTab('products')}
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="mt-5 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
-            {selectedContentTab === 'companies' ? (
-              filteredCompanyTracks.length === 0 ? (
-                <EmptyState message="No challenges for this level yet." />
-              ) : (
-                filteredCompanyTracks.map((track) => (
-                  <DesktopCompanyBrowseCard
-                    key={track.companySummary.id}
-                    track={track}
-                    active={selectedCompanyId === track.companySummary.id}
-                    onClick={() => onSelectCompany(track.companySummary.id)}
-                  />
-                ))
-              )
-            ) : null}
+            <div className="mt-5 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
+              {selectedContentTab === 'companies' ? (
+                filteredCompanyTracks.length === 0 ? (
+                  <EmptyState message="No challenges for this level yet." />
+                ) : (
+                  filteredCompanyTracks.map((track) => (
+                    <DesktopCompanyBrowseCard
+                      key={track.companySummary.id}
+                      track={track}
+                      active={selectedCompanyId === track.companySummary.id}
+                      onClick={() => onSelectCompany(track.companySummary.id)}
+                    />
+                  ))
+                )
+              ) : null}
 
-            {selectedContentTab === 'skill-paths' ? (
-              skillPathCategories.length ? (
-                skillPathCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => onSelectSkillPath(category.id)}
-                    className={cn(
-                      'app-card w-full border text-left',
-                      selectedSkillPathId === category.id
-                        ? 'border-primary bg-primary-soft'
-                        : 'border-primary-soft bg-white',
-                      cardInteractive,
-                      focusRingInteractive
-                    )}
-                  >
-                    <p className="t-card-title">{category.title}</p>
-                    <p className="t-body-muted mt-1">Skill path challenges</p>
-                  </button>
-                ))
-              ) : (
-                <EmptyState message="Skill paths are coming soon." />
-              )
-            ) : null}
+              {selectedContentTab === 'skill-paths' ? (
+                skillPathCategories.length ? (
+                  skillPathCategories.map((category) => (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => onSelectSkillPath(category.id)}
+                      className={cn(
+                        'app-card w-full border text-left',
+                        selectedSkillPathId === category.id
+                          ? 'border-primary bg-primary-soft'
+                          : 'border-primary-soft bg-white',
+                        cardInteractive,
+                        focusRingInteractive
+                      )}
+                    >
+                      <p className="t-card-title">{category.title}</p>
+                      <p className="t-body-muted mt-1">Skill path challenges</p>
+                    </button>
+                  ))
+                ) : (
+                  <EmptyState message="Skill paths are coming soon." />
+                )
+              ) : null}
 
-            {selectedContentTab === 'products' ? (
-              <button
-                type="button"
-                onClick={() => onSelectProduct('product-practice')}
-                className={cn(
-                  'app-card w-full border text-left',
-                  selectedProductId === 'product-practice'
-                    ? 'border-primary bg-primary-soft'
-                    : 'border-primary-soft bg-white',
-                  cardInteractive,
-                  focusRingInteractive
-                )}
-              >
-                <p className="t-card-title">Product practice</p>
-                <p className="t-body-muted mt-1">
-                  Product tracks are coming soon.
-                </p>
-              </button>
-            ) : null}
-          </div>
-        </aside>
+              {selectedContentTab === 'products' ? (
+                <button
+                  type="button"
+                  onClick={() => onSelectProduct('product-practice')}
+                  className={cn(
+                    'app-card w-full border text-left',
+                    selectedProductId === 'product-practice'
+                      ? 'border-primary bg-primary-soft'
+                      : 'border-primary-soft bg-white',
+                    cardInteractive,
+                    focusRingInteractive
+                  )}
+                >
+                  <p className="t-card-title">Product practice</p>
+                  <p className="t-body-muted mt-1">
+                    Product tracks are coming soon.
+                  </p>
+                </button>
+              ) : null}
+            </div>
+          </aside>
+        ) : null}
 
-        <main className="min-h-0 min-w-0 overflow-y-auto px-6 py-6">
-          {selectedDesktopSection === 'home' ? (
+        <main
+          className={cn(
+            'min-h-0 min-w-0 px-6 py-6',
+            hasScrollableMainContent ? 'overflow-y-auto' : 'overflow-hidden',
+            !isHomeSection && 'flex items-center justify-center px-10 xl:px-16'
+          )}
+        >
+          {isHomeSection ? (
             selectedCompanyTrack ? (
               <CompanyDetailsScreen
                 companySummary={selectedCompanyTrack.companySummary}
@@ -669,32 +687,32 @@ function DesktopHomeLayout({
             ) : (
               <DesktopEmptyState message="Choose a company, skill path, or product to start elevating your PM skills." />
             )
-          ) : (
-            <DesktopEmptyState
-              title={
-                selectedDesktopSection === 'notifications'
-                  ? 'Notifications'
-                  : 'Leaderboard'
-              }
-              message="This desktop view is coming soon. Head back home to keep practicing."
+          ) : selectedDesktopSection === 'notifications' ? (
+            <DesktopNotificationsWorkspace
+              notifications={notifications}
+              highlightedNotificationIds={highlightedNotificationIds}
             />
+          ) : (
+            <DesktopLeaderboardWorkspace />
           )}
         </main>
 
-        <aside className="min-h-0 overflow-y-auto border-l border-primary-soft bg-white/70 px-5 py-6">
-          <div className="space-y-4">
-            <UserStatsProfileCard
-              userName={userName}
-              userFirstName={userFirstName}
-              userLastName={userLastName}
-              userEmail={userEmail}
-              userStats={userStats}
-              userAvatarUrl={userAvatarUrl}
-              avatar={avatar}
-            />
-            <ProGymPassCard />
-          </div>
-        </aside>
+        {isHomeSection ? (
+          <aside className="min-h-0 overflow-y-auto border-l border-primary-soft bg-white/70 px-5 py-6">
+            <div className="space-y-4">
+              <UserStatsProfileCard
+                userName={userName}
+                userFirstName={userFirstName}
+                userLastName={userLastName}
+                userEmail={userEmail}
+                userStats={userStats}
+                userAvatarUrl={userAvatarUrl}
+                avatar={avatar}
+              />
+              <ProGymPassCard />
+            </div>
+          </aside>
+        ) : null}
       </section>
     </div>
   );
@@ -769,7 +787,7 @@ function DesktopNavButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'flex flex-col items-center gap-1 rounded-2xl px-2 py-3 text-[10px] font-black uppercase tracking-[0.04em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'flex w-full flex-col items-center gap-1 rounded-2xl px-1.5 py-3 text-[9px] font-black uppercase tracking-[0.02em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         active
           ? 'bg-primary-soft text-primary'
           : 'text-muted hover:bg-surface-soft',
@@ -777,8 +795,146 @@ function DesktopNavButton({
       )}
     >
       {icon}
-      <span>{label}</span>
+      <span className="max-w-full whitespace-normal break-words text-center leading-tight">
+        {label}
+      </span>
     </button>
+  );
+}
+
+const desktopRelativeTimeFormatter = new Intl.RelativeTimeFormat('en', {
+  numeric: 'auto'
+});
+
+const formatDesktopNotificationTime = (createdAt: string) => {
+  const createdTime = new Date(createdAt).getTime();
+  const diffMs = createdTime - Date.now();
+  const diffMinutes = Math.round(diffMs / (60 * 1000));
+  const diffHours = Math.round(diffMs / (60 * 60 * 1000));
+  const diffDays = Math.round(diffMs / (24 * 60 * 60 * 1000));
+
+  if (Math.abs(diffMinutes) < 60) {
+    return desktopRelativeTimeFormatter.format(diffMinutes, 'minute');
+  }
+
+  if (Math.abs(diffHours) < 24) {
+    return desktopRelativeTimeFormatter.format(diffHours, 'hour');
+  }
+
+  return desktopRelativeTimeFormatter.format(diffDays, 'day');
+};
+
+const desktopNotificationIcons = {
+  hand: BellFilledIcon,
+  target: CheckCircleFilledIcon,
+  rocket: RocketFilledIcon,
+  users: UsersFilledIcon,
+  trophy: TrophyFilledIcon
+} as const;
+
+function DesktopNotificationsWorkspace({
+  notifications,
+  highlightedNotificationIds
+}: {
+  notifications: ProductGymNotification[];
+  highlightedNotificationIds: Set<string>;
+}) {
+  return (
+    <section className="w-full max-w-3xl">
+      <div className="mb-6 text-center">
+        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-primary">
+          Product Gym updates
+        </p>
+        <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
+          Notifications
+        </h1>
+        <p className="mt-2 text-sm font-semibold text-muted">
+          Recent practice, challenge, and subscription updates.
+        </p>
+      </div>
+
+      {notifications.length ? (
+        <div className="max-h-[calc(100vh-220px)] space-y-3 overflow-y-auto pr-2">
+          {notifications.map((notification) => {
+            const iconConfig = getNotificationIconConfig(notification.type);
+            const NotificationIcon = desktopNotificationIcons[iconConfig.icon];
+            const isHighlighted = highlightedNotificationIds.has(
+              notification.id
+            );
+
+            return (
+              <article
+                key={notification.id}
+                className={cn(
+                  'flex items-start gap-4 rounded-[24px] border bg-white p-5 text-left shadow-sm shadow-slate-900/5',
+                  isHighlighted
+                    ? 'border-primary bg-primary-soft/60'
+                    : 'border-primary-soft'
+                )}
+              >
+                <div
+                  className={cn(
+                    'grid h-11 w-11 shrink-0 place-items-center rounded-2xl',
+                    iconConfig.chipClassName,
+                    iconConfig.iconClassName
+                  )}
+                >
+                  <NotificationIcon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <h2 className="text-[16px] font-black leading-snug tracking-[-0.02em] text-[var(--color-ink)]">
+                      {notification.title}
+                    </h2>
+                    <p className="shrink-0 text-[12px] font-bold text-muted">
+                      {formatDesktopNotificationTime(notification.createdAt)}
+                    </p>
+                  </div>
+                  <p className="mt-2 text-sm font-medium leading-6 text-muted">
+                    {notification.body}
+                  </p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="rounded-[28px] border border-dashed border-primary-soft bg-white p-10 text-center shadow-sm shadow-slate-900/5">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
+            <BellFilledIcon className="h-6 w-6" />
+          </div>
+          <h2 className="mt-5 text-[24px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
+            No notifications yet
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-[15px] font-medium leading-6 text-muted">
+            You’ll see updates about your progress, challenges, and subscription
+            here.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DesktopLeaderboardWorkspace() {
+  return (
+    <section className="w-full max-w-3xl">
+      <div className="rounded-[28px] border border-primary-soft bg-white p-10 text-center shadow-sm shadow-slate-900/5">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
+          <TrophyFilledIcon className="h-7 w-7" />
+        </div>
+        <p className="mt-6 text-[11px] font-black uppercase tracking-[0.14em] text-primary">
+          Rankings
+        </p>
+        <h1 className="mt-2 text-[28px] font-black tracking-[-0.045em] text-[var(--color-ink)]">
+          Leaderboard coming soon
+        </h1>
+        <p className="mx-auto mt-3 max-w-md text-[15px] font-medium leading-6 text-muted">
+          Track your ranking and compare your progress with other Product Gym
+          members.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -948,7 +1104,7 @@ function DesktopEmptyState({
   message: string;
 }) {
   return (
-    <div className="flex min-h-[calc(100dvh-48px)] items-center justify-center">
+    <div className="flex h-full min-h-0 items-center justify-center overflow-hidden">
       <div className="max-w-md rounded-[28px] border border-primary-soft bg-white p-8 text-center shadow-sm shadow-slate-900/5">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
           <Package className="h-7 w-7" />
