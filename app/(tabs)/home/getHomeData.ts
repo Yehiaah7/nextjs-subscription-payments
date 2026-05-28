@@ -3,13 +3,15 @@ import { requireUser } from '@/utils/auth/require-user';
 import {
   buildCanonicalAttemptByQuizId,
   buildCompanySummary,
-  calculateCompanyProgress
+  calculateCompanyProgress,
+  calculateQuizAttemptProgress
 } from '@/app/(authenticated)/companies/company-summary';
 import type {
   HomeTrack,
   SkillPathCategory,
   SkillPathChallenge
 } from './HomeScreen';
+import type { CompanyChallenge } from '@/app/(authenticated)/companies/[trackId]/CompanyDetailsScreen';
 import { getUserDisplayName } from '@/utils/user-avatar';
 import { getUserProfileStats } from '@/lib/user-profile-stats';
 import type { UserProfileStats } from '@/types/user-profile-stats';
@@ -29,6 +31,7 @@ type QuizRow = {
   title: string;
   difficulty: Seniority | null;
   module_id: string;
+  pass_score: number | null;
   modules: {
     id: string;
     title: string;
@@ -48,11 +51,13 @@ type AttemptRow = {
 type AnswerRow = {
   attempt_id: string;
   question_id: string;
+  points_awarded: number | null;
 };
 
 type QuestionRow = {
   id: string;
   quiz_id: string;
+  points: number;
 };
 
 type ProfileRecord = {
@@ -77,6 +82,7 @@ export async function getHomePageData(): Promise<{
   userAvatarUrl: string | null;
   userEmail: string | null;
   userStats: UserProfileStats;
+  challengesByCompany: Record<string, CompanyChallenge[]>;
 }> {
   const user = await requireUser();
   const db = createClient();
@@ -114,7 +120,9 @@ export async function getHomePageData(): Promise<{
   const { data: quizzesData } = trackIds.length
     ? await db
         .from('quizzes')
-        .select('id,title,difficulty,module_id,modules!inner(id,title,track_id)')
+        .select(
+          'id,title,difficulty,pass_score,module_id,modules!inner(id,title,track_id)'
+        )
         .in('modules.track_id', trackIds)
     : { data: [] as QuizRow[] };
 
@@ -151,13 +159,16 @@ export async function getHomePageData(): Promise<{
   const { data: answersData } = attemptIdsToLoadAnswers.length
     ? await db
         .from('answers')
-        .select('attempt_id,question_id')
+        .select('attempt_id,question_id,points_awarded')
         .in('attempt_id', attemptIdsToLoadAnswers)
     : { data: [] as AnswerRow[] };
   const answers = (answersData ?? []) as AnswerRow[];
 
   const { data: questionsData } = quizIds.length
-    ? await db.from('questions').select('id,quiz_id').in('quiz_id', quizIds)
+    ? await db
+        .from('questions')
+        .select('id,quiz_id,points')
+        .in('quiz_id', quizIds)
     : { data: [] as QuestionRow[] };
   const questions = (questionsData ?? []) as QuestionRow[];
 
@@ -173,6 +184,32 @@ export async function getHomePageData(): Promise<{
     (acc: Record<string, Set<string>>, answer) => {
       acc[answer.attempt_id] ??= new Set<string>();
       acc[answer.attempt_id].add(answer.question_id);
+      return acc;
+    },
+    {}
+  );
+
+  const questionIdsByQuiz = questions.reduce(
+    (acc: Record<string, Set<string>>, question) => {
+      acc[question.quiz_id] ??= new Set<string>();
+      acc[question.quiz_id].add(question.id);
+      return acc;
+    },
+    {}
+  );
+
+  const totalPointsByQuiz = questions.reduce(
+    (acc: Record<string, number>, question) => {
+      acc[question.quiz_id] = (acc[question.quiz_id] ?? 0) + question.points;
+      return acc;
+    },
+    {}
+  );
+
+  const awardedPointsByAttempt = answers.reduce(
+    (acc: Record<string, number>, answer) => {
+      acc[answer.attempt_id] =
+        (acc[answer.attempt_id] ?? 0) + (answer.points_awarded ?? 0);
       return acc;
     },
     {}
@@ -210,6 +247,63 @@ export async function getHomePageData(): Promise<{
     };
   });
 
+  const challengesByCompany = tracksWithQuizzes.reduce(
+    (acc: Record<string, CompanyChallenge[]>, track) => {
+      const quizzesForTrack = quizzesByTrack[track.id] ?? [];
+
+      acc[track.id] = quizzesForTrack.map((quiz) => {
+        const currentAttempt = canonicalAttemptByQuiz[quiz.id] ?? null;
+        const totalSteps = totalQuestionsByQuiz[quiz.id] ?? 0;
+        const passScore = quiz.pass_score ?? 60;
+        const progress = calculateQuizAttemptProgress({
+          attempt: currentAttempt,
+          answeredQuestionIds: currentAttempt
+            ? new Set(
+                Array.from(
+                  solvedQuestionsByAttempt[currentAttempt.id] ?? []
+                ).filter((questionId) =>
+                  questionIdsByQuiz[quiz.id]?.has(questionId)
+                )
+              )
+            : new Set<string>(),
+          totalSteps,
+          awardedPoints: currentAttempt
+            ? (awardedPointsByAttempt[currentAttempt.id] ?? 0)
+            : 0,
+          totalPoints: totalPointsByQuiz[quiz.id] ?? totalSteps,
+          passScore
+        });
+
+        return {
+          id: quiz.id,
+          title: quiz.title,
+          category: quiz.modules?.title ?? 'Challenge',
+          categorySortOrder: 99,
+          status: progress.status,
+          attemptId: progress.attemptId,
+          answeredCount: progress.answeredCount,
+          isCompleted: progress.isCompleted,
+          solvedBadgeValue: progress.solvedBadgeValue,
+          tabClassification: progress.tabClassification,
+          practicingCount: `${10 + ((quiz.title.length * 13) % 91)}`,
+          duration: `${Math.max(totalSteps * 2, 5)} mins`,
+          seniority: (quiz.difficulty ?? 'junior') as Seniority,
+          answeredSteps: progress.answeredSteps,
+          completedSteps: progress.completedSteps,
+          totalSteps: progress.totalSteps,
+          progressPercent: progress.progressPercent,
+          score: progress.score,
+          retake:
+            progress.answeredCount === progress.totalSteps && !progress.passed,
+          reviewAvailable: progress.passed
+        };
+      });
+
+      return acc;
+    },
+    {}
+  );
+
   const userName = getUserDisplayName({
     firstName: profile?.first_name,
     lastName: profile?.last_name,
@@ -225,6 +319,7 @@ export async function getHomePageData(): Promise<{
 
   return {
     companyTracks,
+    challengesByCompany,
     userId: user.id,
     skillPathCategories: [] as SkillPathCategory[],
     skillPathChallenges: [] as SkillPathChallenge[],
