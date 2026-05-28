@@ -523,11 +523,11 @@ function DesktopHomeLayout({
         className={cn(
           'grid min-h-0 flex-1 overflow-hidden',
           isHomeSection
-            ? 'grid-cols-[104px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[104px_320px_minmax(0,1fr)_360px]'
-            : 'grid-cols-[104px_minmax(0,1fr)]'
+            ? 'grid-cols-[80px_minmax(260px,300px)_minmax(0,1fr)_300px] xl:grid-cols-[80px_320px_minmax(0,1fr)_360px]'
+            : 'grid-cols-[80px_minmax(0,1fr)]'
         )}
       >
-        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-2 py-4">
+        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-1.5 py-3">
           <nav
             className="flex w-full flex-col gap-1.5"
             aria-label="Desktop primary"
@@ -568,12 +568,12 @@ function DesktopHomeLayout({
                 lastName={avatar.lastName ?? userLastName}
                 fullName={avatar.fullName ?? userName}
                 email={avatar.email ?? userEmail}
-                className="h-14 w-14 shadow-sm shadow-black/15"
-                initialsClassName="text-base"
+                className="h-11 w-11 shadow-sm shadow-black/15"
+                initialsClassName="text-sm"
               />
             </button>
             <div
-              className="invisible fixed bottom-5 left-[80px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
+              className="invisible fixed bottom-5 left-[64px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
               role="menu"
             >
               <Link
@@ -914,7 +914,7 @@ function DesktopNavButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-[9px] font-black uppercase tracking-[0.02em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2 text-[8px] font-black uppercase tracking-[0.02em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         active
           ? 'bg-primary-soft text-primary'
           : 'text-muted hover:bg-surface-soft',

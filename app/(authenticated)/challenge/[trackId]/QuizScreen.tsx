@@ -264,9 +264,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
                 ? (question.feedback ?? null)
                 : (question.explanation ?? null)
           }))
-          .sort(
-          (a: Question, b: Question) => a.sort_order - b.sort_order
-        )
+          .sort((a: Question, b: Question) => a.sort_order - b.sort_order)
       } as Quiz;
       setQuiz(normalizedQuiz);
       if (!companyId && normalizedQuiz.modules?.track_id) {
@@ -621,7 +619,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
   if (loading || !quiz || !currentQuestion) {
     return (
-      <div className="mx-auto w-full max-w-[361px] rounded-2xl bg-white p-4">
+      <div className="mx-auto w-full max-w-[361px] rounded-2xl bg-white p-4 lg:min-h-dvh lg:max-w-[720px] lg:bg-transparent lg:px-8 lg:pt-8">
         Loading challenge...
       </div>
     );
@@ -675,7 +673,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     }
 
     markCompanyChallengeListStale(companyId);
-    router.push(returnToTrackHref);
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+    router.push(isDesktop ? '/home' : returnToTrackHref);
     pendingSaveRef.current?.catch((error) => {
       console.error(
         '[QuizTrace] background answer sync failed before leaving',
@@ -698,54 +697,271 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
   if (result) {
     return (
       <MotionPage>
-        <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 rounded-2xl bg-white p-4 text-text">
-          <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">
-            Challenge Complete
-          </p>
-          <div className="relative flex items-center justify-center py-1">
-            <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white">
-              <div className="grid h-12 w-12 place-items-center rounded-full bg-white">
-                <CheckCircleFilledIcon className="h-7 w-7 text-[#22c55e]" />
+        <div className="mx-auto w-full lg:min-h-dvh lg:max-w-[760px] lg:px-8 lg:pb-10 lg:pt-8">
+          <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 rounded-2xl bg-white p-4 text-text lg:max-w-[640px] lg:p-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#155dfc]">
+              Challenge Complete
+            </p>
+            <div className="relative flex items-center justify-center py-1">
+              <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white">
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-white">
+                  <CheckCircleFilledIcon className="h-7 w-7 text-[#22c55e]" />
+                </div>
               </div>
             </div>
-          </div>
-          <h1 className="animate-completion-pop text-base font-bold leading-6 text-[#0f172b]">
-            You completed this challenge
-          </h1>
-          <p className="animate-completion-pop text-sm text-[#45556c]">
-            Your final answer was saved, the challenge is now finished, and your
-            progress has been updated. You can continue to the next challenge if
-            you want.
-          </p>
-          <div className="animate-completion-pop rounded-2xl bg-surface-soft p-3 text-sm text-[#45556c]">
-            <p className="font-bold text-[#0f172b]">
-              Score: {result.scorePercent}%
+            <h1 className="animate-completion-pop text-base font-bold leading-6 text-[#0f172b]">
+              You completed this challenge
+            </h1>
+            <p className="animate-completion-pop text-sm text-[#45556c]">
+              Your final answer was saved, the challenge is now finished, and
+              your progress has been updated. You can continue to the next
+              challenge if you want.
             </p>
-            <p>
-              Points earned: {result.awarded}/{result.total}
-            </p>
-            <p>Progress: 100% complete</p>
-          </div>
-          <div className="grid gap-2">
-            <MotionButton
+            <div className="animate-completion-pop rounded-2xl bg-surface-soft p-3 text-sm text-[#45556c]">
+              <p className="font-bold text-[#0f172b]">
+                Score: {result.scorePercent}%
+              </p>
+              <p>
+                Points earned: {result.awarded}/{result.total}
+              </p>
+              <p>Progress: 100% complete</p>
+            </div>
+            <div className="grid gap-2">
+              <MotionButton
+                type="button"
+                onClick={goToNextChallenge}
+                disabled={!nextChallengeId}
+                className={cn(
+                  'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-success-button bg-success-button px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:opacity-50',
+                  btnInteractive,
+                  btnInteractiveColored,
+                  focusRingInteractive
+                )}
+              >
+                Go to next challenge
+                <ChevronRightFilledIcon className="h-4 w-4" />
+              </MotionButton>
+              <MotionButton
+                type="button"
+                onClick={goBackToTrack}
+                className={cn(
+                  'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[var(--color-border)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                  btnInteractive,
+                  btnInteractiveNeutral,
+                  focusRingInteractive
+                )}
+              >
+                Back to challenges
+              </MotionButton>
+            </div>
+          </section>
+        </div>
+      </MotionPage>
+    );
+  }
+
+  return (
+    <MotionPage>
+      <div className="mx-auto w-full lg:min-h-dvh lg:max-w-[760px] lg:px-8 lg:pb-10 lg:pt-8">
+        <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 pb-4 text-text lg:max-w-[680px] lg:gap-5">
+          <header className="flex items-center justify-between">
+            <button
               type="button"
-              onClick={goToNextChallenge}
-              disabled={!nextChallengeId}
+              onClick={goBackToTrack}
               className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-success-button bg-success-button px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:opacity-50',
-                btnInteractive,
-                btnInteractiveColored,
+                'inline-flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[#0f172b]',
+                iconBtnInteractive,
                 focusRingInteractive
               )}
+              aria-label="Back"
             >
-              Go to next challenge
-              <ChevronRightFilledIcon className="h-4 w-4" />
-            </MotionButton>
+              <ChevronLeftFilledIcon className="h-4 w-4" />
+            </button>
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-primary">
+              Step {activeIndex + 1}/{quiz.questions.length}
+            </p>
+          </header>
+
+          <div className="h-2 rounded-pill bg-surface-soft lg:h-2.5">
+            <div
+              className="h-full rounded-pill bg-primary"
+              style={{
+                width: `${inQuizProgressPercent}%`
+              }}
+            />
+          </div>
+
+          <section className="w-full rounded-2xl border border-[#bfe7d1] bg-[#f3fbf6] p-3 lg:p-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2f8a5d]">
+              {quiz.modules?.title ?? 'Challenge'}
+            </p>
+            <h1 className="mt-2 text-base font-bold leading-6 text-[#124a2f] lg:text-xl lg:leading-7">
+              {quiz.title}
+            </h1>
+          </section>
+
+          <section className="w-full rounded-2xl border border-[#d8efe1] bg-[#f8fdf9] p-3 lg:p-5">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              {currentState.isSolved ? (
+                <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand-green-soft)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-productGym-greenDark">
+                  <CheckCircleFilledIcon className="h-3 w-3" />
+                  Solved
+                </div>
+              ) : null}
+              {currentState.needsReview ? (
+                <div className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-amber-700">
+                  Needs review
+                </div>
+              ) : null}
+            </div>
+            <p className="text-sm font-normal leading-5 text-[#45556c] lg:text-base lg:leading-7">
+              {currentQuestion.prompt}
+            </p>
+            {currentState.isSolved ? (
+              <p className="mt-2 text-xs font-semibold text-productGym-greenDark">
+                Solved • You can continue
+              </p>
+            ) : null}
+          </section>
+
+          <section className="space-y-3 lg:mx-auto lg:w-full lg:max-w-[640px]">
+            {visibleOptions.map((option, index) => {
+              const selected = currentState.lastSelectedOptionId === option.id;
+              const isCorrect = option.is_correct;
+              const className = selected
+                ? isCorrect
+                  ? 'border-productGym-green bg-[color:var(--color-brand-green-soft)]'
+                  : 'border-productGym-pink bg-[color:var(--color-brand-pink-soft)]'
+                : 'border-[var(--color-border)] bg-white';
+
+              return (
+                <motion.button
+                  key={option.id}
+                  type="button"
+                  whileHover={reducedMotion ? undefined : { scale: 1.008 }}
+                  whileTap={reducedMotion ? undefined : { scale: 0.99 }}
+                  animate={
+                    selected &&
+                    !isCorrect &&
+                    wrongAnimatingOptionId === option.id &&
+                    !reducedMotion
+                      ? { x: [0, -2, 2, -1, 1, 0] }
+                      : selected && isCorrect && !reducedMotion
+                        ? { scale: [1, 1.01, 1] }
+                        : {}
+                  }
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  onClick={() => onSelectOption(currentQuestion, option.id)}
+                  className={cn(
+                    'w-full cursor-pointer rounded-2xl border p-3 text-left transition-colors duration-150 lg:p-4',
+                    className,
+                    cardInteractive,
+                    selected && isCorrect && 'animate-option-correct',
+                    selected &&
+                      !isCorrect &&
+                      wrongAnimatingOptionId === option.id &&
+                      'animate-option-wrong',
+                    focusRingInteractive
+                  )}
+                >
+                  <p className="text-sm font-bold text-[#0f172b]">
+                    Option {String.fromCharCode(65 + index)}
+                  </p>
+                  <p className="text-xs text-[#62748e] lg:text-sm lg:leading-6">
+                    {option.label}
+                  </p>
+                </motion.button>
+              );
+            })}
+          </section>
+
+          {showCorrectFeedback ? (
+            <motion.div
+              initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-[color:var(--color-brand-green-soft)] p-3 text-sm text-green-900"
+            >
+              <p className="font-black uppercase tracking-[0.08em]">Correct</p>
+              <p>
+                {currentQuestion.explanation ??
+                  'Great work. You solved this step.'}
+              </p>
+            </motion.div>
+          ) : null}
+
+          {showWrongFeedback ? (
+            <motion.div
+              initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-[color:var(--color-brand-pink-soft)] p-3 text-sm text-red-800"
+            >
+              <p className="font-black uppercase tracking-[0.08em]">Wrong</p>
+              <p>
+                {selectedWrongOption
+                  ? `"${selectedWrongOption.label}" is not correct for this step.`
+                  : 'That option is not correct for this step.'}{' '}
+                {currentState.isSolved
+                  ? 'This step stays solved—pick the correct option to view the correct feedback again.'
+                  : 'Try another option.'}
+              </p>
+            </motion.div>
+          ) : null}
+
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-[10px]">
+              <MotionButton
+                type="button"
+                onClick={() =>
+                  setActiveIndex((value) => Math.max(0, value - 1))
+                }
+                disabled={activeIndex === 0}
+                className={cn(
+                  'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[var(--color-border)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#8C9AA3]',
+                  btnInteractive,
+                  btnInteractiveNeutral,
+                  focusRingInteractive
+                )}
+              >
+                <ChevronLeftFilledIcon className="h-4 w-4" /> Previous
+              </MotionButton>
+              <MotionButton
+                type="button"
+                onClick={() => {
+                  if (!canMoveNext) return;
+                  if (isLastStep) {
+                    if (!allQuestionsSelected) return;
+                    finalizeAttempt();
+                    return;
+                  }
+                  setActiveIndex((value) =>
+                    Math.min(quiz.questions.length - 1, value + 1)
+                  );
+                }}
+                disabled={!canMoveNext || (isLastStep && !allQuestionsSelected)}
+                className={cn(
+                  'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
+                  isLastStep
+                    ? 'border-success-button bg-success-button'
+                    : 'border-[#1447e6] bg-[#155dfc]',
+                  btnInteractive,
+                  btnInteractiveColored,
+                  focusRingInteractive
+                )}
+              >
+                {isLastStep ? (
+                  'Finish'
+                ) : (
+                  <>
+                    Next <ChevronRightFilledIcon className="h-4 w-4" />
+                  </>
+                )}
+              </MotionButton>
+            </div>
             <MotionButton
               type="button"
               onClick={goBackToTrack}
               className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[var(--color-border)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                'inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
                 btnInteractive,
                 btnInteractiveNeutral,
                 focusRingInteractive
@@ -755,216 +971,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             </MotionButton>
           </div>
         </section>
-      </MotionPage>
-    );
-  }
-
-  return (
-    <MotionPage>
-      <section className="mx-auto flex w-full max-w-[361px] flex-col gap-4 pb-4 text-text">
-        <header className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={goBackToTrack}
-            className={cn(
-              'inline-flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[#0f172b]',
-              iconBtnInteractive,
-              focusRingInteractive
-            )}
-            aria-label="Back"
-          >
-            <ChevronLeftFilledIcon className="h-4 w-4" />
-          </button>
-          <p className="text-xs font-black uppercase tracking-[0.08em] text-primary">
-            Step {activeIndex + 1}/{quiz.questions.length}
-          </p>
-        </header>
-
-        <div className="h-2 rounded-pill bg-surface-soft">
-          <div
-            className="h-full rounded-pill bg-primary"
-            style={{
-              width: `${inQuizProgressPercent}%`
-            }}
-          />
-        </div>
-
-        <section className="w-full rounded-2xl border border-[#bfe7d1] bg-[#f3fbf6] p-3">
-          <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2f8a5d]">
-            {quiz.modules?.title ?? 'Challenge'}
-          </p>
-          <h1 className="mt-2 text-base font-bold leading-6 text-[#124a2f]">
-            {quiz.title}
-          </h1>
-        </section>
-
-        <section className="w-full rounded-2xl border border-[#d8efe1] bg-[#f8fdf9] p-3">
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            {currentState.isSolved ? (
-              <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand-green-soft)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-productGym-greenDark">
-                <CheckCircleFilledIcon className="h-3 w-3" />
-                Solved
-              </div>
-            ) : null}
-            {currentState.needsReview ? (
-              <div className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-amber-700">
-                Needs review
-              </div>
-            ) : null}
-          </div>
-          <p className="text-sm font-normal leading-5 text-[#45556c]">
-            {currentQuestion.prompt}
-          </p>
-          {currentState.isSolved ? (
-            <p className="mt-2 text-xs font-semibold text-productGym-greenDark">
-              Solved • You can continue
-            </p>
-          ) : null}
-        </section>
-
-        <section className="space-y-3">
-          {visibleOptions.map((option, index) => {
-            const selected = currentState.lastSelectedOptionId === option.id;
-            const isCorrect = option.is_correct;
-            const className = selected
-              ? isCorrect
-                ? 'border-productGym-green bg-[color:var(--color-brand-green-soft)]'
-                : 'border-productGym-pink bg-[color:var(--color-brand-pink-soft)]'
-              : 'border-[var(--color-border)] bg-white';
-
-            return (
-              <motion.button
-                key={option.id}
-                type="button"
-                whileHover={reducedMotion ? undefined : { scale: 1.008 }}
-                whileTap={reducedMotion ? undefined : { scale: 0.99 }}
-                animate={
-                  selected &&
-                  !isCorrect &&
-                  wrongAnimatingOptionId === option.id &&
-                  !reducedMotion
-                    ? { x: [0, -2, 2, -1, 1, 0] }
-                    : selected && isCorrect && !reducedMotion
-                      ? { scale: [1, 1.01, 1] }
-                      : {}
-                }
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                onClick={() => onSelectOption(currentQuestion, option.id)}
-                className={cn(
-                  'w-full cursor-pointer rounded-2xl border p-3 text-left transition-colors duration-150',
-                  className,
-                  cardInteractive,
-                  selected && isCorrect && 'animate-option-correct',
-                  selected &&
-                    !isCorrect &&
-                    wrongAnimatingOptionId === option.id &&
-                    'animate-option-wrong',
-                  focusRingInteractive
-                )}
-              >
-                <p className="text-sm font-bold text-[#0f172b]">
-                  Option {String.fromCharCode(65 + index)}
-                </p>
-                <p className="text-xs text-[#62748e]">{option.label}</p>
-              </motion.button>
-            );
-          })}
-        </section>
-
-        {showCorrectFeedback ? (
-          <motion.div
-            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl bg-[color:var(--color-brand-green-soft)] p-3 text-sm text-green-900"
-          >
-            <p className="font-black uppercase tracking-[0.08em]">Correct</p>
-            <p>
-              {currentQuestion.explanation ??
-                'Great work. You solved this step.'}
-            </p>
-          </motion.div>
-        ) : null}
-
-        {showWrongFeedback ? (
-          <motion.div
-            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl bg-[color:var(--color-brand-pink-soft)] p-3 text-sm text-red-800"
-          >
-            <p className="font-black uppercase tracking-[0.08em]">Wrong</p>
-            <p>
-              {selectedWrongOption
-                ? `"${selectedWrongOption.label}" is not correct for this step.`
-                : 'That option is not correct for this step.'}{' '}
-              {currentState.isSolved
-                ? 'This step stays solved—pick the correct option to view the correct feedback again.'
-                : 'Try another option.'}
-            </p>
-          </motion.div>
-        ) : null}
-
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-[10px]">
-            <MotionButton
-              type="button"
-              onClick={() => setActiveIndex((value) => Math.max(0, value - 1))}
-              disabled={activeIndex === 0}
-              className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border border-[var(--color-border)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#8C9AA3]',
-                btnInteractive,
-                btnInteractiveNeutral,
-                focusRingInteractive
-              )}
-            >
-              <ChevronLeftFilledIcon className="h-4 w-4" /> Previous
-            </MotionButton>
-            <MotionButton
-              type="button"
-              onClick={() => {
-                if (!canMoveNext) return;
-                if (isLastStep) {
-                  if (!allQuestionsSelected) return;
-                  finalizeAttempt();
-                  return;
-                }
-                setActiveIndex((value) =>
-                  Math.min(quiz.questions.length - 1, value + 1)
-                );
-              }}
-              disabled={!canMoveNext || (isLastStep && !allQuestionsSelected)}
-              className={cn(
-                'inline-flex h-[39px] items-center justify-center gap-1 rounded-xl border px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-white disabled:opacity-50',
-                isLastStep
-                  ? 'border-success-button bg-success-button'
-                  : 'border-[#1447e6] bg-[#155dfc]',
-                btnInteractive,
-                btnInteractiveColored,
-                focusRingInteractive
-              )}
-            >
-              {isLastStep ? (
-                'Finish'
-              ) : (
-                <>
-                  Next <ChevronRightFilledIcon className="h-4 w-4" />
-                </>
-              )}
-            </MotionButton>
-          </div>
-          <MotionButton
-            type="button"
-            onClick={goBackToTrack}
-            className={cn(
-              'inline-flex h-[39px] w-full items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
-              btnInteractive,
-              btnInteractiveNeutral,
-              focusRingInteractive
-            )}
-          >
-            Back to challenges
-          </MotionButton>
-        </div>
-      </section>
+      </div>
     </MotionPage>
   );
 }
