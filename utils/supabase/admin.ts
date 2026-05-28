@@ -10,7 +10,7 @@ type Price = Tables<'prices'>;
 // Change to control trial period length
 const TRIAL_PERIOD_DAYS = 0;
 
-const getSupabaseAdmin = () => {
+export const createSupabaseAdminClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -33,7 +33,7 @@ const upsertProductRecord = async (product: Stripe.Product) => {
     metadata: product.metadata
   };
 
-  const { error: upsertError } = await getSupabaseAdmin()
+  const { error: upsertError } = await createSupabaseAdminClient()
     .from('products')
     .upsert([productData]);
   if (upsertError)
@@ -58,7 +58,7 @@ const upsertPriceRecord = async (
     trial_period_days: price.recurring?.trial_period_days ?? TRIAL_PERIOD_DAYS
   };
 
-  const { error: upsertError } = await getSupabaseAdmin()
+  const { error: upsertError } = await createSupabaseAdminClient()
     .from('prices')
     .upsert([priceData]);
 
@@ -80,7 +80,7 @@ const upsertPriceRecord = async (
 };
 
 const deleteProductRecord = async (product: Stripe.Product) => {
-  const { error: deletionError } = await getSupabaseAdmin()
+  const { error: deletionError } = await createSupabaseAdminClient()
     .from('products')
     .delete()
     .eq('id', product.id);
@@ -90,7 +90,7 @@ const deleteProductRecord = async (product: Stripe.Product) => {
 };
 
 const deletePriceRecord = async (price: Stripe.Price) => {
-  const { error: deletionError } = await getSupabaseAdmin()
+  const { error: deletionError } = await createSupabaseAdminClient()
     .from('prices')
     .delete()
     .eq('id', price.id);
@@ -99,7 +99,7 @@ const deletePriceRecord = async (price: Stripe.Price) => {
 };
 
 const upsertCustomerToSupabase = async (uuid: string, customerId: string) => {
-  const { error: upsertError } = await getSupabaseAdmin()
+  const { error: upsertError } = await createSupabaseAdminClient()
     .from('customers')
     .upsert([{ id: uuid, stripe_customer_id: customerId }]);
 
@@ -126,7 +126,7 @@ const createOrRetrieveCustomer = async ({
 }) => {
   // Check if the customer already exists in Supabase
   const { data: existingSupabaseCustomer, error: queryError } =
-    await getSupabaseAdmin()
+    await createSupabaseAdminClient()
       .from('customers')
       .select('*')
       .eq('id', uuid)
@@ -159,7 +159,7 @@ const createOrRetrieveCustomer = async ({
   if (existingSupabaseCustomer && stripeCustomerId) {
     // If Supabase has a record but doesn't match Stripe, update Supabase record
     if (existingSupabaseCustomer.stripe_customer_id !== stripeCustomerId) {
-      const { error: updateError } = await getSupabaseAdmin()
+      const { error: updateError } = await createSupabaseAdminClient()
         .from('customers')
         .update({ stripe_customer_id: stripeCustomerId })
         .eq('id', uuid);
@@ -204,7 +204,7 @@ const copyBillingDetailsToCustomer = async (
   if (!name || !phone || !address) return;
   //@ts-ignore
   await stripe.customers.update(customer, { name, phone, address });
-  const { error: updateError } = await getSupabaseAdmin()
+  const { error: updateError } = await createSupabaseAdminClient()
     .from('users')
     .update({
       billing_address: { ...address },
@@ -220,7 +220,7 @@ const manageSubscriptionStatusChange = async (
   createAction = false
 ) => {
   // Get customer's UUID from mapping table.
-  const { data: customerData, error: noCustomerError } = await getSupabaseAdmin()
+  const { data: customerData, error: noCustomerError } = await createSupabaseAdminClient()
     .from('customers')
     .select('id')
     .eq('stripe_customer_id', customerId)
@@ -269,7 +269,7 @@ const manageSubscriptionStatusChange = async (
       : null
   };
 
-  const { error: upsertError } = await getSupabaseAdmin()
+  const { error: upsertError } = await createSupabaseAdminClient()
     .from('subscriptions')
     .upsert([subscriptionData]);
   if (upsertError)
