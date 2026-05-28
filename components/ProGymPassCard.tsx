@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { CheckCircleFilledIcon } from '@/components/icons/FilledIcons';
 import LoadingButton from '@/components/ui/LoadingButton';
+import { PRODUCT_GYM_MONTHLY_PRICE_LABEL } from '@/utils/pricing-display';
 import {
   calculateTrialDaysLeft,
   formatTrialCountdownLabel
@@ -112,6 +113,9 @@ export default function ProGymPassCard({
             </h2>
             <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[1px] text-productGym-ink/80">
               {isPro ? 'Pro Active' : 'Free Trial'}
+            </p>
+            <p className="mt-1 text-[11px] font-black uppercase tracking-[1px] text-productGym-ink">
+              {PRODUCT_GYM_MONTHLY_PRICE_LABEL}
             </p>
           </div>
         </div>

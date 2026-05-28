@@ -94,7 +94,7 @@ For example, you can create business models with different pricing tiers, e.g.:
   - Price 1: 10 USD per month
   - Price 2: 100 USD per year
 - Product 2: Freelancer
-  - Price 1: 20 USD per month
+  - Price 1: 12 USD per month
   - Price 2: 200 USD per year
 
 Optionally, to speed up the setup, we have added a [fixtures file](fixtures/stripe-fixtures.json) to bootstrap test product and pricing data in your Stripe account. The [Stripe CLI](https://stripe.com/docs/stripe-cli#install) `fixtures` command executes a series of API requests defined in this JSON file. Simply run `stripe fixtures fixtures/stripe-fixtures.json`.

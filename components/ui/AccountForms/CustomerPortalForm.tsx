@@ -7,6 +7,7 @@ import { createStripePortal } from '@/utils/stripe/server';
 import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import { Tables } from '@/types_db';
+import { formatProductGymDisplayPrice } from '@/utils/pricing-display';
 
 type Subscription = Tables<'subscriptions'>;
 type Price = Tables<'prices'>;
@@ -31,11 +32,11 @@ export default function CustomerPortalForm({ subscription }: Props) {
 
   const subscriptionPrice =
     subscription &&
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: subscription?.prices?.currency!,
-      minimumFractionDigits: 0
-    }).format((subscription?.prices?.unit_amount || 0) / 100);
+    formatProductGymDisplayPrice({
+      currency: subscription?.prices?.currency,
+      interval: subscription?.prices?.interval,
+      unitAmount: subscription?.prices?.unit_amount
+    });
 
   const handleStripePortalRequest = async () => {
     setIsSubmitting(true);
