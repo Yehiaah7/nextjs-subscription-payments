@@ -71,8 +71,8 @@ export default function ProGymPassCard({
 
   const primaryButtonClassName =
     variant === 'plans'
-      ? 'mt-3 inline-flex h-[49px] w-full items-center justify-center rounded-full bg-productGym-blue px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-productGym-blue focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-yellow'
-      : 'mt-3 inline-flex h-[43px] w-full items-center justify-center rounded-full bg-productGym-blue text-[10px] font-black uppercase tracking-[1px] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-productGym-blue focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-yellow';
+      ? 'mt-3 inline-flex h-[49px] w-full items-center justify-center rounded-full bg-productGym-ink px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-white shadow-sm shadow-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-yellow'
+      : 'mt-3 inline-flex h-[43px] w-full items-center justify-center rounded-full bg-productGym-ink text-[10px] font-black uppercase tracking-[1px] text-white shadow-sm shadow-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-yellow';
 
   const isTrial = subscriptionState === 'trial';
   const isPro = subscriptionState === 'pro';
@@ -89,11 +89,11 @@ export default function ProGymPassCard({
   return (
     <section
       id={id}
-      className="rounded-[16px] border border-productGym-blue bg-productGym-yellow p-3 text-productGym-ink"
+      className="rounded-[16px] border border-black/10 bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-white/70 text-productGym-blue shadow-sm shadow-productGym-blue/10">
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-productGym-ink shadow-sm shadow-black/10">
             <svg
               viewBox="0 0 20 20"
               fill="currentColor"
@@ -108,14 +108,14 @@ export default function ProGymPassCard({
             <h2 className="text-[16px] font-bold tracking-[-0.4px]">
               Pro Gym Pass
             </h2>
-            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[1px] text-productGym-blue">
+            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[1px] text-productGym-ink/80">
               {isPro ? 'Pro Active' : 'Free Trial'}
             </p>
           </div>
         </div>
 
         {isTrial || hasExpiredTrial ? (
-          <span className="rounded-full bg-white/75 px-2 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-blue shadow-sm shadow-productGym-blue/10">
+          <span className="rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-ink shadow-sm shadow-black/10">
             {trialDaysLabel}
           </span>
         ) : null}
@@ -123,13 +123,13 @@ export default function ProGymPassCard({
 
       {isTrial ? (
         <div className="mt-3">
-          <p className="text-[11px] font-bold uppercase tracking-[1px] text-productGym-blue">
+          <p className="text-[11px] font-bold uppercase tracking-[1px] text-productGym-ink/80">
             Included in your 7-day free trial:
           </p>
 
           <ul className="mt-2 space-y-2 text-[12px] font-medium leading-4 text-productGym-ink">
             <li className="flex items-center gap-2.5">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-productGym-blueSoft bg-white shadow-sm shadow-productGym-blue/10">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white shadow-sm shadow-black/10">
                 <Image
                   src="/airbnb.svg"
                   alt="Airbnb"
@@ -142,7 +142,7 @@ export default function ProGymPassCard({
             </li>
 
             <li className="flex items-center gap-2.5">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-productGym-blueSoft bg-white shadow-sm shadow-productGym-blue/10">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white shadow-sm shadow-black/10">
                 <Image
                   src="/Uber.svg"
                   alt="Uber"
@@ -157,29 +157,29 @@ export default function ProGymPassCard({
         </div>
       ) : null}
 
-      <p className="mt-3 text-[11px] font-bold uppercase tracking-[1px] text-productGym-blue">
+      <p className="mt-3 text-[11px] font-bold uppercase tracking-[1px] text-productGym-ink/80">
         {isPro ? 'Pro benefits:' : 'Upgrade to Pro to unlock:'}
       </p>
 
       <ul className="mt-1 space-y-1 text-[12px] font-medium leading-4 text-productGym-ink">
         <li className="flex items-start gap-2">
-          <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-productGym-blue" />
+          <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-productGym-ink" />
           <span>All company assignments unlocked</span>
         </li>
 
         <li className="flex items-start gap-2">
-          <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-productGym-blue" />
+          <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-productGym-ink" />
           <span>Unlimited daily challenges</span>
         </li>
 
         <li className="flex items-start gap-2">
-          <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-productGym-blue" />
+          <CheckCircleFilledIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-productGym-ink" />
           <span>Decision quality analytics</span>
         </li>
       </ul>
 
       {isPro ? (
-        <p className="mt-3 text-center text-[11px] font-bold uppercase tracking-[0.8px] text-productGym-blue">
+        <p className="mt-3 text-center text-[11px] font-bold uppercase tracking-[0.8px] text-productGym-ink/80">
           Pro plan active
         </p>
       ) : (
