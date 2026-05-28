@@ -47,6 +47,7 @@ type ProfileScreenProps = {
   lastName?: string | null;
   avatarUrl?: string | null;
   userStats: UserProfileStats;
+  subscriptionState?: 'trial' | 'expired' | 'pro';
 };
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -251,7 +252,8 @@ export default function ProfileScreen({
   firstName,
   lastName,
   avatarUrl,
-  userStats
+  userStats,
+  subscriptionState = 'trial'
 }: ProfileScreenProps) {
   const router = useRouter();
   const { avatar, setAvatarImageUrl } = useUserAvatar();
@@ -771,7 +773,10 @@ export default function ProfileScreen({
             </div>
           </MotionCard>
 
-          <ProGymPassCard variant="profile" />
+          <ProGymPassCard
+            variant="profile"
+            subscriptionState={subscriptionState}
+          />
 
           <Link
             href="/profile/settings"
