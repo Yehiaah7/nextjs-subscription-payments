@@ -5,12 +5,16 @@ import { useSearchParams } from 'next/navigation';
 import {
   BadgeCheckFilledIcon,
   BellFilledIcon,
+  BriefcaseFilledIcon,
   CalendarFilledIcon,
   CheckCircleFilledIcon,
   ChevronRightFilledIcon,
+  CubeFilledIcon,
   FireFilledIcon,
   HomeFilledIcon,
+  LibraryFilledIcon,
   RocketFilledIcon,
+  RouteFilledIcon,
   TrophyFilledIcon,
   UsersFilledIcon
 } from '@/components/icons/FilledIcons';
@@ -623,24 +627,30 @@ function DesktopHomeLayout({
 
         {isHomeSection ? (
           <aside className="m-4 flex min-h-0 flex-col overflow-hidden rounded-[20px] border border-primary-soft bg-white/85 px-5 py-5 shadow-sm shadow-slate-900/5">
-            <h1 className="text-[22px] font-medium leading-tight tracking-[-0.03em] text-[var(--color-ink)]">
-              Practice Library
+            <h1 className="flex items-center gap-2 text-[18px] font-semibold leading-tight tracking-[-0.02em] text-[var(--color-ink)]">
+              <LibraryFilledIcon className="h-5 w-5 shrink-0 text-primary" />
+              <span>Practice Library</span>
             </h1>
 
             <div className="app-segment mt-4 h-9 p-0.5">
               <div className="grid h-full grid-cols-3 gap-1">
                 <TabButton
                   label="Companies"
+                  icon={
+                    <BriefcaseFilledIcon className="h-3.5 w-3.5 shrink-0" />
+                  }
                   active={selectedContentTab === 'companies'}
                   onClick={() => onSelectContentTab('companies')}
                 />
                 <TabButton
                   label="Skill Path"
+                  icon={<RouteFilledIcon className="h-3.5 w-3.5 shrink-0" />}
                   active={selectedContentTab === 'skill-paths'}
                   onClick={() => onSelectContentTab('skill-paths')}
                 />
                 <TabButton
                   label="Products"
+                  icon={<CubeFilledIcon className="h-3.5 w-3.5 shrink-0" />}
                   active={selectedContentTab === 'products'}
                   onClick={() => onSelectContentTab('products')}
                 />
@@ -1601,10 +1611,12 @@ function EmptyState({
 
 function TabButton({
   label,
+  icon,
   active,
   onClick
 }: {
   label: string;
+  icon?: ReactNode;
   active: boolean;
   onClick: () => void;
 }) {
@@ -1625,7 +1637,10 @@ function TabButton({
           className="absolute inset-0 rounded-pill bg-primary shadow-button"
         />
       ) : null}
-      <span className="relative">{label}</span>
+      <span className="relative inline-flex items-center justify-center gap-1.5">
+        {icon}
+        <span>{label}</span>
+      </span>
     </button>
   );
 }
