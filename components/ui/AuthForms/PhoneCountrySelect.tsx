@@ -163,13 +163,13 @@ export default function PhoneCountrySelect({
       : null;
 
   return (
-    <div className="relative inline-flex max-w-[52%] shrink-0 overflow-visible">
+    <div className="relative inline-flex w-auto min-w-0 max-w-[45%] shrink-0 overflow-visible sm:max-w-[52%]">
       <input type="hidden" name={name} value={selectedCountry.code} />
       <button
         ref={triggerRef}
         type="button"
         className={cn(
-          'inline-flex h-8 max-w-full items-center gap-1.5 rounded-xl border border-border bg-slate-50 py-0 pl-2 pr-2 text-sm font-semibold text-slate-700 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
+          'inline-flex h-8 max-w-full min-w-0 items-center gap-1.5 rounded-xl border border-border bg-slate-50 py-0 pl-2 pr-2 text-sm font-semibold text-slate-700 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
           btnInteractive,
           focusRingInteractive
         )}

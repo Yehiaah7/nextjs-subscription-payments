@@ -47,8 +47,8 @@ export default async function LoginPage({
         Resume your progress
       </p>
 
-      <form action={login} className="mt-8 grid gap-4">
-        <div>
+      <form action={login} className="mt-8 grid min-w-0 max-w-full gap-4">
+        <div className="min-w-0">
           <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
             Email or username
           </label>
@@ -61,15 +61,15 @@ export default async function LoginPage({
               required
               placeholder="Enter your email or username"
               className={cn(
-                'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
+                'h-full w-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                 focusRingInteractive
               )}
             />
-            <UserRound className="h-4 w-4 text-slate-300" />
+            <UserRound className="h-4 w-4 shrink-0 text-slate-300" />
           </MotionInput>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="mb-2 flex items-center justify-between">
             <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Gym password
@@ -88,17 +88,17 @@ export default async function LoginPage({
             placeholder="Password"
             containerClassName={cn(authInputShellClassName, inputInteractive)}
             inputClassName={cn(
-              'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
+              'h-full w-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
               focusRingInteractive
             )}
-            leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
-            iconClassName="h-4 w-4 text-slate-300"
+            leftIcon={<Lock className="h-4 w-4 shrink-0 text-slate-300" />}
+            iconClassName="h-4 w-4 shrink-0 text-slate-300"
           />
         </div>
 
         <AuthSubmitButton
           className={cn(
-            'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
+            'mt-2 h-12 w-full min-w-0 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
             btnInteractive,
             btnInteractiveColored,
             focusRingInteractive

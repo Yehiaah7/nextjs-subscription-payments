@@ -50,9 +50,12 @@ export default async function SignupPage({
         Join the gym floor
       </p>
 
-      <form action={signup} className="mt-8 grid gap-4 overflow-visible">
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
-          <div>
+      <form
+        action={signup}
+        className="mt-8 grid min-w-0 max-w-full gap-4 overflow-visible"
+      >
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2 sm:gap-3">
+          <div className="min-w-0">
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               First name
             </label>
@@ -64,14 +67,14 @@ export default async function SignupPage({
                 type="text"
                 placeholder="First"
                 className={cn(
-                  'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
+                  'h-full w-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                   focusRingInteractive
                 )}
               />
-              <UserRound className="h-4 w-4 text-slate-300" />
+              <UserRound className="h-4 w-4 shrink-0 text-slate-300" />
             </MotionInput>
           </div>
-          <div>
+          <div className="min-w-0">
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
               Last name
             </label>
@@ -83,16 +86,16 @@ export default async function SignupPage({
                 type="text"
                 placeholder="Last"
                 className={cn(
-                  'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
+                  'h-full w-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                   focusRingInteractive
                 )}
               />
-              <UserRound className="h-4 w-4 text-slate-300" />
+              <UserRound className="h-4 w-4 shrink-0 text-slate-300" />
             </MotionInput>
           </div>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
             Gym username
           </label>
@@ -108,7 +111,7 @@ export default async function SignupPage({
               pattern="[A-Za-z0-9_]{3,20}"
               placeholder="username"
               className={cn(
-                'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
+                'h-full w-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                 focusRingInteractive
               )}
             />
@@ -116,7 +119,7 @@ export default async function SignupPage({
           </MotionInput>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
             Email address
           </label>
@@ -129,15 +132,15 @@ export default async function SignupPage({
               required
               placeholder="name@company.com"
               className={cn(
-                'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
+                'h-full w-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                 focusRingInteractive
               )}
             />
-            <Mail className="h-4 w-4 text-slate-300" />
+            <Mail className="h-4 w-4 shrink-0 text-slate-300" />
           </MotionInput>
         </div>
 
-        <div className="relative overflow-visible">
+        <div className="relative min-w-0 overflow-visible">
           <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
             Phone number
           </label>
@@ -154,15 +157,15 @@ export default async function SignupPage({
               type="tel"
               placeholder="123 456 7890"
               className={cn(
-                'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
+                'h-full w-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                 focusRingInteractive
               )}
             />
-            <Phone className="h-4 w-4 text-slate-300" />
+            <Phone className="h-4 w-4 shrink-0 text-slate-300" />
           </MotionInput>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
             Gym password
           </label>
@@ -174,17 +177,17 @@ export default async function SignupPage({
             placeholder="Password"
             containerClassName={cn(authInputShellClassName, inputInteractive)}
             inputClassName={cn(
-              'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
+              'h-full w-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
               focusRingInteractive
             )}
-            leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
-            iconClassName="h-4 w-4 text-slate-300"
+            leftIcon={<Lock className="h-4 w-4 shrink-0 text-slate-300" />}
+            iconClassName="h-4 w-4 shrink-0 text-slate-300"
           />
         </div>
 
         <AuthSubmitButton
           className={cn(
-            'mt-2 h-12 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
+            'mt-2 h-12 w-full min-w-0 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
             btnInteractive,
             btnInteractiveColored,
             focusRingInteractive
