@@ -593,8 +593,8 @@ function DesktopHomeLayout({
                 lastName={avatar.lastName ?? userLastName}
                 fullName={avatar.fullName ?? userName}
                 email={avatar.email ?? userEmail}
-                className="h-10 w-10 shadow-sm shadow-black/15"
-                initialsClassName="text-xs"
+                className="h-14 w-14 shadow-sm shadow-black/15"
+                initialsClassName="text-sm"
               />
             </button>
             <div
@@ -624,7 +624,7 @@ function DesktopHomeLayout({
 
         {isHomeSection ? (
           <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-4 py-5">
-            <h1 className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[16px] font-medium tracking-[-0.02em] text-[var(--color-ink)]">
+            <h1 className="flex items-center gap-x-1 whitespace-nowrap text-[12px] font-medium tracking-[-0.02em] text-[var(--color-ink)]">
               <span>Practice</span>
               <span className="relative inline-flex">
                 <select
@@ -633,7 +633,7 @@ function DesktopHomeLayout({
                     onSelectSeniority(event.target.value as SeniorityFilter)
                   }
                   className={cn(
-                    'appearance-none rounded-pill bg-primary-soft py-0.5 pl-2 pr-6 text-[14px] font-semibold text-primary',
+                    'appearance-none rounded-pill bg-primary-soft py-0.5 pl-1.5 pr-4 text-[11px] font-medium text-primary',
                     btnInteractive,
                     btnInteractiveNeutral,
                     focusRingInteractive
@@ -646,7 +646,7 @@ function DesktopHomeLayout({
                     </option>
                   ))}
                 </select>
-                <ChevronRightFilledIcon className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-primary" />
+                <ChevronRightFilledIcon className="pointer-events-none absolute right-1 top-1/2 h-3 w-3 -translate-y-1/2 rotate-90 text-primary" />
               </span>
               <span>PM Interview Questions.</span>
             </h1>
