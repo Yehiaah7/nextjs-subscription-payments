@@ -906,9 +906,11 @@ function DesktopTopNavbar({
         >
           {isUpgrading ? 'Opening…' : 'Upgrade'}
         </MotionButton>
-        <MotionButton
-          type="button"
-          title="Feedback flow coming soon"
+        <motion.a
+          href="https://t.me/product_gym_builders"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Send feedback on Telegram"
           className={cn(
             'inline-flex h-10 items-center justify-center rounded-full border border-primary-soft bg-white px-5 text-[12px] font-black uppercase tracking-[0.08em] text-[var(--color-ink)] shadow-sm shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
             btnInteractive,
@@ -916,7 +918,7 @@ function DesktopTopNavbar({
           )}
         >
           Send feedback
-        </MotionButton>
+        </motion.a>
       </div>
     </header>
   );
