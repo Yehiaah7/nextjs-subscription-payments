@@ -491,7 +491,7 @@ function PracticeLibraryPanel({
       <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
         {selectedContentTab === 'companies' ? (
           <>
-            <h2 className="mt-4 mb-3 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-ink)]">
+            <h2 className="mt-2 mb-2 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-ink)]">
               Practice PM Interview Questions
             </h2>
 
@@ -776,9 +776,7 @@ function DesktopHomeLayout({
                 title="Coming soon"
                 message="This practice area is being prepared for Product Gym members."
               />
-            ) : (
-              <DesktopEmptyState message="Choose a company, skill path, or product to start elevating your PM skills." />
-            )
+            ) : null
           ) : selectedDesktopSection === 'notifications' ? (
             <DesktopNotificationsWorkspace
               notifications={notifications}
