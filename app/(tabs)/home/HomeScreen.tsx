@@ -488,6 +488,10 @@ function PracticeLibraryPanel({
         </div>
       </div>
 
+      <h2 className="mt-4 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-ink)] lg:hidden">
+        Practice PM Interview Questions
+      </h2>
+
       <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
         {selectedContentTab === 'companies' ? (
           filteredCompanyTracks.length === 0 ? (
