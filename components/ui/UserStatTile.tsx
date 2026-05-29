@@ -107,7 +107,7 @@ function RankingsLockedModal({
         aria-modal="true"
         aria-labelledby="rankings-locked-title"
         aria-describedby="rankings-locked-description"
-        className="relative w-full max-w-[320px] rounded-[24px] bg-white px-5 pb-6 pt-5 text-center shadow-[0_24px_60px_rgba(15,23,42,0.24)]"
+        className="relative w-full max-w-[320px] rounded-[20px] bg-white px-5 pb-6 pt-5 text-center shadow-[0_24px_60px_rgba(15,23,42,0.24)]"
         onClick={(event) => event.stopPropagation()}
       >
         <button

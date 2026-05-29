@@ -199,9 +199,7 @@ export default function NotificationsScreen() {
                               'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary'
                             )}
                           >
-                            <NotificationIcon
-                              className="h-4 w-4 shrink-0"
-                            />
+                            <NotificationIcon className="h-4 w-4 shrink-0" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-3">
@@ -260,7 +258,7 @@ export default function NotificationsScreen() {
             aria-modal="true"
             aria-labelledby="delete-notification-title"
           >
-            <div className="w-full max-w-[329px] rounded-3xl bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+            <div className="w-full max-w-[329px] rounded-[20px] bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
               <h2
                 id="delete-notification-title"
                 className="text-base font-bold tracking-[-0.35px] text-[#0f172b]"
