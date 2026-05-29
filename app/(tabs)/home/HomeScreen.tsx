@@ -659,8 +659,8 @@ function DesktopHomeLayout({
               <span>Practice Library</span>
             </h1>
 
-            <div className="mt-4 h-9 overflow-x-auto rounded-pill bg-background p-0.5">
-              <div className="grid h-full min-w-full grid-cols-3 gap-1">
+            <div className="mt-4 max-w-full overflow-x-auto">
+              <div className="inline-flex h-9 w-max flex-nowrap gap-1 rounded-pill bg-background p-0.5">
                 <TabButton
                   label="Companies"
                   icon={
@@ -1655,6 +1655,9 @@ function TabButton({
       onClick={onClick}
       className={cn(
         'relative h-full rounded-pill t-label whitespace-nowrap',
+        isDesktopLibrary
+          ? 'inline-flex w-fit flex-none items-center justify-center'
+          : 'w-full',
         active ? 'px-[10px]' : 'px-2',
         active
           ? isDesktopLibrary
