@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function AuthBrandHeader() {
   return (
-    <header className="hidden h-[64px] shrink-0 items-center border-b border-border bg-white px-6 md:flex">
+    <header className="flex h-[64px] shrink-0 items-center border-b border-border bg-white px-4 md:px-6">
       <Link
         href="/home"
         className="flex items-center gap-3 rounded-[20px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
