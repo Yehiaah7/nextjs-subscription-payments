@@ -666,13 +666,19 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
   if (loading || !quiz || !currentQuestion) {
     return (
-      <div className="mx-auto grid w-full max-w-[361px] place-items-center rounded-2xl bg-white p-4 lg:min-h-dvh lg:max-w-[720px] lg:bg-transparent lg:px-8 lg:pt-8">
+      <div className="mx-auto grid min-h-[calc(100dvh-3rem)] w-full max-w-[361px] place-items-center rounded-2xl bg-white p-4 lg:min-h-dvh lg:max-w-[720px] lg:bg-transparent lg:px-8 lg:pt-8">
         <div
-          className="relative grid h-16 w-16 place-items-center rounded-full border border-border bg-white shadow-sm shadow-slate-900/5"
+          className="flex flex-col items-center gap-3 text-center"
           role="status"
-          aria-label="Loading challenge"
+          aria-live="polite"
         >
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary" />
+          <div
+            className="relative grid h-16 w-16 place-items-center rounded-full border border-border bg-white shadow-sm shadow-slate-900/5"
+            aria-hidden="true"
+          >
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary" />
+          </div>
+          <p className="text-sm font-bold text-[#45556c]">Loading challenge…</p>
         </div>
       </div>
     );
@@ -710,6 +716,8 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
         currentQuestion.id
       )
     : [...currentQuestion.options].sort((a, b) => a.sort_order - b.sort_order);
+  const showQuestionStatusBadges =
+    currentState.isSolved || currentState.needsReview;
 
   const goBackToTrack = () => {
     if (
@@ -857,20 +865,22 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             </h1>
           </section>
 
-          <section className="w-full rounded-2xl border border-border bg-[#f8fdf9] p-2.5 lg:p-4">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              {currentState.isSolved ? (
-                <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand-green-soft)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-productGym-greenDark">
-                  <CheckCircleFilledIcon className="h-3 w-3" />
-                  Solved
-                </div>
-              ) : null}
-              {currentState.needsReview ? (
-                <div className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-amber-700">
-                  Needs review
-                </div>
-              ) : null}
-            </div>
+          <section className="w-full rounded-2xl border border-border bg-[#f8fdf9] px-3 py-3 lg:px-4 lg:py-4">
+            {showQuestionStatusBadges ? (
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                {currentState.isSolved ? (
+                  <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand-green-soft)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-productGym-greenDark">
+                    <CheckCircleFilledIcon className="h-3 w-3" />
+                    Solved
+                  </div>
+                ) : null}
+                {currentState.needsReview ? (
+                  <div className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-amber-700">
+                    Needs review
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <p className="text-sm font-normal leading-5 text-[#45556c] lg:text-base lg:leading-7">
               {currentQuestion.prompt}
             </p>
