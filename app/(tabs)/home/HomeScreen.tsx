@@ -32,6 +32,7 @@ import { motion } from 'framer-motion';
 import { ReactNode, useEffect, useState } from 'react';
 import { MotionButton, MotionCard } from '@/components/motion';
 import MotionPage from '@/components/motion/MotionPage';
+import { DESKTOP_LAYOUT_ENTER_EVENT } from '@/components/mobile/responsive-layout';
 import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
 import {
   btnInteractive,
@@ -216,6 +217,32 @@ export default function HomeScreen({
         (track) => track.companySummary.id === selectedCompanyId
       ) ?? null)
     : null;
+
+  useEffect(() => {
+    const resetDesktopHomeState = () => {
+      const requestedCompanyId = searchParams.get('company');
+      const hasRequestedCompany = requestedCompanyId
+        ? companyTracks.some(
+            (track) => track.companySummary.id === requestedCompanyId
+          )
+        : false;
+
+      setSelectedDesktopSection('home');
+      setSelectedContentTab('companies');
+      setSelectedCompanyId(hasRequestedCompany ? requestedCompanyId : null);
+      setSelectedSkillPathId(null);
+      setSelectedProductId(null);
+    };
+
+    window.addEventListener(DESKTOP_LAYOUT_ENTER_EVENT, resetDesktopHomeState);
+
+    return () => {
+      window.removeEventListener(
+        DESKTOP_LAYOUT_ENTER_EVENT,
+        resetDesktopHomeState
+      );
+    };
+  }, [companyTracks, searchParams]);
 
   useEffect(() => {
     ensureCompanyProgressReminder({
