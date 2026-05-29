@@ -286,7 +286,9 @@ export default function CompanyDetailsScreen({
                         <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">
                           {challenge.category}
                         </p>
-                        <h3 className="t-card-title">{challenge.title}</h3>
+                        <h3 className="t-card-title lg:text-[15px] lg:leading-[1.25]">
+                          {challenge.title}
+                        </h3>
                       </div>
                       <span
                         className={`whitespace-nowrap rounded-pill px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] ${
