@@ -410,6 +410,9 @@ export default function HomeScreen({
 
         {tab === 'companies' && (
           <section>
+            <h2 className="mb-3 w-full max-w-[361px] px-3 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-ink)]">
+              Practice PM Interview Questions
+            </h2>
             <motion.div
               className="space-y-4"
               variants={listVariants}
