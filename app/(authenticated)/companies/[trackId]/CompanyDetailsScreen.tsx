@@ -192,7 +192,7 @@ export default function CompanyDetailsScreen({
       <CompanySummaryCard company={companySummary} className="app-card mb-5" />
 
       {displayMode === 'embedded' ? (
-        <h2 className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[22px] font-medium leading-tight tracking-[-0.03em] text-[var(--color-ink)]">
+        <h2 className="mb-4 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[18px] font-medium leading-snug tracking-[-0.02em] text-[var(--color-ink)]">
           <span>Practice</span>
           <SeniorityDropdown
             selected={selectedSeniority}
