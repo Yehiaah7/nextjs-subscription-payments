@@ -49,7 +49,7 @@ export default async function SignupPage({
     <div className="min-h-dvh bg-[#F7F7F7] md:flex md:flex-col">
       <AuthBrandHeader />
       <main className="flex justify-center px-4 py-6 md:flex-1 md:items-center md:py-10">
-        <div className="w-full max-w-sm md:max-w-[440px] md:rounded-[20px] md:border md:border-[#dbeafe] md:bg-white md:p-8 md:shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+        <div className="w-full max-w-sm md:max-w-[440px] md:rounded-[20px] md:border md:border-[#dbeafe] overflow-visible md:bg-white md:p-8 md:shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
           <div
             className={cn(
               'mb-7 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm md:hidden',
@@ -65,7 +65,7 @@ export default async function SignupPage({
             Join the gym floor
           </p>
 
-          <form action={signup} className="mt-8 grid gap-4">
+          <form action={signup} className="mt-8 grid gap-4 overflow-visible">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
@@ -158,12 +158,16 @@ export default async function SignupPage({
               </MotionInput>
             </div>
 
-            <div>
+            <div className="relative overflow-visible">
               <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Phone number
               </label>
               <MotionInput
-                className={cn(compactAuthInputShellClassName, inputInteractive)}
+                className={cn(
+                  compactAuthInputShellClassName,
+                  'overflow-visible',
+                  inputInteractive
+                )}
               >
                 <PhoneCountrySelect />
                 <input
