@@ -18,6 +18,11 @@ import {
 } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 
+const authTitleClassName =
+  'text-[42px] font-extrabold leading-[1.03] tracking-[-0.03em] text-slate-900';
+const authInputShellClassName =
+  'flex h-12 items-center gap-2 rounded-2xl border border-[#bfdbfe] bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
+
 export default async function LoginPage({
   searchParams
 }: {
@@ -54,9 +59,7 @@ export default async function LoginPage({
             <ChevronLeft className="h-4 w-4" />
           </div>
 
-          <h1 className="text-[46px] font-extrabold tracking-[-0.03em] text-slate-900 leading-[1.02]">
-            Welcome back
-          </h1>
+          <h1 className={authTitleClassName}>Welcome back</h1>
           <p className="mt-2 text-lg font-extrabold uppercase tracking-[0.08em] text-blue-600">
             Resume your progress
           </p>
@@ -67,10 +70,7 @@ export default async function LoginPage({
                 Email or username
               </label>
               <MotionInput
-                className={cn(
-                  'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
-                  inputInteractive
-                )}
+                className={cn(authInputShellClassName, inputInteractive)}
               >
                 <input
                   name="email"
@@ -78,7 +78,7 @@ export default async function LoginPage({
                   required
                   placeholder="Enter your email or username"
                   className={cn(
-                    'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                    'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                     focusRingInteractive
                   )}
                 />
@@ -104,11 +104,11 @@ export default async function LoginPage({
                 autoComplete="current-password"
                 placeholder="Password"
                 containerClassName={cn(
-                  'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
+                  authInputShellClassName,
                   inputInteractive
                 )}
                 inputClassName={cn(
-                  'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                  'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                   focusRingInteractive
                 )}
                 leftIcon={<Lock className="h-4 w-4 text-slate-300" />}

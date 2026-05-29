@@ -17,6 +17,23 @@ import {
 } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
 
+const authTitleClassName =
+  'text-[42px] font-extrabold leading-[1.03] tracking-[-0.03em] text-slate-900';
+const authInputShellClassName =
+  'flex h-12 items-center gap-2 rounded-2xl border border-[#bfdbfe] bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
+const compactAuthInputShellClassName = cn(authInputShellClassName, 'px-3');
+
+const PHONE_COUNTRY_OPTIONS = [
+  { code: 'EG', dialCode: '+20', label: 'Egypt', flag: '🇪🇬' },
+  { code: 'US', dialCode: '+1', label: 'United States', flag: '🇺🇸' },
+  { code: 'GB', dialCode: '+44', label: 'United Kingdom', flag: '🇬🇧' },
+  { code: 'SA', dialCode: '+966', label: 'Saudi Arabia', flag: '🇸🇦' },
+  { code: 'AE', dialCode: '+971', label: 'United Arab Emirates', flag: '🇦🇪' },
+  { code: 'DE', dialCode: '+49', label: 'Germany', flag: '🇩🇪' },
+  { code: 'FR', dialCode: '+33', label: 'France', flag: '🇫🇷' },
+  { code: 'CA', dialCode: '+1', label: 'Canada', flag: '🇨🇦' }
+];
+
 export default async function SignupPage({
   searchParams
 }: {
@@ -53,9 +70,7 @@ export default async function SignupPage({
             <ChevronLeft className="h-4 w-4" />
           </div>
 
-          <h1 className="text-[46px] font-extrabold tracking-[-0.03em] text-slate-900 leading-[1.02]">
-            Create account
-          </h1>
+          <h1 className={authTitleClassName}>Create account</h1>
           <p className="mt-2 text-lg font-extrabold uppercase tracking-[0.08em] text-blue-600">
             Join the gym floor
           </p>
@@ -68,7 +83,7 @@ export default async function SignupPage({
                 </label>
                 <MotionInput
                   className={cn(
-                    'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3',
+                    compactAuthInputShellClassName,
                     inputInteractive
                   )}
                 >
@@ -77,7 +92,7 @@ export default async function SignupPage({
                     type="text"
                     placeholder="First"
                     className={cn(
-                      'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                      'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                       focusRingInteractive
                     )}
                   />
@@ -90,7 +105,7 @@ export default async function SignupPage({
                 </label>
                 <MotionInput
                   className={cn(
-                    'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3',
+                    compactAuthInputShellClassName,
                     inputInteractive
                   )}
                 >
@@ -99,7 +114,7 @@ export default async function SignupPage({
                     type="text"
                     placeholder="Last"
                     className={cn(
-                      'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                      'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                       focusRingInteractive
                     )}
                   />
@@ -113,10 +128,7 @@ export default async function SignupPage({
                 Gym username
               </label>
               <MotionInput
-                className={cn(
-                  'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
-                  inputInteractive
-                )}
+                className={cn(authInputShellClassName, inputInteractive)}
               >
                 <input
                   name="username"
@@ -127,7 +139,7 @@ export default async function SignupPage({
                   pattern="[A-Za-z0-9_]{3,20}"
                   placeholder="username"
                   className={cn(
-                    'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                    'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                     focusRingInteractive
                   )}
                 />
@@ -140,10 +152,7 @@ export default async function SignupPage({
                 Email address
               </label>
               <MotionInput
-                className={cn(
-                  'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
-                  inputInteractive
-                )}
+                className={cn(authInputShellClassName, inputInteractive)}
               >
                 <input
                   name="email"
@@ -151,7 +160,7 @@ export default async function SignupPage({
                   required
                   placeholder="name@company.com"
                   className={cn(
-                    'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                    'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                     focusRingInteractive
                   )}
                 />
@@ -164,21 +173,33 @@ export default async function SignupPage({
                 Phone number
               </label>
               <MotionInput
-                className={cn(
-                  'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-3',
-                  inputInteractive
-                )}
+                className={cn(compactAuthInputShellClassName, inputInteractive)}
               >
-                <div className="flex h-8 items-center gap-1 rounded-xl bg-slate-100 px-2 text-slate-700">
-                  <span className="text-xl leading-none">+</span>
-                  <span className="text-sm font-semibold">20</span>
-                </div>
+                <label className="sr-only" htmlFor="phone_country">
+                  Country code
+                </label>
+                <select
+                  id="phone_country"
+                  name="phone_country"
+                  defaultValue="EG"
+                  className={cn(
+                    'h-8 max-w-[154px] shrink-0 rounded-xl border border-[#dbeafe] bg-slate-50 px-2 text-sm font-semibold text-slate-700 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
+                    focusRingInteractive
+                  )}
+                  aria-label="Phone country code"
+                >
+                  {PHONE_COUNTRY_OPTIONS.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.flag} {country.label} {country.dialCode}
+                    </option>
+                  ))}
+                </select>
                 <input
                   name="phone"
                   type="tel"
                   placeholder="123 456 7890"
                   className={cn(
-                    'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                    'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                     focusRingInteractive
                   )}
                 />
@@ -197,11 +218,11 @@ export default async function SignupPage({
                 autoComplete="new-password"
                 placeholder="Password"
                 containerClassName={cn(
-                  'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
+                  authInputShellClassName,
                   inputInteractive
                 )}
                 inputClassName={cn(
-                  'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                  'h-full min-w-0 flex-1 bg-transparent text-slate-700 placeholder:text-slate-400',
                   focusRingInteractive
                 )}
                 leftIcon={<Lock className="h-4 w-4 text-slate-300" />}

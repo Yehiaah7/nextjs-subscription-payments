@@ -25,7 +25,24 @@ const formatLoginError = (message: string) => {
 const sanitizeUsername = (value: string) => value.trim().toLowerCase();
 
 const DEFAULT_PHONE_COUNTRY = 'EG';
-const DEFAULT_PHONE_DIAL_CODE = '+20';
+const PHONE_COUNTRY_OPTIONS = [
+  { code: 'EG', dialCode: '+20' },
+  { code: 'US', dialCode: '+1' },
+  { code: 'GB', dialCode: '+44' },
+  { code: 'SA', dialCode: '+966' },
+  { code: 'AE', dialCode: '+971' },
+  { code: 'DE', dialCode: '+49' },
+  { code: 'FR', dialCode: '+33' },
+  { code: 'CA', dialCode: '+1' }
+] as const;
+
+function getPhoneCountry(countryValue: string) {
+  return (
+    PHONE_COUNTRY_OPTIONS.find(
+      (country) => country.code === countryValue.trim().toUpperCase()
+    ) ?? PHONE_COUNTRY_OPTIONS[0]
+  );
+}
 
 function normalizePhoneNational(value: string) {
   const compact = value.replace(/\s+/g, '');
@@ -38,36 +55,42 @@ function normalizePhoneNational(value: string) {
   return compact;
 }
 
-function derivePhoneFields(phoneValue: string) {
+function derivePhoneFields(phoneValue: string, countryValue: string) {
+  const selectedCountry = getPhoneCountry(countryValue);
   const trimmed = phoneValue.trim();
 
   if (!trimmed) {
     return {
       phone: null,
-      phone_country: DEFAULT_PHONE_COUNTRY,
-      phone_dial_code: DEFAULT_PHONE_DIAL_CODE,
+      phone_country: selectedCountry.code,
+      phone_country_code: selectedCountry.dialCode,
+      phone_dial_code: selectedCountry.dialCode,
       phone_national: null,
       phone_e164: null
     };
   }
 
   const compact = trimmed.replace(/\s+/g, '');
-  const withoutPlus = compact.startsWith('+') ? compact.slice(1) : compact;
-  const national = normalizePhoneNational(
-    withoutPlus.startsWith('20') ? withoutPlus.slice(2) : withoutPlus
-  );
+  const selectedDialCodeDigits = selectedCountry.dialCode.replace('+', '');
+  const nationalValue = compact.startsWith('+')
+    ? compact.slice(1).startsWith(selectedDialCodeDigits)
+      ? compact.slice(1 + selectedDialCodeDigits.length)
+      : compact.slice(1)
+    : compact;
+  const national = normalizePhoneNational(nationalValue);
 
   if (national === null) {
     return null;
   }
 
-  const phone_e164 = `${DEFAULT_PHONE_DIAL_CODE}${national}`;
+  const phone_e164 = national ? `${selectedCountry.dialCode}${national}` : null;
 
   return {
     phone: phone_e164,
-    phone_country: DEFAULT_PHONE_COUNTRY,
-    phone_dial_code: DEFAULT_PHONE_DIAL_CODE,
-    phone_national: national,
+    phone_country: selectedCountry.code,
+    phone_country_code: selectedCountry.dialCode,
+    phone_dial_code: selectedCountry.dialCode,
+    phone_national: national || null,
     phone_e164
   };
 }
@@ -136,6 +159,9 @@ export async function signup(formData: FormData) {
   const username = sanitizeUsername(String(formData.get('username') || ''));
   const email = String(formData.get('email') || '').trim();
   const phone = String(formData.get('phone') || '').trim();
+  const phone_country = String(
+    formData.get('phone_country') || DEFAULT_PHONE_COUNTRY
+  );
   const password = String(formData.get('password') || '').trim();
   const name = [first_name, last_name].filter(Boolean).join(' ').trim();
 
@@ -145,7 +171,7 @@ export async function signup(formData: FormData) {
     );
   }
 
-  const parsedPhone = derivePhoneFields(phone);
+  const parsedPhone = derivePhoneFields(phone, phone_country);
 
   if (!parsedPhone) {
     return redirect(
@@ -174,7 +200,12 @@ export async function signup(formData: FormData) {
         first_name,
         last_name,
         username,
-        phone: parsedPhone.phone ?? ''
+        phone: parsedPhone.phone ?? '',
+        phone_country: parsedPhone.phone_country,
+        phone_country_code: parsedPhone.phone_country_code,
+        phone_dial_code: parsedPhone.phone_dial_code,
+        phone_national: parsedPhone.phone_national ?? '',
+        phone_e164: parsedPhone.phone_e164 ?? ''
       },
       emailRedirectTo: getURL('auth/callback')
     }
@@ -212,6 +243,7 @@ export async function signup(formData: FormData) {
         username,
         phone: parsedPhone.phone,
         phone_country: parsedPhone.phone_country,
+        phone_country_code: parsedPhone.phone_country_code,
         phone_dial_code: parsedPhone.phone_dial_code,
         phone_national: parsedPhone.phone_national,
         phone_e164: parsedPhone.phone_e164
