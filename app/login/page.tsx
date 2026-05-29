@@ -21,7 +21,7 @@ import { cn } from '@/utils/cn';
 const authTitleClassName =
   'text-[42px] font-extrabold leading-[1.03] tracking-[-0.03em] text-slate-900';
 const authInputShellClassName =
-  'flex h-12 items-center gap-2 rounded-2xl border border-[#bfdbfe] bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
+  'flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
 
 export default async function LoginPage({
   searchParams

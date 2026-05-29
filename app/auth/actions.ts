@@ -4,6 +4,10 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { getURL } from '@/utils/helpers';
 import { createAdminClient } from '@/utils/supabase/service-role';
+import {
+  DEFAULT_PHONE_COUNTRY,
+  PHONE_COUNTRY_OPTIONS
+} from '@/lib/auth/phone-countries';
 
 const LOGIN_INVALID_CREDENTIALS = 'Invalid login credentials';
 const LOGIN_EMAIL_NOT_CONFIRMED = 'Email not confirmed';
@@ -23,18 +27,6 @@ const formatLoginError = (message: string) => {
 };
 
 const sanitizeUsername = (value: string) => value.trim().toLowerCase();
-
-const DEFAULT_PHONE_COUNTRY = 'EG';
-const PHONE_COUNTRY_OPTIONS = [
-  { code: 'EG', dialCode: '+20' },
-  { code: 'US', dialCode: '+1' },
-  { code: 'GB', dialCode: '+44' },
-  { code: 'SA', dialCode: '+966' },
-  { code: 'AE', dialCode: '+971' },
-  { code: 'DE', dialCode: '+49' },
-  { code: 'FR', dialCode: '+33' },
-  { code: 'CA', dialCode: '+1' }
-] as const;
 
 function getPhoneCountry(countryValue: string) {
   return (

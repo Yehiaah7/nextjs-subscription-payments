@@ -16,23 +16,13 @@ import {
   inputInteractive
 } from '@/components/ui/interactive';
 import { cn } from '@/utils/cn';
+import PhoneCountrySelect from '@/components/ui/AuthForms/PhoneCountrySelect';
 
 const authTitleClassName =
   'text-[42px] font-extrabold leading-[1.03] tracking-[-0.03em] text-slate-900';
 const authInputShellClassName =
-  'flex h-12 items-center gap-2 rounded-2xl border border-[#bfdbfe] bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
+  'flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
 const compactAuthInputShellClassName = cn(authInputShellClassName, 'px-3');
-
-const PHONE_COUNTRY_OPTIONS = [
-  { code: 'EG', dialCode: '+20', label: 'Egypt', flag: '🇪🇬' },
-  { code: 'US', dialCode: '+1', label: 'United States', flag: '🇺🇸' },
-  { code: 'GB', dialCode: '+44', label: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'SA', dialCode: '+966', label: 'Saudi Arabia', flag: '🇸🇦' },
-  { code: 'AE', dialCode: '+971', label: 'United Arab Emirates', flag: '🇦🇪' },
-  { code: 'DE', dialCode: '+49', label: 'Germany', flag: '🇩🇪' },
-  { code: 'FR', dialCode: '+33', label: 'France', flag: '🇫🇷' },
-  { code: 'CA', dialCode: '+1', label: 'Canada', flag: '🇨🇦' }
-];
 
 export default async function SignupPage({
   searchParams
@@ -175,25 +165,7 @@ export default async function SignupPage({
               <MotionInput
                 className={cn(compactAuthInputShellClassName, inputInteractive)}
               >
-                <label className="sr-only" htmlFor="phone_country">
-                  Country code
-                </label>
-                <select
-                  id="phone_country"
-                  name="phone_country"
-                  defaultValue="EG"
-                  className={cn(
-                    'h-8 max-w-[154px] shrink-0 rounded-xl border border-[#dbeafe] bg-slate-50 px-2 text-sm font-semibold text-slate-700 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
-                    focusRingInteractive
-                  )}
-                  aria-label="Phone country code"
-                >
-                  {PHONE_COUNTRY_OPTIONS.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.flag} {country.label} {country.dialCode}
-                    </option>
-                  ))}
-                </select>
+                <PhoneCountrySelect />
                 <input
                   name="phone"
                   type="tel"
