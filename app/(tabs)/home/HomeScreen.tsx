@@ -623,35 +623,12 @@ function DesktopHomeLayout({
         </aside>
 
         {isHomeSection ? (
-          <aside className="flex min-h-0 flex-col overflow-hidden border-r border-primary-soft bg-white/85 px-4 py-5">
-            <h1 className="flex items-center gap-x-1 whitespace-nowrap text-[12px] font-medium tracking-[-0.02em] text-[var(--color-ink)]">
-              <span>Practice</span>
-              <span className="relative inline-flex">
-                <select
-                  value={selectedSeniority}
-                  onChange={(event) =>
-                    onSelectSeniority(event.target.value as SeniorityFilter)
-                  }
-                  className={cn(
-                    'appearance-none rounded-pill bg-primary-soft py-0.5 pl-1.5 pr-4 text-[11px] font-medium text-primary',
-                    btnInteractive,
-                    btnInteractiveNeutral,
-                    focusRingInteractive
-                  )}
-                  aria-label="Filter interview questions by level"
-                >
-                  {SENIORITY_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {SENIORITY_FILTER_LABELS[option]}
-                    </option>
-                  ))}
-                </select>
-                <ChevronRightFilledIcon className="pointer-events-none absolute right-1 top-1/2 h-3 w-3 -translate-y-1/2 rotate-90 text-primary" />
-              </span>
-              <span>PM Interview Questions.</span>
+          <aside className="m-4 flex min-h-0 flex-col overflow-hidden rounded-[28px] border border-primary-soft bg-white/85 px-4 py-5 shadow-sm shadow-slate-900/5">
+            <h1 className="text-[22px] font-medium leading-tight tracking-[-0.03em] text-[var(--color-ink)]">
+              Practice Library
             </h1>
 
-            <div className="app-segment mt-3 h-9 p-0.5">
+            <div className="app-segment mt-4 h-9 p-0.5">
               <div className="grid h-full grid-cols-3 gap-1">
                 <TabButton
                   label="Companies"
@@ -751,6 +728,8 @@ function DesktopHomeLayout({
                 companyId={selectedCompanyTrack.companySummary.id}
                 challenges={selectedCompanyChallenges}
                 displayMode="embedded"
+                selectedSeniority={selectedSeniority}
+                onSelectSeniority={onSelectSeniority}
               />
             ) : selectedSkillPathId || selectedProductId ? (
               <DesktopEmptyState
@@ -875,7 +854,7 @@ function DesktopHomeLayout({
         ) : null}
 
         {isHomeSection ? (
-          <aside className="min-h-0 overflow-y-auto border-l border-primary-soft bg-white/70 px-5 py-6">
+          <aside className="m-4 min-h-0 overflow-y-auto rounded-[28px] border border-primary-soft bg-white/70 px-5 py-6 shadow-sm shadow-slate-900/5">
             <div className="space-y-4">
               <UserStatsProfileCard
                 userName={userName}
