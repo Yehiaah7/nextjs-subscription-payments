@@ -19,7 +19,7 @@ import {
 import { cn } from '@/utils/cn';
 
 const authTitleClassName =
-  'text-[42px] font-extrabold leading-[1.03] tracking-[-0.03em] text-slate-900';
+  'text-[34px] font-extrabold leading-[1.08] tracking-[-0.025em] text-slate-900 md:text-[36px]';
 const authInputShellClassName =
   'flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
 
@@ -60,7 +60,7 @@ export default async function LoginPage({
           </div>
 
           <h1 className={authTitleClassName}>Welcome back</h1>
-          <p className="mt-2 text-lg font-extrabold uppercase tracking-[0.08em] text-blue-600">
+          <p className="mt-2 text-[15px] font-extrabold uppercase tracking-[0.08em] text-blue-600">
             Resume your progress
           </p>
 
@@ -93,7 +93,7 @@ export default async function LoginPage({
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-[11px] font-bold uppercase tracking-[0.08em] text-blue-600"
+                  className="text-[10px] font-bold uppercase tracking-[0.08em] text-blue-600"
                 >
                   Forgot?
                 </Link>
@@ -133,7 +133,7 @@ export default async function LoginPage({
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-slate-200" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-                or continue with email
+                or sign up
               </span>
               <div className="h-px flex-1 bg-slate-200" />
             </div>
