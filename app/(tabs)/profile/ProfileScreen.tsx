@@ -31,6 +31,7 @@ import {
   Clock3,
   Crosshair,
   HelpCircle,
+  MessageCircle,
   Minus,
   Pencil,
   Plus,
@@ -58,6 +59,7 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/webp',
   'image/gif'
 ]);
+const FEEDBACK_TELEGRAM_URL = 'https://t.me/product_gym_builders';
 const AVATAR_UPDATE_SUCCESS_MESSAGE = 'Profile photo updated successfully';
 const AVATAR_REMOVE_SUCCESS_MESSAGE = 'Profile photo removed successfully';
 const AVATAR_EDITOR_SIZE = 240;
@@ -789,6 +791,30 @@ export default function ProfileScreen({
               <p className="text-[12px] font-bold tracking-[-0.3px] text-[#0f172b]">
                 Preferences & Security
               </p>
+            </div>
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-xl text-[#8C9AA3]">
+              ›
+            </span>
+          </Link>
+
+          <Link
+            href={FEEDBACK_TELEGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-[82px] items-center justify-between rounded-[16px] border border-border bg-white p-3"
+          >
+            <div className="flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-primary">
+                <MessageCircle className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.9px] text-[#cad5e2]">
+                  Feedback
+                </p>
+                <p className="text-[12px] font-bold tracking-[-0.3px] text-[#0f172b]">
+                  Send feedback
+                </p>
+              </div>
             </div>
             <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-xl text-[#8C9AA3]">
               ›
