@@ -1,22 +1,24 @@
 :root {
   --font-red-hat-display: 'Red Hat Display';
-  --app-font-sans: var(--font-red-hat-display), -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue', 'Helvetica', sans-serif;
+  --app-font-sans:
+    var(--font-red-hat-display), -apple-system, system-ui, BlinkMacSystemFont,
+    'Helvetica Neue', 'Helvetica', sans-serif;
 
-  --productGymBlue: #155DFC;
-  --productGymBlueDark: #1D4ED8;
-  --productGymBlueSoft: #DBEAFE;
-  --productGymYellow: #F4B740;
-  --productGymYellowSoft: #FFF4D6;
-  --productGymPink: #E85AA6;
-  --productGymPinkSoft: #FCE7F3;
-  --productGymGreen: #16A34A;
-  --productGymGreenDark: #15803D;
-  --productGymGreenSoft: #DCFCE7;
-  --productGymInk: #0F172B;
-  --productGymMuted: #62748E;
-  --productGymBackground: #F7F7F7;
-  --productGymSurface: #FFFFFF;
-  --productGymBorder: #DBE5F0;
+  --productGymBlue: #155dfc;
+  --productGymBlueDark: #1d4ed8;
+  --productGymBlueSoft: #dbeafe;
+  --productGymYellow: #f4b740;
+  --productGymYellowSoft: #fff4d6;
+  --productGymPink: #e85aa6;
+  --productGymPinkSoft: #fce7f3;
+  --productGymGreen: #16a34a;
+  --productGymGreenDark: #15803d;
+  --productGymGreenSoft: #dcfce7;
+  --productGymInk: #0f172b;
+  --productGymMuted: #62748e;
+  --productGymBackground: #f7f7f7;
+  --productGymSurface: #ffffff;
+  --productGymBorder: #e2e8f0;
 
   --color-background: var(--productGymBackground);
   --color-surface: var(--productGymSurface);
@@ -36,16 +38,16 @@
 
   --color-bg: var(--color-background);
   --color-container: var(--color-surface);
-  --color-surface-muted: #EEF2F6;
-  --color-surface-soft: #E2E8F0;
+  --color-surface-muted: #eef2f6;
+  --color-surface-soft: #e2e8f0;
   --color-border: var(--color-border-muted);
   --color-text-main: var(--color-ink);
   --color-text-subtle: var(--productGymMuted);
-  --color-text-muted: #94A3B8;
+  --color-text-muted: #94a3b8;
   --color-primary: var(--color-brand-blue);
   --color-primary-soft: var(--color-brand-blue-soft);
   --color-success-button: var(--color-brand-green);
-  --color-danger: #DC2626;
+  --color-danger: #dc2626;
 
   --radius-card: 16px;
   --radius-pill: 999px;
@@ -61,41 +63,45 @@
   --lb-tabbar-height: 39px;
   --lb-tabbar-radius: 1000px;
   --lb-tabbar-bg: var(--color-brand-blue-soft);
-  --lb-tabbar-stroke: #BFDBFE;
-  --lb-tab-active-bg: #FFFFFF;
+  --lb-tabbar-stroke: var(--color-border);
+  --lb-tab-active-bg: #ffffff;
   --lb-tab-active-color: var(--color-brand-blue-dark);
   --lb-tab-active-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
-  --lb-tab-inactive-color: #64748B;
-  --lb-card-bg: #FFFFFF;
-  --lb-card-stroke: transparent;
+  --lb-tab-inactive-color: #64748b;
+  --lb-card-bg: #ffffff;
+  --lb-card-stroke: var(--color-border);
   --lb-card-radius: 16px;
   --lb-name-color: var(--color-ink);
-  --lb-role-color: #64748B;
-  --lb-score-bg: #EFF6FF;
+  --lb-role-color: #64748b;
+  --lb-score-bg: #eff6ff;
   --lb-score-color: var(--color-brand-blue-dark);
-  --lb-solved-color: #64748B;
-  --lb-meta-color: #94A3B8;
+  --lb-solved-color: #64748b;
+  --lb-meta-color: #94a3b8;
   --lb-divider: var(--color-brand-blue-soft);
-  --lb-avatar-bg: #3B82F6;
+  --lb-avatar-bg: #3b82f6;
 
   --profile-title-color: var(--color-ink);
   --profile-card-radius: 16px;
   --profile-main-bg: var(--color-brand-blue-soft);
-  --profile-main-stroke: transparent;
-  --profile-avatar-bg: #60A5FA;
+  --profile-main-stroke: var(--color-border);
+  --profile-avatar-bg: #60a5fa;
   --profile-member-color: var(--color-brand-blue);
-  --profile-pro-bg: linear-gradient(180deg, var(--color-brand-green) 0%, var(--color-brand-green-strong) 100%);
+  --profile-pro-bg: linear-gradient(
+    180deg,
+    var(--color-brand-green) 0%,
+    var(--color-brand-green-strong) 100%
+  );
   --profile-pro-badge-bg: rgba(255, 255, 255, 0.2);
-  --profile-container-effect: 0px 25px 50px -12px #1C398E;
+  --profile-container-effect: 0px 25px 50px -12px #1c398e;
 
   --alerts-title-size: 24px;
   --alerts-title-track: -0.6px;
   --alerts-title-color: var(--color-ink);
-  --alerts-card-bg: #FFFFFF;
-  --alerts-card-stroke: transparent;
+  --alerts-card-bg: #ffffff;
+  --alerts-card-stroke: var(--color-border);
   --alerts-card-radius: 16px;
   --alerts-heading-color: var(--color-ink);
-  --alerts-time-color: #64748B;
+  --alerts-time-color: #64748b;
   --alerts-body-color: #475569;
 
   --font-weight-title: 700;

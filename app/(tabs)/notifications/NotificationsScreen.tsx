@@ -153,7 +153,7 @@ export default function NotificationsScreen() {
               href="/home"
               aria-label="Back to Home"
               className={cn(
-                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-muted',
+                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted',
                 iconBtnInteractive,
                 focusRingInteractive
               )}
@@ -177,7 +177,7 @@ export default function NotificationsScreen() {
                   <h2 className="mb-2 px-1 text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#506176]">
                     {section.label}
                   </h2>
-                  <div className="overflow-hidden rounded-[28px] border border-[#e9eef5] bg-white">
+                  <div className="overflow-hidden rounded-[28px] border border-border bg-white">
                     {section.items.map((notification, index) => {
                       const iconConfig = getNotificationIconConfig(
                         notification.type
@@ -191,7 +191,7 @@ export default function NotificationsScreen() {
                           className={cn(
                             'group flex w-full items-start gap-3.5 px-4 py-4',
                             index < section.items.length - 1 &&
-                              'border-b border-[#edf2f8]'
+                              'border-b border-border'
                           )}
                         >
                           <div
@@ -273,7 +273,7 @@ export default function NotificationsScreen() {
                   type="button"
                   onClick={() => setNotificationToDelete(null)}
                   className={cn(
-                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-border bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
                     btnInteractive,
                     btnInteractiveNeutral,
                     focusRingInteractive

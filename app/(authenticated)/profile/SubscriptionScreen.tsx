@@ -60,7 +60,7 @@ export default function SubscriptionScreen({
           subscriptionState={subscriptionState}
         />
 
-        <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3">
+        <section className="rounded-[16px] border border-border bg-white p-3">
           <div className="flex items-center gap-2">
             <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eff6ff] text-[#2563eb]">
               <ShieldCheckFilledIcon className="h-4 w-4" />
@@ -86,7 +86,7 @@ export default function SubscriptionScreen({
               Public global ranking
             </li>
           </ul>
-          <button className="mt-3 h-[49px] w-full rounded-[16px] border border-[#dbeafe] bg-white px-[72px] py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[var(--profile-title-color)]">
+          <button className="mt-3 h-[49px] w-full rounded-[16px] border border-border bg-white px-[72px] py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[var(--profile-title-color)]">
             Current Plan
           </button>
         </section>

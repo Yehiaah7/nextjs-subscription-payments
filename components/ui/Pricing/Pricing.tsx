@@ -115,14 +115,14 @@ export default function Pricing({ user, products, subscription }: Props) {
               Start building for free, then add a site plan to go live. Account
               plans unlock additional features.
             </p>
-            <div className="relative self-center mt-6 bg-zinc-900 rounded-lg p-0.5 flex sm:mt-8 border border-zinc-800">
+            <div className="relative self-center mt-6 bg-zinc-900 rounded-lg p-0.5 flex sm:mt-8 border border-border">
               {intervals.includes('month') && (
                 <button
                   onClick={() => setBillingInterval('month')}
                   type="button"
                   className={`${
                     billingInterval === 'month'
-                      ? 'relative w-1/2 bg-zinc-700 border-zinc-800 text-white'
+                      ? 'relative w-1/2 bg-zinc-700 border-border text-white'
                       : 'ml-0.5 relative w-1/2 border border-transparent text-zinc-400'
                   } rounded-md m-1 py-2 text-sm font-medium whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 focus:z-10 sm:w-auto sm:px-8`}
                 >
@@ -135,7 +135,7 @@ export default function Pricing({ user, products, subscription }: Props) {
                   type="button"
                   className={`${
                     billingInterval === 'year'
-                      ? 'relative w-1/2 bg-zinc-700 border-zinc-800 text-white'
+                      ? 'relative w-1/2 bg-zinc-700 border-border text-white'
                       : 'ml-0.5 relative w-1/2 border border-transparent text-zinc-400'
                   } rounded-md m-1 py-2 text-sm font-medium whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 focus:z-10 sm:w-auto sm:px-8`}
                 >
@@ -159,7 +159,7 @@ export default function Pricing({ user, products, subscription }: Props) {
                 <div
                   key={product.id}
                   className={cn(
-                    'flex flex-col rounded-lg divide-y divide-zinc-600 bg-zinc-900',
+                    'flex flex-col rounded-lg divide-y divide-border bg-zinc-900',
                     {
                       'border border-pink-500': subscription
                         ? product.name === subscription?.prices?.products?.name

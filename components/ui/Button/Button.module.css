@@ -23,7 +23,7 @@
 }
 
 .loading {
-  @apply cursor-not-allowed border-zinc-600 bg-zinc-700 text-zinc-500;
+  @apply cursor-not-allowed border-border bg-zinc-700 text-zinc-500;
 }
 
 .slim {
@@ -33,7 +33,7 @@
 .disabled,
 .disabled:hover,
 .disabled:active {
-  @apply cursor-not-allowed border-zinc-600 bg-zinc-700 text-zinc-400;
+  @apply cursor-not-allowed border-border bg-zinc-700 text-zinc-400;
   filter: grayscale(1);
   transform: none;
   transition: none;

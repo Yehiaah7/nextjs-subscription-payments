@@ -21,7 +21,7 @@ import PhoneCountrySelect from '@/components/ui/AuthForms/PhoneCountrySelect';
 const authTitleClassName =
   'text-[42px] font-extrabold leading-[1.03] tracking-[-0.03em] text-slate-900';
 const authInputShellClassName =
-  'flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
+  'flex h-12 items-center gap-2 rounded-2xl border border-border bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
 const compactAuthInputShellClassName = cn(authInputShellClassName, 'px-3');
 
 export default async function SignupPage({
@@ -49,7 +49,7 @@ export default async function SignupPage({
     <div className="min-h-dvh bg-[#F7F7F7] md:flex md:flex-col">
       <AuthBrandHeader />
       <main className="flex justify-center px-4 py-6 md:flex-1 md:items-center md:py-10">
-        <div className="w-full max-w-sm md:max-w-[440px] md:rounded-[20px] md:border md:border-[#dbeafe] overflow-visible md:bg-white md:p-8 md:shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+        <div className="w-full max-w-sm md:max-w-[440px] md:rounded-[20px] md:border md:border-border overflow-visible md:bg-white md:p-8 md:shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
           <div
             className={cn(
               'mb-7 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm md:hidden',

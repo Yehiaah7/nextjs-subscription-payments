@@ -16,7 +16,7 @@ import { cn } from '@/utils/cn';
 const authTitleClassName =
   'text-[42px] font-extrabold leading-[1.03] tracking-[-0.03em] text-slate-900';
 const authInputShellClassName =
-  'flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
+  'flex h-12 items-center gap-2 rounded-2xl border border-border bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
 
 export default function ForgotPasswordPage({
   searchParams
@@ -27,7 +27,7 @@ export default function ForgotPasswordPage({
     <div className="min-h-dvh bg-[#F7F7F7] md:flex md:flex-col">
       <AuthBrandHeader />
       <main className="flex justify-center px-4 py-6 md:flex-1 md:items-center md:py-10">
-        <div className="w-full max-w-sm md:max-w-[440px] md:rounded-[20px] md:border md:border-[#dbeafe] md:bg-white md:p-8 md:shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+        <div className="w-full max-w-sm md:max-w-[440px] md:rounded-[20px] md:border md:border-border md:bg-white md:p-8 md:shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
           <Link
             href="/login"
             className={cn(

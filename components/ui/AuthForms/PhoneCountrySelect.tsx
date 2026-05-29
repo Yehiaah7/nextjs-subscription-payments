@@ -125,7 +125,7 @@ export default function PhoneCountrySelect({
       ? createPortal(
           <div
             ref={dropdownRef}
-            className="fixed z-[100] max-h-64 w-max max-w-[min(82vw,22rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.14)]"
+            className="fixed z-[100] max-h-64 w-max max-w-[min(82vw,22rem)] overflow-y-auto rounded-2xl border border-border bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.14)]"
             style={{
               left: dropdownPosition.left,
               top: dropdownPosition.top,
@@ -169,7 +169,7 @@ export default function PhoneCountrySelect({
         ref={triggerRef}
         type="button"
         className={cn(
-          'inline-flex h-8 max-w-full items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-0 pl-2 pr-2 text-sm font-semibold text-slate-700 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
+          'inline-flex h-8 max-w-full items-center gap-1.5 rounded-xl border border-border bg-slate-50 py-0 pl-2 pr-2 text-sm font-semibold text-slate-700 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
           btnInteractive,
           focusRingInteractive
         )}

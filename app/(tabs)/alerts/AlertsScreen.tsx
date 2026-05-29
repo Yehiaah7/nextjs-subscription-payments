@@ -78,7 +78,7 @@ export default function AlertsScreen() {
               href="/home"
               aria-label="Back to Home"
               className={cn(
-                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-muted',
+                'inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted',
                 iconBtnInteractive,
                 focusRingInteractive
               )}
@@ -101,7 +101,7 @@ export default function AlertsScreen() {
                 <article
                   key={alert.id}
                   className={cn(
-                    'min-h-[86px] w-full border-b border-[#eef2f7] bg-white p-4 transition-[box-shadow,color] last:border-b-0 hover:shadow-[inset_3px_0_0_#2563eb]',
+                    'min-h-[86px] w-full border-b border-border bg-white p-4 transition-[box-shadow,color] last:border-b-0 hover:shadow-[inset_3px_0_0_#2563eb]',
                     alert.isHighlighted && 'shadow-[inset_3px_0_0_#2563eb]'
                   )}
                 >
