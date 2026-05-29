@@ -632,7 +632,7 @@ function DesktopHomeLayout({
               <span>Practice Library</span>
             </h1>
 
-            <div className="app-segment mt-4 h-9 p-0.5">
+            <div className="mt-4 h-9 rounded-pill bg-background p-0.5">
               <div className="grid h-full grid-cols-3 gap-1">
                 <TabButton
                   label="Companies"
@@ -641,18 +641,21 @@ function DesktopHomeLayout({
                   }
                   active={selectedContentTab === 'companies'}
                   onClick={() => onSelectContentTab('companies')}
+                  variant="desktopLibrary"
                 />
                 <TabButton
                   label="Skill Path"
                   icon={<RouteFilledIcon className="h-3.5 w-3.5 shrink-0" />}
                   active={selectedContentTab === 'skill-paths'}
                   onClick={() => onSelectContentTab('skill-paths')}
+                  variant="desktopLibrary"
                 />
                 <TabButton
                   label="Products"
                   icon={<CubeFilledIcon className="h-3.5 w-3.5 shrink-0" />}
                   active={selectedContentTab === 'products'}
                   onClick={() => onSelectContentTab('products')}
+                  variant="desktopLibrary"
                 />
               </div>
             </div>
@@ -1374,7 +1377,7 @@ function UserStatsProfileCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="-mx-3 grid grid-cols-3 gap-2">
         <UserStatTile
           icon={<TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />}
           label="Rank"
@@ -1613,19 +1616,27 @@ function TabButton({
   label,
   icon,
   active,
-  onClick
+  onClick,
+  variant = 'primary'
 }: {
   label: string;
   icon?: ReactNode;
   active: boolean;
   onClick: () => void;
+  variant?: 'primary' | 'desktopLibrary';
 }) {
+  const isDesktopLibrary = variant === 'desktopLibrary';
   return (
     <button
       onClick={onClick}
       className={cn(
-        'relative h-full rounded-pill px-2 t-label whitespace-nowrap',
-        active ? 'text-white' : 'text-muted',
+        'relative h-full rounded-pill t-label whitespace-nowrap',
+        isDesktopLibrary && active ? 'px-2.5' : 'px-2',
+        active
+          ? isDesktopLibrary
+            ? 'text-productGym-ink'
+            : 'text-white'
+          : 'text-muted',
         tabInteractive,
         focusRingInteractive
       )}
@@ -1634,7 +1645,10 @@ function TabButton({
         <motion.span
           layoutId="home-tab-indicator"
           transition={springTransition}
-          className="absolute inset-0 rounded-pill bg-primary shadow-button"
+          className={cn(
+            'absolute inset-0 rounded-pill shadow-button',
+            isDesktopLibrary ? 'bg-white' : 'bg-primary'
+          )}
         />
       ) : null}
       <span className="relative inline-flex items-center justify-center gap-1.5">
