@@ -469,7 +469,6 @@ function DesktopHomeLayout({
   selectedCompanyId,
   onSelectCompany,
   onSelectSkillPath,
-  onSelectProduct,
   selectedSkillPathId,
   selectedProductId,
   selectedSeniority,
@@ -651,7 +650,10 @@ function DesktopHomeLayout({
             <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
               {selectedContentTab === 'companies' ? (
                 filteredCompanyTracks.length === 0 ? (
-                  <EmptyState message="No challenges for this level yet." />
+                  <EmptyState
+                    message="No challenges for this level yet."
+                    className="rounded-[20px]"
+                  />
                 ) : (
                   filteredCompanyTracks.map((track) => (
                     <DesktopCompanyBrowseCard
@@ -685,28 +687,22 @@ function DesktopHomeLayout({
                     </button>
                   ))
                 ) : (
-                  <EmptyState message="Skill paths are coming soon." />
+                  <DesktopPracticeLibraryEmptyState
+                    icon={<Crosshair className="h-5 w-5" />}
+                    title="Skill paths are warming up"
+                    message="Guided practice routes for core PM skills will appear here soon."
+                    tone="blue"
+                  />
                 )
               ) : null}
 
               {selectedContentTab === 'products' ? (
-                <button
-                  type="button"
-                  onClick={() => onSelectProduct('product-practice')}
-                  className={cn(
-                    'app-card w-full border text-left',
-                    selectedProductId === 'product-practice'
-                      ? 'border-primary bg-primary-soft'
-                      : 'border-primary-soft bg-white',
-                    cardInteractive,
-                    focusRingInteractive
-                  )}
-                >
-                  <p className="t-card-title">Product practice</p>
-                  <p className="t-body-muted mt-1">
-                    Product tracks are coming soon.
-                  </p>
-                </button>
+                <DesktopPracticeLibraryEmptyState
+                  icon={<Package className="h-5 w-5" />}
+                  title="Product practice is coming soon"
+                  message="Focused product tracks are being prepared for your next PM workout."
+                  tone="green"
+                />
               ) : null}
             </div>
           </aside>
@@ -1416,7 +1412,7 @@ function DesktopEmptyState({
 }) {
   return (
     <div className="flex h-full min-h-0 items-center justify-center overflow-hidden">
-      <div className="max-w-md rounded-[28px] border border-primary-soft bg-white p-8 text-center shadow-sm shadow-slate-900/5">
+      <div className="max-w-md rounded-[20px] border border-primary-soft bg-white p-8 text-center shadow-sm shadow-slate-900/5">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
           <Package className="h-7 w-7" />
         </div>
@@ -1427,6 +1423,39 @@ function DesktopEmptyState({
           {message}
         </p>
       </div>
+    </div>
+  );
+}
+
+function DesktopPracticeLibraryEmptyState({
+  icon,
+  title,
+  message,
+  tone = 'blue'
+}: {
+  icon: ReactNode;
+  title: string;
+  message: string;
+  tone?: 'blue' | 'green';
+}) {
+  return (
+    <div className="rounded-[20px] border border-primary-soft bg-white px-5 py-7 text-center shadow-sm shadow-slate-900/5">
+      <div
+        className={cn(
+          'mx-auto grid h-12 w-12 place-items-center rounded-2xl',
+          tone === 'green'
+            ? 'bg-productGym-green-soft text-productGym-green'
+            : 'bg-primary-soft text-primary'
+        )}
+      >
+        {icon}
+      </div>
+      <h3 className="mt-4 text-[17px] font-black leading-tight tracking-[-0.03em] text-[var(--color-ink)]">
+        {title}
+      </h3>
+      <p className="mx-auto mt-2 max-w-[260px] text-[13px] font-medium leading-5 text-muted">
+        {message}
+      </p>
     </div>
   );
 }
@@ -1549,9 +1578,20 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
   );
 }
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({
+  message,
+  className
+}: {
+  message: string;
+  className?: string;
+}) {
   return (
-    <div className="app-card t-body-muted border border-primary-soft">
+    <div
+      className={cn(
+        'app-card t-body-muted border border-primary-soft',
+        className
+      )}
+    >
       {message}
     </div>
   );
