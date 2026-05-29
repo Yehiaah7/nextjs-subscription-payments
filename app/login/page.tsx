@@ -48,6 +48,17 @@ export default async function LoginPage({
       </p>
 
       <form action={login} className="mt-8 grid min-w-0 max-w-full gap-4">
+        <div className="grid gap-4">
+          <GoogleSignInButton label="Continue with Google" />
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              or
+            </span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+        </div>
+
         <div className="min-w-0">
           <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
             Email or username
@@ -94,17 +105,6 @@ export default async function LoginPage({
             leftIcon={<Lock className="h-4 w-4 shrink-0 text-slate-300" />}
             iconClassName="h-4 w-4 shrink-0 text-slate-300"
           />
-        </div>
-
-        <div className="mt-2 grid gap-4">
-          <GoogleSignInButton label="Continue with Google" />
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-              or
-            </span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
         </div>
 
         <AuthSubmitButton
