@@ -761,7 +761,7 @@ function DesktopHomeLayout({
             aria-modal="true"
             aria-labelledby="desktop-delete-notification-title"
           >
-            <div className="w-full max-w-[329px] rounded-3xl bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+            <div className="w-full max-w-[329px] rounded-[20px] bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
               <h2
                 id="desktop-delete-notification-title"
                 className="text-base font-bold tracking-[-0.35px] text-[#0f172b]"
@@ -808,7 +808,7 @@ function DesktopHomeLayout({
             aria-modal="true"
             aria-labelledby="desktop-logout-title"
           >
-            <div className="w-full max-w-[329px] rounded-3xl bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+            <div className="w-full max-w-[329px] rounded-[20px] bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
               <h2
                 id="desktop-logout-title"
                 className="text-base font-bold tracking-[-0.35px] text-[#0f172b]"

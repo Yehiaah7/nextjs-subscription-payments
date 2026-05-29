@@ -891,7 +891,7 @@ function ProfilePhotoActionsModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-photo-actions-title"
-        className="relative w-full max-w-[320px] rounded-[24px] bg-white p-5 shadow-2xl"
+        className="relative w-full max-w-[320px] rounded-[20px] bg-white p-5 shadow-2xl"
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
@@ -988,7 +988,7 @@ function RemoveProfilePhotoConfirmModal({
         aria-modal="true"
         aria-labelledby="remove-profile-photo-title"
         aria-describedby="remove-profile-photo-description"
-        className="relative w-full max-w-[320px] rounded-[24px] bg-white p-4 shadow-2xl"
+        className="relative w-full max-w-[320px] rounded-[20px] bg-white p-4 shadow-2xl"
       >
         <div className="mb-4 flex items-start gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-50 text-rose-600">
@@ -1122,7 +1122,7 @@ function AvatarEditorModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 px-4 pb-4 pt-10 sm:items-center">
       <div
-        className="w-full max-w-[361px] rounded-[24px] bg-white p-4 shadow-2xl"
+        className="w-full max-w-[361px] rounded-[20px] bg-white p-4 shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="avatar-editor-title"

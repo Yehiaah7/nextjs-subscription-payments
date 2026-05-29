@@ -491,7 +491,7 @@ function ConfirmModal({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-[#0f172a]/40 px-4">
-      <div className="w-full max-w-[361px] rounded-[16px] bg-white p-4 text-center">
+      <div className="w-full max-w-[361px] rounded-[20px] bg-white p-4 text-center">
         <h2 className="text-[24px] font-bold tracking-[-0.6px] text-[#0f172b]">
           {title}
         </h2>
