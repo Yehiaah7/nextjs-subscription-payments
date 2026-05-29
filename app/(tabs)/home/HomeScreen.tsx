@@ -737,8 +737,10 @@ function DesktopHomeLayout({
 
         <main
           className={cn(
-            'min-h-0 min-w-0 px-6 py-6',
-            hasScrollableMainContent ? 'overflow-y-auto' : 'overflow-hidden',
+            'min-h-0 min-w-0 py-6',
+            hasScrollableMainContent
+              ? 'overflow-y-auto px-12'
+              : 'overflow-hidden px-6',
             !isHomeSection && 'overflow-hidden px-10 py-0 xl:px-16'
           )}
         >
