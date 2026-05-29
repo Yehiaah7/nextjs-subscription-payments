@@ -488,7 +488,7 @@ function PracticeLibraryPanel({
         </div>
       </div>
 
-      <h2 className="mt-4 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-ink)] lg:hidden">
+      <h2 className="mt-4 mb-3 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-ink)] lg:hidden">
         Practice PM Interview Questions
       </h2>
 
