@@ -8,6 +8,38 @@ const baseProps = {
   'aria-hidden': 'true' as const
 };
 
+export function LibraryFilledIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M5.25 4.25c0-.83.67-1.5 1.5-1.5h4.5c.83 0 1.5.67 1.5 1.5v15.5c0 .83-.67 1.5-1.5 1.5h-4.5c-.83 0-1.5-.67-1.5-1.5V4.25Zm2.05 2.1a.8.8 0 0 0 0 1.6h3.4a.8.8 0 0 0 0-1.6H7.3Zm0 10.05a.8.8 0 0 0 0 1.6h3.4a.8.8 0 0 0 0-1.6H7.3Zm7.2-11.62a1.5 1.5 0 0 1 1.83 1.06l3.48 12.98a1.5 1.5 0 0 1-1.06 1.84l-2.9.77a1.5 1.5 0 0 1-1.84-1.06V7.2c0-.13.02-.26.05-.38a1.5 1.5 0 0 1 .44-2.04Z" />
+    </svg>
+  );
+}
+
+export function BriefcaseFilledIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M9.25 4.25A2.25 2.25 0 0 1 11.5 2h1a2.25 2.25 0 0 1 2.25 2.25V5h3.75A2.5 2.5 0 0 1 21 7.5v2.35c-2.12.9-4.94 1.4-7.9 1.5v-.15a1.1 1.1 0 1 0-2.2 0v.15c-2.96-.1-5.78-.6-7.9-1.5V7.5A2.5 2.5 0 0 1 5.5 5h3.75v-.75Zm1.9.75h1.7v-.75a.35.35 0 0 0-.35-.35h-1a.35.35 0 0 0-.35.35V5ZM3 11.9c2.18.78 4.92 1.22 7.9 1.3v.1a1.1 1.1 0 1 0 2.2 0v-.1c2.98-.08 5.72-.52 7.9-1.3v5.6a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-5.6Z" />
+    </svg>
+  );
+}
+
+export function RouteFilledIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M6.5 3.25a3.25 3.25 0 1 0 0 6.5 3.25 3.25 0 0 0 0-6.5Zm0 2.1a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3Zm11 8.9a3.25 3.25 0 1 0 0 6.5 3.25 3.25 0 0 0 0-6.5Zm0 2.1a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3ZM8.9 7.5a1 1 0 0 1 1-1h3.95a3.65 3.65 0 1 1 0 7.3H10.2a1.55 1.55 0 1 0 0 3.1h2.3a1 1 0 1 1 0 2h-2.3a3.55 3.55 0 1 1 0-7.1h3.65a1.65 1.65 0 1 0 0-3.3H9.9a1 1 0 0 1-1-1Z" />
+    </svg>
+  );
+}
+
+export function CubeFilledIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M11.28 2.7a1.7 1.7 0 0 1 1.44 0l6.55 3.05a1.7 1.7 0 0 1 .98 1.54v9.42a1.7 1.7 0 0 1-.98 1.54l-6.55 3.05a1.7 1.7 0 0 1-1.44 0l-6.55-3.05a1.7 1.7 0 0 1-.98-1.54V7.29c0-.66.38-1.26.98-1.54l6.55-3.05ZM6.37 7.2 12 9.82l5.63-2.62L12 4.58 6.37 7.2Zm6.58 12.08 5.3-2.46V9.06l-5.3 2.47v7.75ZM5.75 9.06v7.76l5.3 2.46v-7.75l-5.3-2.47Z" />
+    </svg>
+  );
+}
+
 export function HomeFilledIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>
@@ -135,7 +167,6 @@ export function TargetFilledIcon(props: IconProps) {
     </svg>
   );
 }
-
 
 export function AlarmFilledIcon(props: IconProps) {
   return (
