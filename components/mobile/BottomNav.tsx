@@ -48,7 +48,7 @@ export default function BottomNav({
       {...props}
     >
       <div className="mx-auto flex w-full justify-center px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
-        <div className="pointer-events-auto grid h-16 w-[min(100%,393px)] grid-cols-3 rounded-full border border-slate-200/80 bg-white px-2 shadow-[0_8px_24px_rgba(15,23,42,0.08)] sm:w-fit">
+        <div className="pointer-events-auto grid h-16 w-[min(100%,393px)] grid-cols-3 rounded-full border border-border bg-white px-2 shadow-[0_8px_24px_rgba(15,23,42,0.08)] sm:w-fit">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
 

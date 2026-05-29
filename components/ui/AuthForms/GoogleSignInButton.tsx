@@ -52,7 +52,7 @@ export default function GoogleSignInButton({
       onClick={handleGoogleSignIn}
       disabled={isSubmitting}
       className={cn(
-        'flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700',
+        'flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-border bg-white px-4 text-sm font-bold text-slate-700',
         inputInteractive,
         btnInteractive,
         focusRingInteractive,

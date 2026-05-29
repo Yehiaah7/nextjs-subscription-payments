@@ -51,10 +51,13 @@ export default function ResetPasswordPage({
               autoComplete="new-password"
               placeholder="Password"
               containerClassName={cn(
-                'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
+                'flex h-12 items-center gap-2 rounded-2xl border border-border bg-white px-4',
                 inputInteractive
               )}
-              inputClassName={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
+              inputClassName={cn(
+                'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                focusRingInteractive
+              )}
               leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
               iconClassName="h-4 w-4 text-slate-300"
             />
@@ -71,10 +74,13 @@ export default function ResetPasswordPage({
               autoComplete="new-password"
               placeholder="Confirm password"
               containerClassName={cn(
-                'flex h-12 items-center gap-2 rounded-2xl border border-transparent bg-white px-4',
+                'flex h-12 items-center gap-2 rounded-2xl border border-border bg-white px-4',
                 inputInteractive
               )}
-              inputClassName={cn('h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400', focusRingInteractive)}
+              inputClassName={cn(
+                'h-full w-full bg-transparent text-slate-700 placeholder:text-slate-400',
+                focusRingInteractive
+              )}
               leftIcon={<Lock className="h-4 w-4 text-slate-300" />}
               iconClassName="h-4 w-4 text-slate-300"
             />
@@ -96,7 +102,9 @@ export default function ResetPasswordPage({
           <p className="mt-3 text-sm text-red-500">{searchParams.error}</p>
         )}
         {searchParams.message && (
-          <p className="mt-3 text-sm text-emerald-600">{searchParams.message}</p>
+          <p className="mt-3 text-sm text-emerald-600">
+            {searchParams.message}
+          </p>
         )}
       </div>
     </div>

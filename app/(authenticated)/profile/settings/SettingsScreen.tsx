@@ -133,7 +133,7 @@ export default function SettingsScreen({
           </h1>
         </header>
 
-        <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3 md:p-5">
+        <section className="rounded-[16px] border border-border bg-white p-3 md:p-5">
           <p className="mb-3 text-[12px] font-bold tracking-[-0.3px] text-[#0f172b] md:text-[14px]">
             Account Preferences
           </p>
@@ -234,7 +234,7 @@ export default function SettingsScreen({
               <MotionButton
                 type="button"
                 onClick={() => setFormValues(initialValues)}
-                className="h-[43px] w-[90px] rounded-[12px] border border-[#dbeafe] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]"
+                className="h-[43px] w-[90px] rounded-[12px] border border-border bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]"
               >
                 Discard
               </MotionButton>
@@ -254,7 +254,7 @@ export default function SettingsScreen({
           </form>
         </section>
 
-        <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3 md:p-5">
+        <section className="rounded-[16px] border border-border bg-white p-3 md:p-5">
           <p className="mb-3 text-[12px] font-bold tracking-[-0.3px] text-[#0f172b] md:text-[14px]">
             Security
           </p>
@@ -364,8 +364,8 @@ function PhoneField({
       <p className="mb-1 text-[9px] font-black uppercase tracking-[1px] text-[#94a3b8]">
         Phone
       </p>
-      <MotionInput className="flex h-[43px] w-full items-center overflow-hidden rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc]">
-        <label className="flex h-full min-w-[124px] items-center border-r border-[#dbeafe] pl-3 pr-2 text-[14px] font-medium text-[var(--profile-title-color)]">
+      <MotionInput className="flex h-[43px] w-full items-center overflow-hidden rounded-[12px] border border-border bg-[#f8fafc]">
+        <label className="flex h-full min-w-[124px] items-center border-r border-border pl-3 pr-2 text-[14px] font-medium text-[var(--profile-title-color)]">
           <select
             name="phone_country"
             value={phoneCountry}
@@ -448,7 +448,7 @@ function Field({
           autoComplete={
             name === 'currentPassword' ? 'current-password' : 'new-password'
           }
-          containerClassName="flex h-[43px] w-full items-center rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc] px-3"
+          containerClassName="flex h-[43px] w-full items-center rounded-[12px] border border-border bg-[#f8fafc] px-3"
           inputClassName="h-full w-full bg-[#f8fafc] text-[14px] font-medium text-[var(--profile-title-color)] outline-none"
           iconClassName="h-4 w-4 text-[#94a3b8]"
         />
@@ -466,7 +466,7 @@ function Field({
             maxLength={maxLength}
             pattern={pattern}
             title={title}
-            className="h-[43px] w-full rounded-[12px] border border-[#e2e8f0] bg-[#f8fafc] px-3 text-[14px] font-medium text-[var(--profile-title-color)]"
+            className="h-[43px] w-full rounded-[12px] border border-border bg-[#f8fafc] px-3 text-[14px] font-medium text-[var(--profile-title-color)]"
           />
         </MotionInput>
       )}
@@ -501,7 +501,7 @@ function ConfirmModal({
         <div className="mt-4">{children}</div>
         <button
           onClick={onCancel}
-          className="mt-2 h-[43px] w-full rounded-[12px] border border-[#dbeafe] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]"
+          className="mt-2 h-[43px] w-full rounded-[12px] border border-border bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]"
         >
           Cancel
         </button>

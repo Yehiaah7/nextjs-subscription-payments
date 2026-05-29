@@ -288,7 +288,7 @@ export default function HomeScreen({
           className={cn('app-card mb-4 border', cardInteractive)}
           style={{
             backgroundColor: '#ffffff',
-            borderColor: '#dbeafe'
+            borderColor: 'var(--color-border)'
           }}
         >
           <div className="mb-3 flex items-center gap-3">
@@ -362,7 +362,7 @@ export default function HomeScreen({
         </h3>
 
         <div className="app-segment mb-4">
-          <div className="grid h-full grid-cols-3 gap-1">
+          <div className="grid h-full min-w-full grid-cols-3 gap-1">
             <TabButton
               label="Companies"
               active={tab === 'companies'}
@@ -555,7 +555,7 @@ function DesktopHomeLayout({
             : 'grid-cols-[88px_minmax(0,1fr)]'
         )}
       >
-        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-primary-soft bg-white px-2 py-3">
+        <aside className="relative z-30 flex min-h-0 flex-col items-center justify-between border-r border-border bg-white px-2 py-3">
           <nav
             className="flex w-full flex-col gap-1.5"
             aria-label="Desktop primary"
@@ -601,7 +601,7 @@ function DesktopHomeLayout({
               />
             </button>
             <div
-              className="invisible fixed bottom-5 left-[80px] z-[100] w-44 translate-x-1 rounded-[18px] border border-primary-soft bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
+              className="invisible fixed bottom-5 left-[80px] z-[100] w-44 translate-x-1 rounded-[18px] border border-border bg-white p-2 opacity-0 shadow-2xl shadow-slate-900/20 transition group-hover:visible group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-x-0 group-focus-within:opacity-100"
               role="menu"
             >
               <Link
@@ -626,14 +626,14 @@ function DesktopHomeLayout({
         </aside>
 
         {isHomeSection ? (
-          <aside className="m-4 flex min-h-0 flex-col overflow-hidden rounded-[20px] border border-primary-soft bg-white/85 px-5 py-5 shadow-sm shadow-slate-900/5">
+          <aside className="m-4 flex min-h-0 flex-col overflow-hidden rounded-[20px] border border-border bg-white/85 px-5 py-5 shadow-sm shadow-slate-900/5">
             <h1 className="flex items-center gap-2 text-[18px] font-semibold leading-tight tracking-[-0.02em] text-[var(--color-ink)]">
               <LibraryFilledIcon className="h-5 w-5 shrink-0 text-primary" />
               <span>Practice Library</span>
             </h1>
 
-            <div className="mt-4 h-9 rounded-pill bg-background p-0.5">
-              <div className="grid h-full grid-cols-3 gap-1">
+            <div className="mt-4 h-9 overflow-x-auto rounded-pill bg-background p-0.5">
+              <div className="grid h-full min-w-full grid-cols-3 gap-1">
                 <TabButton
                   label="Companies"
                   icon={
@@ -690,7 +690,7 @@ function DesktopHomeLayout({
                         'app-card w-full border text-left',
                         selectedSkillPathId === category.id
                           ? 'border-primary bg-primary-soft'
-                          : 'border-primary-soft bg-white',
+                          : 'border-border bg-white',
                         cardInteractive,
                         focusRingInteractive
                       )}
@@ -789,7 +789,7 @@ function DesktopHomeLayout({
                   type="button"
                   onClick={() => setDesktopNotificationToDelete(null)}
                   className={cn(
-                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-border bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
                     btnInteractive,
                     btnInteractiveNeutral,
                     focusRingInteractive
@@ -836,7 +836,7 @@ function DesktopHomeLayout({
                   type="button"
                   onClick={() => setShowLogoutConfirmation(false)}
                   className={cn(
-                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-[#e2e8f0] bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
+                    'inline-flex h-[39px] items-center justify-center rounded-xl border border-border bg-white px-4 py-[11px] text-[11px] font-black uppercase tracking-[0.08em] text-[#0f172b]',
                     btnInteractive,
                     btnInteractiveNeutral,
                     focusRingInteractive
@@ -863,7 +863,7 @@ function DesktopHomeLayout({
         ) : null}
 
         {isHomeSection ? (
-          <aside className="m-4 min-h-0 overflow-y-auto rounded-[20px] border border-primary-soft bg-white/70 px-5 py-6 shadow-sm shadow-slate-900/5">
+          <aside className="m-4 min-h-0 overflow-y-auto rounded-[20px] border border-border bg-white/70 px-5 py-6 shadow-sm shadow-slate-900/5">
             <div className="space-y-4">
               <UserStatsProfileCard
                 userName={userName}
@@ -891,7 +891,7 @@ function DesktopTopNavbar({
   isUpgrading: boolean;
 }) {
   return (
-    <header className="flex h-[64px] shrink-0 items-center justify-between border-b border-primary-soft bg-white px-6">
+    <header className="flex h-[64px] shrink-0 items-center justify-between border-b border-border bg-white px-6">
       <div className="flex items-center gap-3" aria-label="Product Gym">
         <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-[15px] font-black tracking-[-0.04em] text-white shadow-sm shadow-primary/20">
           PG
@@ -925,7 +925,7 @@ function DesktopTopNavbar({
           rel="noopener noreferrer"
           title="Send feedback on Telegram"
           className={cn(
-            'inline-flex h-10 items-center justify-center rounded-full border border-primary-soft bg-white px-5 text-[12px] font-black uppercase tracking-[0.08em] text-[var(--color-ink)] shadow-sm shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+            'inline-flex h-10 items-center justify-center rounded-full border border-border bg-white px-5 text-[12px] font-black uppercase tracking-[0.08em] text-[var(--color-ink)] shadow-sm shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
             btnInteractive,
             btnInteractiveNeutral
           )}
@@ -1132,7 +1132,7 @@ function DesktopSettingsWorkspace({
           {settingsSections.map((section) => (
             <section
               key={section.title}
-              className="rounded-[24px] border border-primary-soft bg-white p-5 text-left shadow-sm shadow-slate-900/5"
+              className="rounded-[24px] border border-border bg-white p-5 text-left shadow-sm shadow-slate-900/5"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -1189,7 +1189,7 @@ function DesktopLeaderboardWorkspace({
           </p>
         </div>
         <div className="app-segment h-10 w-[220px] shrink-0 p-0.5">
-          <div className="grid h-full grid-cols-2 gap-1">
+          <div className="grid h-full min-w-full grid-cols-2 gap-1">
             <DesktopLeaderboardSegmentButton
               label="Weekly"
               active={tab === 'weekly'}
@@ -1238,8 +1238,8 @@ function DesktopLeaderboardSegmentButton({
       onClick={onClick}
       type="button"
       className={cn(
-        'relative h-full whitespace-nowrap rounded-pill px-2 t-label',
-        active ? 'text-white' : 'text-muted',
+        'relative h-full whitespace-nowrap rounded-pill t-label',
+        active ? 'px-[10px] text-white' : 'px-2 text-muted',
         tabInteractive,
         focusRingInteractive
       )}
@@ -1278,7 +1278,7 @@ function DesktopCompanyBrowseCard({
         'group w-full rounded-[18px] border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         active
           ? 'border-primary bg-primary-soft shadow-sm shadow-primary/10'
-          : 'border-primary-soft bg-white hover:border-primary/40 hover:bg-surface-soft',
+          : 'border-border bg-white hover:border-primary/40 hover:bg-surface-soft',
         cardInteractive
       )}
     >
@@ -1355,7 +1355,7 @@ function UserStatsProfileCard({
   return (
     <MotionCard
       className={cn('app-card border', cardInteractive)}
-      style={{ backgroundColor: '#ffffff', borderColor: '#dbeafe' }}
+      style={{ backgroundColor: '#ffffff', borderColor: 'var(--color-border)' }}
     >
       <div className="mb-3 flex items-center gap-3">
         <UserAvatar
@@ -1427,7 +1427,7 @@ function DesktopEmptyState({
 }) {
   return (
     <div className="flex h-full min-h-0 items-center justify-center overflow-hidden">
-      <div className="max-w-md rounded-[20px] border border-primary-soft bg-white p-8 text-center shadow-sm shadow-slate-900/5">
+      <div className="max-w-md rounded-[20px] border border-border bg-white p-8 text-center shadow-sm shadow-slate-900/5">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
           <Package className="h-7 w-7" />
         </div>
@@ -1454,7 +1454,7 @@ function DesktopPracticeLibraryEmptyState({
   tone?: 'blue' | 'green';
 }) {
   return (
-    <div className="rounded-[20px] border border-primary-soft bg-white px-5 py-7 text-center shadow-sm shadow-slate-900/5">
+    <div className="rounded-[20px] border border-border bg-white px-5 py-7 text-center shadow-sm shadow-slate-900/5">
       <div
         className={cn(
           'mx-auto grid h-12 w-12 place-items-center rounded-2xl',
@@ -1483,7 +1483,7 @@ function SkillPathChallengeCard({
   return (
     <MotionCard
       className={cn(
-        'app-card flex cursor-pointer items-center justify-between gap-3 border border-primary-soft p-3',
+        'app-card flex cursor-pointer items-center justify-between gap-3 border border-border p-3',
         cardInteractive
       )}
     >
@@ -1534,7 +1534,7 @@ function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
       >
         <article
           className={cn(
-            'app-card cursor-pointer border border-primary-soft',
+            'app-card cursor-pointer border border-border',
             cardInteractive
           )}
         >
@@ -1602,10 +1602,7 @@ function EmptyState({
 }) {
   return (
     <div
-      className={cn(
-        'app-card t-body-muted border border-primary-soft',
-        className
-      )}
+      className={cn('app-card t-body-muted border border-border', className)}
     >
       {message}
     </div>
@@ -1631,7 +1628,7 @@ function TabButton({
       onClick={onClick}
       className={cn(
         'relative h-full rounded-pill t-label whitespace-nowrap',
-        isDesktopLibrary && active ? 'px-2.5' : 'px-2',
+        active ? 'px-[10px]' : 'px-2',
         active
           ? isDesktopLibrary
             ? 'text-productGym-ink'

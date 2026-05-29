@@ -22,7 +22,17 @@ type ProfileValues = {
   phone: string | null;
 };
 
-export default function ProfileEditScreen({ email, profile, status, error }: { email: string; profile: ProfileValues; status?: string; error?: string; }) {
+export default function ProfileEditScreen({
+  email,
+  profile,
+  status,
+  error
+}: {
+  email: string;
+  profile: ProfileValues;
+  status?: string;
+  error?: string;
+}) {
   const initialValues = useMemo(
     () => ({
       first_name: profile.first_name ?? '',
@@ -49,29 +59,71 @@ export default function ProfileEditScreen({ email, profile, status, error }: { e
           >
             ‹
           </Link>
-          <h1 className="text-[24px] font-bold tracking-[-0.6px] text-[#0f172b]">Edit Profile</h1>
+          <h1 className="text-[24px] font-bold tracking-[-0.6px] text-[#0f172b]">
+            Edit Profile
+          </h1>
         </header>
 
-        <section className="rounded-[16px] border border-[#dbeafe] bg-white p-3">
+        <section className="rounded-[16px] border border-border bg-white p-3">
           <form action={updateProfile} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <Field label="First Name" name="first_name" value={formValues.first_name} onChange={(value) => setFormValues((prev) => ({ ...prev, first_name: value }))} />
-              <Field label="Last Name" name="last_name" value={formValues.last_name} onChange={(value) => setFormValues((prev) => ({ ...prev, last_name: value }))} />
+              <Field
+                label="First Name"
+                name="first_name"
+                value={formValues.first_name}
+                onChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, first_name: value }))
+                }
+              />
+              <Field
+                label="Last Name"
+                name="last_name"
+                value={formValues.last_name}
+                onChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, last_name: value }))
+                }
+              />
             </div>
 
-            <Field label="Username" name="username" value={formValues.username} onChange={(value) => setFormValues((prev) => ({ ...prev, username: value.toLowerCase() }))} required minLength={3} maxLength={20} pattern="[A-Za-z0-9_]{3,20}" title="3-20 chars: letters, numbers, underscore" />
+            <Field
+              label="Username"
+              name="username"
+              value={formValues.username}
+              onChange={(value) =>
+                setFormValues((prev) => ({
+                  ...prev,
+                  username: value.toLowerCase()
+                }))
+              }
+              required
+              minLength={3}
+              maxLength={20}
+              pattern="[A-Za-z0-9_]{3,20}"
+              title="3-20 chars: letters, numbers, underscore"
+            />
             <Field label="Email" value={email} readOnly />
-            <Field label="Phone" name="phone" value={formValues.phone} onChange={(value) => setFormValues((prev) => ({ ...prev, phone: value }))} />
+            <Field
+              label="Phone"
+              name="phone"
+              value={formValues.phone}
+              onChange={(value) =>
+                setFormValues((prev) => ({ ...prev, phone: value }))
+              }
+            />
 
-            {status && <p className="text-xs font-medium text-emerald-600">{status}</p>}
-            {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+            {status && (
+              <p className="text-xs font-medium text-emerald-600">{status}</p>
+            )}
+            {error && (
+              <p className="text-xs font-medium text-red-500">{error}</p>
+            )}
 
             <div className="flex justify-end gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => setFormValues(initialValues)}
                 className={cn(
-                  'h-[43px] w-[90px] rounded-[12px] border border-[#dbeafe] bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]',
+                  'h-[43px] w-[90px] rounded-[12px] border border-border bg-white text-[10px] font-black uppercase tracking-[1px] text-[#64748b]',
                   btnInteractive,
                   btnInteractiveNeutral,
                   focusRingInteractive
@@ -97,10 +149,36 @@ export default function ProfileEditScreen({ email, profile, status, error }: { e
   );
 }
 
-function Field({ label, className = '', value, name, onChange, readOnly, required, minLength, maxLength, pattern, title }: { label: string; className?: string; value: string; name?: string; onChange?: (value: string) => void; readOnly?: boolean; required?: boolean; minLength?: number; maxLength?: number; pattern?: string; title?: string; }) {
+function Field({
+  label,
+  className = '',
+  value,
+  name,
+  onChange,
+  readOnly,
+  required,
+  minLength,
+  maxLength,
+  pattern,
+  title
+}: {
+  label: string;
+  className?: string;
+  value: string;
+  name?: string;
+  onChange?: (value: string) => void;
+  readOnly?: boolean;
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  title?: string;
+}) {
   return (
     <div className={className}>
-      <p className="mb-1 text-[10px] font-black uppercase tracking-[1px] text-[#64748b]">{label}</p>
+      <p className="mb-1 text-[10px] font-black uppercase tracking-[1px] text-[#64748b]">
+        {label}
+      </p>
       <input
         name={name}
         value={value}
@@ -112,7 +190,7 @@ function Field({ label, className = '', value, name, onChange, readOnly, require
         pattern={pattern}
         title={title}
         className={cn(
-          'h-[43px] w-full rounded-[12px] border border-[#dbeafe] bg-white px-3 text-[14px] font-medium text-[var(--profile-title-color)] read-only:bg-[#f8fafc] read-only:text-[#94a3b8]',
+          'h-[43px] w-full rounded-[12px] border border-border bg-white px-3 text-[14px] font-medium text-[var(--profile-title-color)] read-only:bg-[#f8fafc] read-only:text-[#94a3b8]',
           inputInteractive,
           focusRingInteractive
         )}

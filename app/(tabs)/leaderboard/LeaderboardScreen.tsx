@@ -30,7 +30,7 @@ export default function LeaderboardScreen() {
               href="/home"
               aria-label="Back to Home"
               className={cn(
-                'hidden h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-muted lg:inline-flex',
+                'hidden h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted lg:inline-flex',
                 focusRingInteractive
               )}
             >

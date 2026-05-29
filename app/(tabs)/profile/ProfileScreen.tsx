@@ -661,7 +661,7 @@ export default function ProfileScreen({
             className={cn('app-card border', cardInteractive)}
             style={{
               backgroundColor: '#ffffff',
-              borderColor: '#dbeafe'
+              borderColor: 'var(--color-border)'
             }}
           >
             <div className="flex flex-col items-center">
@@ -676,7 +676,7 @@ export default function ProfileScreen({
                   initialsClassName="text-2xl"
                 />
 
-                <span className="absolute -right-0.5 -top-0.5 grid h-6 w-6 place-items-center rounded-full border border-[#bfdbfe] bg-white text-primary">
+                <span className="absolute -right-0.5 -top-0.5 grid h-6 w-6 place-items-center rounded-full border border-border bg-white text-primary">
                   <TrophyFilledIcon className="h-3.5 w-3.5" />
                 </span>
 
@@ -780,7 +780,7 @@ export default function ProfileScreen({
 
           <Link
             href="/profile/settings"
-            className="flex h-[82px] items-center justify-between rounded-[16px] border border-[#d7e3f7] bg-white p-3"
+            className="flex h-[82px] items-center justify-between rounded-[16px] border border-border bg-white p-3"
           >
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.9px] text-[#cad5e2]">
@@ -1015,7 +1015,7 @@ function RemoveProfilePhotoConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={isRemoving}
-            className="h-11 rounded-[14px] border border-slate-200 bg-white text-[13px] font-bold text-slate-600 disabled:opacity-50"
+            className="h-11 rounded-[14px] border border-border bg-white text-[13px] font-bold text-slate-600 disabled:opacity-50"
           >
             Cancel
           </button>
@@ -1050,7 +1050,7 @@ function ProfilePhotoActionTrigger({
       aria-label="Open profile photo actions"
       aria-haspopup="dialog"
       aria-expanded={isOpen}
-      className="grid h-8 w-8 place-items-center rounded-full border border-[#bfdbfe] bg-white text-primary shadow-md transition hover:bg-primary-soft disabled:cursor-not-allowed disabled:opacity-60"
+      className="grid h-8 w-8 place-items-center rounded-full border border-border bg-white text-primary shadow-md transition hover:bg-primary-soft disabled:cursor-not-allowed disabled:opacity-60"
     >
       <Camera className="h-4 w-4" />
     </button>
@@ -1204,7 +1204,7 @@ function AvatarEditorModal({
             type="button"
             onClick={onCancel}
             disabled={isSaving}
-            className="h-11 rounded-[14px] border border-slate-200 bg-white text-[13px] font-bold text-slate-600 disabled:opacity-50"
+            className="h-11 rounded-[14px] border border-border bg-white text-[13px] font-bold text-slate-600 disabled:opacity-50"
           >
             Cancel
           </button>

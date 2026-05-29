@@ -668,11 +668,11 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
     return (
       <div className="mx-auto grid w-full max-w-[361px] place-items-center rounded-2xl bg-white p-4 lg:min-h-dvh lg:max-w-[720px] lg:bg-transparent lg:px-8 lg:pt-8">
         <div
-          className="relative grid h-16 w-16 place-items-center rounded-full border border-[#d8efe1] bg-white shadow-sm shadow-slate-900/5"
+          className="relative grid h-16 w-16 place-items-center rounded-full border border-border bg-white shadow-sm shadow-slate-900/5"
           role="status"
           aria-label="Loading challenge"
         >
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#d8efe1] border-t-primary" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary" />
         </div>
       </div>
     );
@@ -759,7 +759,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
               Challenge Complete
             </p>
             <div className="relative flex items-center justify-center py-1">
-              <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-[#bfdbfe] bg-gradient-to-br from-[#dbeafe] to-white">
+              <div className="animate-completion-pop relative grid h-16 w-16 place-items-center rounded-full border border-border bg-gradient-to-br from-[#dbeafe] to-white">
                 <div className="grid h-12 w-12 place-items-center rounded-full bg-white">
                   <CheckCircleFilledIcon className="h-7 w-7 text-[#22c55e]" />
                 </div>
@@ -848,7 +848,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             />
           </div>
 
-          <section className="w-full rounded-2xl border border-[#bfe7d1] bg-[#f3fbf6] p-3 lg:p-5">
+          <section className="w-full rounded-2xl border border-border bg-[#f3fbf6] p-3 lg:p-5">
             <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2f8a5d]">
               {quiz.modules?.title ?? 'Challenge'}
             </p>
@@ -857,7 +857,7 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
             </h1>
           </section>
 
-          <section className="w-full rounded-2xl border border-[#d8efe1] bg-[#f8fdf9] p-2.5 lg:p-4">
+          <section className="w-full rounded-2xl border border-border bg-[#f8fdf9] p-2.5 lg:p-4">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               {currentState.isSolved ? (
                 <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand-green-soft)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-productGym-greenDark">
