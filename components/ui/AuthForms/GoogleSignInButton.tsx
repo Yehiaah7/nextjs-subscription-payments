@@ -1,6 +1,7 @@
 'use client';
 
 import { createClient } from '@/utils/supabase/client';
+import { getOAuthRedirectUrl } from '@/utils/auth/oauth-redirect';
 import { cn } from '@/utils/cn';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -26,21 +27,28 @@ export default function GoogleSignInButton({
 
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
-    const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=/home`;
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo
+    try {
+      const supabase = createClient();
+      const redirectTo = getOAuthRedirectUrl('/home');
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo
+        }
+      });
+
+      if (error) {
+        throw error;
       }
-    });
-
-    if (error) {
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Please try again.';
       setIsSubmitting(false);
       router.push(
         `${pathname}?error=${encodeURIComponent(
-          `Google sign-in failed: ${error.message}`
+          `Google sign-in failed: ${message}`
         )}`
       );
     }

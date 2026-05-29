@@ -43,6 +43,15 @@ In your Supabase project, navigate to [auth > URL configuration](https://app.sup
 
 Next, in your Vercel deployment settings, add a new **Production** environment variable called `NEXT_PUBLIC_SITE_URL` and set it to the same URL. Make sure to deselect preview and development environments to make sure that preview branches and local development work correctly.
 
+### Product Gym Google OAuth redirect URLs
+
+For Google SSO to work in mobile and desktop browser flows, configure Supabase Auth with these redirect URLs:
+
+- `https://productgymapp.vercel.app/auth/callback`
+- `http://localhost:3000/auth/callback`
+
+Set `NEXT_PUBLIC_SITE_URL` to `https://productgymapp.vercel.app` in production. Leave it unset for local development, or make sure local testing uses `http://localhost:3000` so OAuth redirects back to the same local origin.
+
 #### [Optional] - Set up redirect wildcards for deploy previews (not needed if you installed via the Deploy Button)
 
 If you've deployed this template via the "Deploy to Vercel" button above, you can skip this step. The Supabase Vercel Integration will have set redirect wildcards for you. You can check this by going to your Supabase [auth settings](https://app.supabase.com/project/_/auth/url-configuration) and you should see a list of redirects under "Redirect URLs".
