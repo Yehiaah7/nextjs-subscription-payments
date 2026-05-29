@@ -288,7 +288,7 @@ export default function HomeScreen({
           className={cn('app-card mb-4 border', cardInteractive)}
           style={{
             backgroundColor: '#ffffff',
-            borderColor: 'var(--color-border)'
+            borderColor: 'transparent'
           }}
         >
           <div className="mb-3 flex items-center gap-3">
@@ -1355,7 +1355,7 @@ function UserStatsProfileCard({
   return (
     <MotionCard
       className={cn('app-card border', cardInteractive)}
-      style={{ backgroundColor: '#ffffff', borderColor: 'var(--color-border)' }}
+      style={{ backgroundColor: '#ffffff', borderColor: 'transparent' }}
     >
       <div className="mb-3 flex items-center gap-3">
         <UserAvatar

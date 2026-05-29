@@ -661,7 +661,7 @@ export default function ProfileScreen({
             className={cn('app-card border', cardInteractive)}
             style={{
               backgroundColor: '#ffffff',
-              borderColor: 'var(--color-border)'
+              borderColor: 'transparent'
             }}
           >
             <div className="flex flex-col items-center">
