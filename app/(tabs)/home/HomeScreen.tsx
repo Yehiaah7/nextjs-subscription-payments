@@ -701,7 +701,7 @@ function DesktopHomeLayout({
                   icon={<Package className="h-5 w-5" />}
                   title="Product practice is coming soon"
                   message="Focused product tracks are being prepared for your next PM workout."
-                  tone="green"
+                  tone="blue"
                 />
               ) : null}
             </div>
