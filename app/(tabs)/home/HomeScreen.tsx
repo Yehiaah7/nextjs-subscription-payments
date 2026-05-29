@@ -548,7 +548,7 @@ function DesktopHomeLayout({
         className={cn(
           'grid min-h-0 flex-1 overflow-hidden',
           isHomeSection
-            ? 'grid-cols-[88px_minmax(268px,308px)_minmax(0,1fr)_300px] xl:grid-cols-[88px_332px_minmax(0,1fr)_360px]'
+            ? 'grid-cols-[88px_minmax(304px,344px)_minmax(0,1fr)_336px] xl:grid-cols-[88px_372px_minmax(0,1fr)_392px]'
             : 'grid-cols-[88px_minmax(0,1fr)]'
         )}
       >
@@ -623,7 +623,7 @@ function DesktopHomeLayout({
         </aside>
 
         {isHomeSection ? (
-          <aside className="m-4 flex min-h-0 flex-col overflow-hidden rounded-[28px] border border-primary-soft bg-white/85 px-4 py-5 shadow-sm shadow-slate-900/5">
+          <aside className="m-4 flex min-h-0 flex-col overflow-hidden rounded-[20px] border border-primary-soft bg-white/85 px-5 py-5 shadow-sm shadow-slate-900/5">
             <h1 className="text-[22px] font-medium leading-tight tracking-[-0.03em] text-[var(--color-ink)]">
               Practice Library
             </h1>
@@ -716,7 +716,7 @@ function DesktopHomeLayout({
           className={cn(
             'min-h-0 min-w-0 py-6',
             hasScrollableMainContent
-              ? 'overflow-y-auto px-12'
+              ? 'overflow-y-auto px-6 xl:px-8'
               : 'overflow-hidden px-6',
             !isHomeSection && 'overflow-hidden px-10 py-0 xl:px-16'
           )}
@@ -854,7 +854,7 @@ function DesktopHomeLayout({
         ) : null}
 
         {isHomeSection ? (
-          <aside className="m-4 min-h-0 overflow-y-auto rounded-[28px] border border-primary-soft bg-white/70 px-5 py-6 shadow-sm shadow-slate-900/5">
+          <aside className="m-4 min-h-0 overflow-y-auto rounded-[20px] border border-primary-soft bg-white/70 px-5 py-6 shadow-sm shadow-slate-900/5">
             <div className="space-y-4">
               <UserStatsProfileCard
                 userName={userName}

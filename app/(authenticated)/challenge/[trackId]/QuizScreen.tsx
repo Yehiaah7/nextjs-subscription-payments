@@ -666,8 +666,14 @@ export default function QuizScreen({ challengeId }: { challengeId: string }) {
 
   if (loading || !quiz || !currentQuestion) {
     return (
-      <div className="mx-auto w-full max-w-[361px] rounded-2xl bg-white p-4 lg:min-h-dvh lg:max-w-[720px] lg:bg-transparent lg:px-8 lg:pt-8">
-        Loading challenge...
+      <div className="mx-auto grid w-full max-w-[361px] place-items-center rounded-2xl bg-white p-4 lg:min-h-dvh lg:max-w-[720px] lg:bg-transparent lg:px-8 lg:pt-8">
+        <div
+          className="relative grid h-16 w-16 place-items-center rounded-full border border-[#d8efe1] bg-white shadow-sm shadow-slate-900/5"
+          role="status"
+          aria-label="Loading challenge"
+        >
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#d8efe1] border-t-primary" />
+        </div>
       </div>
     );
   }
