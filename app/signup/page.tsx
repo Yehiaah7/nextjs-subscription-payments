@@ -54,6 +54,17 @@ export default async function SignupPage({
         action={signup}
         className="mt-8 grid min-w-0 max-w-full gap-4 overflow-visible"
       >
+        <div className="grid gap-4">
+          <GoogleSignInButton label="Continue with Google" />
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              or
+            </span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+        </div>
+
         <div className="grid min-w-0 gap-4 sm:grid-cols-2 sm:gap-3">
           <div className="min-w-0">
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
@@ -185,17 +196,6 @@ export default async function SignupPage({
           />
         </div>
 
-        <div className="mt-2 grid gap-4">
-          <GoogleSignInButton label="Continue with Google" />
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-              or
-            </span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
-        </div>
-
         <AuthSubmitButton
           className={cn(
             'mt-2 h-12 w-full min-w-0 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
@@ -212,16 +212,16 @@ export default async function SignupPage({
         <p className="mt-3 text-sm text-red-500">{searchParams.error}</p>
       )}
 
+      <p className="mt-4 text-center text-xs text-slate-400">
+        By joining, you agree to the{' '}
+        <span className="underline">Terms of Service</span> and{' '}
+        <span className="underline">Privacy Policy</span>.
+      </p>
       <p className="mt-5 text-center text-sm font-extrabold uppercase tracking-[0.05em] text-blue-600">
         Already have an account?{' '}
         <Link href="/login" className="underline">
           Sign in
         </Link>
-      </p>
-      <p className="mt-4 text-center text-xs text-slate-400">
-        By joining, you agree to the{' '}
-        <span className="underline">Terms of Service</span> and{' '}
-        <span className="underline">Privacy Policy</span>.
       </p>
     </AuthLayout>
   );
