@@ -488,27 +488,29 @@ function PracticeLibraryPanel({
         </div>
       </div>
 
-      <h2 className="mt-4 mb-3 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-ink)] lg:hidden">
-        Practice PM Interview Questions
-      </h2>
-
       <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
         {selectedContentTab === 'companies' ? (
-          filteredCompanyTracks.length === 0 ? (
-            <EmptyState
-              message="No challenges for this level yet."
-              className="rounded-[20px]"
-            />
-          ) : (
-            filteredCompanyTracks.map((track) => (
-              <DesktopCompanyBrowseCard
-                key={track.companySummary.id}
-                track={track}
-                active={selectedCompanyId === track.companySummary.id}
-                onClick={() => onSelectCompany(track.companySummary.id)}
+          <>
+            <h2 className="mt-4 mb-3 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-ink)]">
+              Practice PM Interview Questions
+            </h2>
+
+            {filteredCompanyTracks.length === 0 ? (
+              <EmptyState
+                message="No challenges for this level yet."
+                className="rounded-[20px]"
               />
-            ))
-          )
+            ) : (
+              filteredCompanyTracks.map((track) => (
+                <DesktopCompanyBrowseCard
+                  key={track.companySummary.id}
+                  track={track}
+                  active={selectedCompanyId === track.companySummary.id}
+                  onClick={() => onSelectCompany(track.companySummary.id)}
+                />
+              ))
+            )}
+          </>
         ) : null}
 
         {selectedContentTab === 'skill-paths' ? (
