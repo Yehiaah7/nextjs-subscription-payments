@@ -185,6 +185,17 @@ export default async function SignupPage({
           />
         </div>
 
+        <div className="mt-2 grid gap-4">
+          <GoogleSignInButton label="Continue with Google" />
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              or
+            </span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+        </div>
+
         <AuthSubmitButton
           className={cn(
             'mt-2 h-12 w-full min-w-0 rounded-2xl bg-blue-600 text-sm font-extrabold uppercase tracking-[0.14em] text-white',
@@ -196,17 +207,6 @@ export default async function SignupPage({
           Create account
         </AuthSubmitButton>
       </form>
-
-      <div className="mt-6 grid gap-4">
-        <GoogleSignInButton label="Continue with Google" />
-        <div className="flex items-center gap-3">
-          <div className="h-px flex-1 bg-slate-200" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-            or continue with email
-          </span>
-          <div className="h-px flex-1 bg-slate-200" />
-        </div>
-      </div>
 
       {searchParams.error && (
         <p className="mt-3 text-sm text-red-500">{searchParams.error}</p>
