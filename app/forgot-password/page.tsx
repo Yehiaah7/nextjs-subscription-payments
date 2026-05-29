@@ -14,7 +14,7 @@ import {
 import { cn } from '@/utils/cn';
 
 const authTitleClassName =
-  'text-[42px] font-extrabold leading-[1.03] tracking-[-0.03em] text-slate-900';
+  'text-[34px] font-extrabold leading-[1.08] tracking-[-0.025em] text-slate-900 md:text-[36px]';
 const authInputShellClassName =
   'flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20';
 
@@ -41,7 +41,7 @@ export default function ForgotPasswordPage({
           </Link>
 
           <h1 className={authTitleClassName}>Forgot password</h1>
-          <p className="mt-2 text-lg font-extrabold uppercase tracking-[0.08em] text-blue-600">
+          <p className="mt-2 text-[15px] font-extrabold uppercase tracking-[0.08em] text-blue-600">
             Reset your account access
           </p>
 
