@@ -33,7 +33,6 @@ import { ReactNode, useEffect, useState } from 'react';
 import { MotionButton, MotionCard } from '@/components/motion';
 import MotionPage from '@/components/motion/MotionPage';
 import { DESKTOP_LAYOUT_ENTER_EVENT } from '@/components/mobile/responsive-layout';
-import { getCompanyHref } from '@/app/(authenticated)/companies/navigation';
 import {
   btnInteractive,
   btnInteractiveColored,
@@ -44,7 +43,6 @@ import {
   tabInteractive
 } from '@/components/ui/interactive';
 import {
-  SENIORITY_FILTER_LABELS,
   SENIORITY_OPTIONS,
   SENIORITY_STORAGE_KEY,
   Seniority,
@@ -125,7 +123,6 @@ export default function HomeScreen({
   const searchParams = useSearchParams();
   const { avatar } = useUserAvatar();
   const { refreshNotifications } = useNotifications();
-  const [tab, setTab] = useState<MainTab>('companies');
   const [selectedDesktopSection, setSelectedDesktopSection] =
     useState<DesktopSection>('home');
   const [selectedContentTab, setSelectedContentTab] =
@@ -143,27 +140,33 @@ export default function HomeScreen({
   const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
   const [selectedSeniority, setSelectedSeniority] =
     useState<SeniorityFilter>('all');
-  const defaultSkillCategoryKey =
-    skillPathCategories.find((category) => category.key === 'discovery')?.key ??
-    skillPathCategories[0]?.key ??
-    null;
-  const [selectedSkillCategoryKey, setSelectedSkillCategoryKey] = useState<
-    string | null
-  >(defaultSkillCategoryKey);
   const trialDaysLeft = 7;
   const freeTrialCopy = getProTrialRemainingCopy(trialDaysLeft);
 
-  const selectedCategory =
-    skillPathCategories.find(
-      (category) => category.key === selectedSkillCategoryKey
-    ) ?? skillPathCategories[0];
-  const selectedCategoryChallenges = selectedCategory
-    ? skillPathChallenges.filter(
-        (challenge) =>
-          challenge.categoryId === selectedCategory.id &&
-          (selectedSeniority === 'all' || challenge.level === selectedSeniority)
-      )
-    : [];
+  const handleSelectContentTab = (nextTab: MainTab) => {
+    setSelectedContentTab(nextTab);
+    setSelectedCompanyId(null);
+    setSelectedSkillPathId(null);
+    setSelectedProductId(null);
+  };
+
+  const handleSelectCompany = (companyId: string) => {
+    setSelectedCompanyId(companyId);
+    setSelectedSkillPathId(null);
+    setSelectedProductId(null);
+  };
+
+  const handleSelectSkillPath = (skillPathId: string) => {
+    setSelectedSkillPathId(skillPathId);
+    setSelectedCompanyId(null);
+    setSelectedProductId(null);
+  };
+
+  const handleSelectProduct = (productId: string) => {
+    setSelectedProductId(productId);
+    setSelectedCompanyId(null);
+    setSelectedSkillPathId(null);
+  };
 
   const filteredCompanyTracks = companyTracks
     .filter((track) =>
@@ -361,117 +364,51 @@ export default function HomeScreen({
           </div>
         </MotionCard>
 
-        <h3 className="t-card-title mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1">
-          <span>Practice</span>
-          <span className="relative inline-flex">
-            <select
-              value={selectedSeniority}
-              onChange={(event) =>
-                setSelectedSeniority(event.target.value as SeniorityFilter)
+        <PracticeLibraryPanel
+          className="mb-4"
+          selectedContentTab={selectedContentTab}
+          onSelectContentTab={handleSelectContentTab}
+          selectedCompanyId={selectedCompanyId}
+          onSelectCompany={handleSelectCompany}
+          onSelectSkillPath={handleSelectSkillPath}
+          selectedSkillPathId={selectedSkillPathId}
+          filteredCompanyTracks={filteredCompanyTracks}
+          skillPathCategories={skillPathCategories}
+        />
+
+        <section className="pb-8">
+          {selectedCompanyTrack ? (
+            <CompanyDetailsScreen
+              companySummary={selectedCompanyTrack.companySummary}
+              companyId={selectedCompanyTrack.companySummary.id}
+              challenges={
+                challengesByCompany[selectedCompanyTrack.companySummary.id] ??
+                []
               }
-              className={cn(
-                'appearance-none rounded-pill bg-primary-soft py-0.5 pl-2 pr-6 text-[14px] font-semibold text-primary',
-                btnInteractive,
-                btnInteractiveNeutral,
-                focusRingInteractive
-              )}
-              aria-label="Filter interview questions by level"
-            >
-              {SENIORITY_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {SENIORITY_FILTER_LABELS[option]}
-                </option>
-              ))}
-            </select>
-            <ChevronRightFilledIcon className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-primary" />
-          </span>
-          <span>PM interview questions</span>
-        </h3>
-
-        <div className="app-segment mb-4">
-          <div className="grid h-full min-w-full grid-cols-3 gap-1">
-            <TabButton
-              label="Companies"
-              active={tab === 'companies'}
-              onClick={() => setTab('companies')}
+              displayMode="embedded"
+              selectedSeniority={selectedSeniority}
+              onSelectSeniority={setSelectedSeniority}
             />
-            <TabButton
-              label="Skill Paths"
-              active={tab === 'skill-paths'}
-              onClick={() => setTab('skill-paths')}
+          ) : selectedSkillPathId || selectedProductId ? (
+            <MobilePracticeEmptyState
+              title="Coming soon"
+              message="This practice area is being prepared for Product Gym members."
             />
-            <TabButton
-              label="Products"
-              active={tab === 'products'}
-              onClick={() => setTab('products')}
-            />
-          </div>
-        </div>
-
-        {tab === 'companies' && (
-          <section>
-            <motion.div
-              className="space-y-4"
-              variants={listVariants}
-              initial="initial"
-              animate="animate"
-            >
-              {filteredCompanyTracks.length === 0 ? (
-                <EmptyState message="No challenges for this level yet." />
-              ) : (
-                filteredCompanyTracks.map((track) => (
-                  <motion.div
-                    key={track.companySummary.id}
-                    variants={fadeSlideUp}
-                  >
-                    <CompanyTrackCard
-                      track={track}
-                      href={getCompanyHref(track.companySummary.id)}
-                    />
-                  </motion.div>
-                ))
-              )}
-            </motion.div>
-          </section>
-        )}
-        {tab === 'skill-paths' && (
-          <div className="space-y-4">
-            <EmptyState message="No skill path challenges yet." />
-          </div>
-        )}
-        {tab === 'products' && (
-          <div className="space-y-4">
-            <EmptyState message="No products yet." />
-          </div>
-        )}
+          ) : (
+            <MobilePracticeEmptyState message="Choose a company, skill path, or product to start elevating your PM skills." />
+          )}
+        </section>
       </section>
 
       <DesktopHomeLayout
         selectedDesktopSection={selectedDesktopSection}
         onSelectDesktopSection={setSelectedDesktopSection}
         selectedContentTab={selectedContentTab}
-        onSelectContentTab={(nextTab) => {
-          setSelectedContentTab(nextTab);
-          setSelectedCompanyId(null);
-          setSelectedSkillPathId(null);
-          setSelectedProductId(null);
-        }}
+        onSelectContentTab={handleSelectContentTab}
         selectedCompanyId={selectedCompanyId}
-        onSelectCompany={(companyId) => {
-          setSelectedCompanyId(companyId);
-          setSelectedSkillPathId(null);
-          setSelectedProductId(null);
-        }}
-        onSelectSkillPath={(skillPathId) => {
-          setSelectedSkillPathId(skillPathId);
-          setSelectedCompanyId(null);
-          setSelectedProductId(null);
-        }}
-        onSelectProduct={(productId) => {
-          setSelectedProductId(productId);
-          setSelectedCompanyId(null);
-          setSelectedSkillPathId(null);
-        }}
+        onSelectCompany={handleSelectCompany}
+        onSelectSkillPath={handleSelectSkillPath}
+        onSelectProduct={handleSelectProduct}
         selectedSkillPathId={selectedSkillPathId}
         selectedProductId={selectedProductId}
         selectedSeniority={selectedSeniority}
@@ -489,6 +426,149 @@ export default function HomeScreen({
         avatar={avatar}
       />
     </MotionPage>
+  );
+}
+
+function PracticeLibraryPanel({
+  className,
+  selectedContentTab,
+  onSelectContentTab,
+  selectedCompanyId,
+  onSelectCompany,
+  onSelectSkillPath,
+  selectedSkillPathId,
+  filteredCompanyTracks,
+  skillPathCategories
+}: {
+  className?: string;
+  selectedContentTab: MainTab;
+  onSelectContentTab: (tab: MainTab) => void;
+  selectedCompanyId: string | null;
+  onSelectCompany: (companyId: string) => void;
+  onSelectSkillPath: (skillPathId: string) => void;
+  selectedSkillPathId: string | null;
+  filteredCompanyTracks: HomeTrack[];
+  skillPathCategories: SkillPathCategory[];
+}) {
+  return (
+    <aside
+      className={cn(
+        'flex min-h-0 flex-col overflow-hidden rounded-[20px] border border-border bg-white/85 px-5 py-5 shadow-sm shadow-slate-900/5',
+        className
+      )}
+    >
+      <h1 className="flex items-center gap-2 text-[18px] font-semibold leading-tight tracking-[-0.02em] text-[var(--color-ink)]">
+        <LibraryFilledIcon className="h-5 w-5 shrink-0 text-primary" />
+        <span>Practice Library</span>
+      </h1>
+
+      <div className="mt-4 max-w-full overflow-x-auto">
+        <div className="inline-flex h-9 w-max flex-nowrap gap-1 rounded-pill bg-background p-0.5">
+          <TabButton
+            label="Companies"
+            icon={<BriefcaseFilledIcon className="h-3.5 w-3.5 shrink-0" />}
+            active={selectedContentTab === 'companies'}
+            onClick={() => onSelectContentTab('companies')}
+            variant="desktopLibrary"
+          />
+          <TabButton
+            label="Skill Path"
+            icon={<RouteFilledIcon className="h-3.5 w-3.5 shrink-0" />}
+            active={selectedContentTab === 'skill-paths'}
+            onClick={() => onSelectContentTab('skill-paths')}
+            variant="desktopLibrary"
+          />
+          <TabButton
+            label="Products"
+            icon={<CubeFilledIcon className="h-3.5 w-3.5 shrink-0" />}
+            active={selectedContentTab === 'products'}
+            onClick={() => onSelectContentTab('products')}
+            variant="desktopLibrary"
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
+        {selectedContentTab === 'companies' ? (
+          filteredCompanyTracks.length === 0 ? (
+            <EmptyState
+              message="No challenges for this level yet."
+              className="rounded-[20px]"
+            />
+          ) : (
+            filteredCompanyTracks.map((track) => (
+              <DesktopCompanyBrowseCard
+                key={track.companySummary.id}
+                track={track}
+                active={selectedCompanyId === track.companySummary.id}
+                onClick={() => onSelectCompany(track.companySummary.id)}
+              />
+            ))
+          )
+        ) : null}
+
+        {selectedContentTab === 'skill-paths' ? (
+          skillPathCategories.length ? (
+            skillPathCategories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => onSelectSkillPath(category.id)}
+                className={cn(
+                  'app-card w-full border text-left',
+                  selectedSkillPathId === category.id
+                    ? 'border-primary bg-primary-soft'
+                    : 'border-border bg-white',
+                  cardInteractive,
+                  focusRingInteractive
+                )}
+              >
+                <p className="t-card-title">{category.title}</p>
+                <p className="t-body-muted mt-1">Skill path challenges</p>
+              </button>
+            ))
+          ) : (
+            <DesktopPracticeLibraryEmptyState
+              icon={<Crosshair className="h-5 w-5" />}
+              title="Skill paths are warming up"
+              message="Guided practice routes for core PM skills will appear here soon."
+              tone="blue"
+            />
+          )
+        ) : null}
+
+        {selectedContentTab === 'products' ? (
+          <DesktopPracticeLibraryEmptyState
+            icon={<Package className="h-5 w-5" />}
+            title="Product practice is coming soon"
+            message="Focused product tracks are being prepared for your next PM workout."
+            tone="blue"
+          />
+        ) : null}
+      </div>
+    </aside>
+  );
+}
+
+function MobilePracticeEmptyState({
+  title = 'Ready when you are',
+  message
+}: {
+  title?: string;
+  message: string;
+}) {
+  return (
+    <div className="rounded-[20px] border border-border bg-white p-6 text-center shadow-sm shadow-slate-900/5">
+      <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+        <Package className="h-6 w-6" />
+      </div>
+      <h2 className="mt-4 text-[20px] font-black tracking-[-0.04em] text-[var(--color-ink)]">
+        {title}
+      </h2>
+      <p className="mt-2 text-[14px] font-medium leading-6 text-muted">
+        {message}
+      </p>
+    </div>
   );
 }
 
@@ -653,99 +733,17 @@ function DesktopHomeLayout({
         </aside>
 
         {isHomeSection ? (
-          <aside className="m-4 flex min-h-0 flex-col overflow-hidden rounded-[20px] border border-border bg-white/85 px-5 py-5 shadow-sm shadow-slate-900/5">
-            <h1 className="flex items-center gap-2 text-[18px] font-semibold leading-tight tracking-[-0.02em] text-[var(--color-ink)]">
-              <LibraryFilledIcon className="h-5 w-5 shrink-0 text-primary" />
-              <span>Practice Library</span>
-            </h1>
-
-            <div className="mt-4 max-w-full overflow-x-auto">
-              <div className="inline-flex h-9 w-max flex-nowrap gap-1 rounded-pill bg-background p-0.5">
-                <TabButton
-                  label="Companies"
-                  icon={
-                    <BriefcaseFilledIcon className="h-3.5 w-3.5 shrink-0" />
-                  }
-                  active={selectedContentTab === 'companies'}
-                  onClick={() => onSelectContentTab('companies')}
-                  variant="desktopLibrary"
-                />
-                <TabButton
-                  label="Skill Path"
-                  icon={<RouteFilledIcon className="h-3.5 w-3.5 shrink-0" />}
-                  active={selectedContentTab === 'skill-paths'}
-                  onClick={() => onSelectContentTab('skill-paths')}
-                  variant="desktopLibrary"
-                />
-                <TabButton
-                  label="Products"
-                  icon={<CubeFilledIcon className="h-3.5 w-3.5 shrink-0" />}
-                  active={selectedContentTab === 'products'}
-                  onClick={() => onSelectContentTab('products')}
-                  variant="desktopLibrary"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-4 pr-1">
-              {selectedContentTab === 'companies' ? (
-                filteredCompanyTracks.length === 0 ? (
-                  <EmptyState
-                    message="No challenges for this level yet."
-                    className="rounded-[20px]"
-                  />
-                ) : (
-                  filteredCompanyTracks.map((track) => (
-                    <DesktopCompanyBrowseCard
-                      key={track.companySummary.id}
-                      track={track}
-                      active={selectedCompanyId === track.companySummary.id}
-                      onClick={() => onSelectCompany(track.companySummary.id)}
-                    />
-                  ))
-                )
-              ) : null}
-
-              {selectedContentTab === 'skill-paths' ? (
-                skillPathCategories.length ? (
-                  skillPathCategories.map((category) => (
-                    <button
-                      key={category.id}
-                      type="button"
-                      onClick={() => onSelectSkillPath(category.id)}
-                      className={cn(
-                        'app-card w-full border text-left',
-                        selectedSkillPathId === category.id
-                          ? 'border-primary bg-primary-soft'
-                          : 'border-border bg-white',
-                        cardInteractive,
-                        focusRingInteractive
-                      )}
-                    >
-                      <p className="t-card-title">{category.title}</p>
-                      <p className="t-body-muted mt-1">Skill path challenges</p>
-                    </button>
-                  ))
-                ) : (
-                  <DesktopPracticeLibraryEmptyState
-                    icon={<Crosshair className="h-5 w-5" />}
-                    title="Skill paths are warming up"
-                    message="Guided practice routes for core PM skills will appear here soon."
-                    tone="blue"
-                  />
-                )
-              ) : null}
-
-              {selectedContentTab === 'products' ? (
-                <DesktopPracticeLibraryEmptyState
-                  icon={<Package className="h-5 w-5" />}
-                  title="Product practice is coming soon"
-                  message="Focused product tracks are being prepared for your next PM workout."
-                  tone="blue"
-                />
-              ) : null}
-            </div>
-          </aside>
+          <PracticeLibraryPanel
+            className="m-4"
+            selectedContentTab={selectedContentTab}
+            onSelectContentTab={onSelectContentTab}
+            selectedCompanyId={selectedCompanyId}
+            onSelectCompany={onSelectCompany}
+            onSelectSkillPath={onSelectSkillPath}
+            selectedSkillPathId={selectedSkillPathId}
+            filteredCompanyTracks={filteredCompanyTracks}
+            skillPathCategories={skillPathCategories}
+          />
         ) : null}
 
         <main
@@ -1499,124 +1497,6 @@ function DesktopPracticeLibraryEmptyState({
         {message}
       </p>
     </div>
-  );
-}
-
-function SkillPathChallengeCard({
-  challenge
-}: {
-  challenge: SkillPathChallenge;
-}) {
-  return (
-    <MotionCard
-      className={cn(
-        'app-card flex cursor-pointer items-center justify-between gap-3 border border-border p-3',
-        cardInteractive
-      )}
-    >
-      <div className="min-w-0 flex-1">
-        <h4 className="line-clamp-2 text-[16px] font-bold leading-[1.35] text-[var(--color-ink)]">
-          {challenge.title}
-        </h4>
-        <div className="mt-2 flex items-center gap-3 text-[10px] font-black tracking-[0.04em] text-[#5D6B74]">
-          <span>{challenge.practicingCount} Practicing</span>
-          <span>
-            {challenge.durationMin}–{challenge.durationMax} mins
-          </span>
-        </div>
-      </div>
-      <MotionCard
-        className={cn(
-          'grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-primary',
-          iconBtnInteractive,
-          focusRingInteractive
-        )}
-      >
-        <Link href={`/challenge/${challenge.id}`} aria-label={challenge.title}>
-          <ChevronRightFilledIcon className="h-4 w-4" />
-        </Link>
-      </MotionCard>
-    </MotionCard>
-  );
-}
-
-function CompanyTrackCard({ track, href }: { track: HomeTrack; href: string }) {
-  const boundedProgress = Math.max(
-    0,
-    Math.min(100, track.companySummary.progress)
-  );
-  const ctaLabel = boundedProgress === 0 ? 'Start' : 'Continue';
-
-  return (
-    <MotionCard>
-      <Link
-        href={href}
-        onClick={() =>
-          console.log('[proof] company challenge card clicked', {
-            companyId: track.companySummary.id,
-            href
-          })
-        }
-        className={cn('block w-full', focusRingInteractive)}
-      >
-        <article
-          className={cn(
-            'app-card cursor-pointer border border-border',
-            cardInteractive
-          )}
-        >
-          <div className="mb-3 flex items-start gap-3">
-            <CompanyThumbnail
-              companyId={track.companySummary.id}
-              companyName={track.companySummary.name}
-              companyLogoSrc={track.companySummary.logo}
-              className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-white"
-            />
-            <div className="min-w-0 flex-1">
-              <h4 className="truncate text-[16px] font-bold text-[var(--color-ink)]">
-                {track.companySummary.name}
-              </h4>
-              <p className="mt-0.5 truncate text-[12px] font-medium text-[#9a7a30]">
-                {track.companySummary.focus
-                  ? `Focus: ${track.companySummary.focus}`
-                  : ''}
-              </p>
-              <div className="mt-2 flex items-center gap-3 text-[10px] font-bold tracking-[0.04em] text-[#5D6B74]">
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <TrophyFilledIcon className="h-3.5 w-3.5" />
-                  {track.companySummary.challengesCount} Challenges
-                </span>
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <UsersFilledIcon className="h-3.5 w-3.5" />
-                  {track.companySummary.practicingCount} Practicing
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 flex-1 rounded-pill bg-[var(--color-border)]">
-              <div
-                className="h-full rounded-pill bg-primary"
-                style={{ width: `${boundedProgress}%` }}
-              />
-            </div>
-            <span className="text-[10px] font-black tracking-[0.04em] text-primary">
-              {boundedProgress}%
-            </span>
-            <span className="text-[10px] font-black tracking-[0.04em] text-primary">
-              {ctaLabel}
-            </span>
-            <span
-              className="grid h-7 w-7 place-items-center rounded-full bg-primary-soft text-primary"
-              aria-label={`${ctaLabel} ${track.companySummary.name}`}
-            >
-              <ChevronRightFilledIcon className="h-4 w-4" />
-            </span>
-          </div>
-        </article>
-      </Link>
-    </MotionCard>
   );
 }
 
