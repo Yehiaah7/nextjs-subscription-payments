@@ -75,18 +75,26 @@ export default function CompanyDetailsScreen({
   companySummary,
   challenges,
   companyId,
-  displayMode = 'page'
+  displayMode = 'page',
+  selectedSeniority: controlledSelectedSeniority,
+  onSelectSeniority
 }: {
   companySummary: CompanySummary;
   companyId: string;
   challenges: CompanyChallenge[];
   displayMode?: 'page' | 'embedded';
+  selectedSeniority?: SeniorityFilter;
+  onSelectSeniority?: (seniority: SeniorityFilter) => void;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const [filter, setFilter] = useState<FilterTab>('all');
-  const [selectedSeniority, setSelectedSeniority] =
+  const [internalSelectedSeniority, setInternalSelectedSeniority] =
     useState<SeniorityFilter>('all');
+  const selectedSeniority =
+    controlledSelectedSeniority ?? internalSelectedSeniority;
+  const setSelectedSeniority =
+    onSelectSeniority ?? setInternalSelectedSeniority;
 
   const refreshChallengeSnapshot = useCallback(() => {
     if (consumeCompanyChallengeListRefresh(companyId)) {
@@ -105,11 +113,13 @@ export default function CompanyDetailsScreen({
   }, [refreshChallengeSnapshot]);
 
   useEffect(() => {
+    if (controlledSelectedSeniority !== undefined) return;
+
     const stored = window.localStorage.getItem(SENIORITY_STORAGE_KEY);
     if (stored && SENIORITY_OPTIONS.includes(stored as SeniorityFilter)) {
-      setSelectedSeniority(stored as SeniorityFilter);
+      setInternalSelectedSeniority(stored as SeniorityFilter);
     }
-  }, []);
+  }, [controlledSelectedSeniority]);
 
   useEffect(() => {
     window.localStorage.setItem(SENIORITY_STORAGE_KEY, selectedSeniority);
@@ -181,13 +191,24 @@ export default function CompanyDetailsScreen({
 
       <CompanySummaryCard company={companySummary} className="app-card mb-5" />
 
-      <div className="mb-4 flex items-center gap-2">
-        <span className="t-card-title">PM interview practice</span>
-        <SeniorityDropdown
-          selected={selectedSeniority}
-          onSelect={setSelectedSeniority}
-        />
-      </div>
+      {displayMode === 'embedded' ? (
+        <h2 className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[22px] font-medium leading-tight tracking-[-0.03em] text-[var(--color-ink)]">
+          <span>Practice</span>
+          <SeniorityDropdown
+            selected={selectedSeniority}
+            onSelect={setSelectedSeniority}
+          />
+          <span>PM Interview Questions.</span>
+        </h2>
+      ) : (
+        <div className="mb-4 flex items-center gap-2">
+          <span className="t-card-title">PM interview practice</span>
+          <SeniorityDropdown
+            selected={selectedSeniority}
+            onSelect={setSelectedSeniority}
+          />
+        </div>
+      )}
 
       <div className="mb-4 overflow-x-auto px-1">
         <div className="app-segment flex min-w-max flex-nowrap items-center gap-1 p-1 text-center">
@@ -229,7 +250,10 @@ export default function CompanyDetailsScreen({
       </div>
 
       <motion.div
-        className="space-y-3 pb-8"
+        className={cn(
+          'pb-8',
+          displayMode === 'embedded' ? 'space-y-5' : 'space-y-3'
+        )}
         variants={listVariants}
         initial="initial"
         animate="animate"
