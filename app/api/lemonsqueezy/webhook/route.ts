@@ -114,10 +114,15 @@ function getSubscriptionRecord(
     subscription_resumed: 'active',
     subscription_unpaused: 'active'
   };
-  const status =
+  const rawStatus =
     typeof attributes.status === 'string'
       ? attributes.status
       : (fallbackStatusByEvent[eventName] ?? 'unknown');
+  const status =
+    eventName === 'subscription_payment_success' &&
+    rawStatus.toLowerCase() === 'paid'
+      ? 'active'
+      : rawStatus;
 
   return {
     user_id: userId,
@@ -127,7 +132,9 @@ function getSubscriptionRecord(
       : getRelationshipId(payload, 'customer'),
     lemon_squeezy_order_id: attributes.order_id
       ? String(attributes.order_id)
-      : null,
+      : eventName === 'subscription_payment_success' && payload.data?.id
+        ? String(payload.data.id)
+        : null,
     lemon_squeezy_product_id: attributes.product_id
       ? String(attributes.product_id)
       : getRelationshipId(payload, 'product'),
