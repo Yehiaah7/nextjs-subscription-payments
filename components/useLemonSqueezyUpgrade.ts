@@ -7,13 +7,8 @@ export function useLemonSqueezyUpgrade(onUpgrade?: () => void) {
   const router = useRouter();
   const currentPath = usePathname();
   const [isUpgrading, setIsUpgrading] = useState(false);
-  const paymentProvider = 'lemonsqueezy';
-
   const handleUpgrade = async () => {
-    if (onUpgrade) {
-      onUpgrade();
-      return;
-    }
+    onUpgrade?.();
 
     setIsUpgrading(true);
 
@@ -22,8 +17,7 @@ export function useLemonSqueezyUpgrade(onUpgrade?: () => void) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ paymentProvider })
+        }
       });
       const data = (await response.json().catch(() => null)) as {
         url?: string;

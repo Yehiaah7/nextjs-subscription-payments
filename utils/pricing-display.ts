@@ -1,7 +1,8 @@
-const PRODUCT_GYM_MONTHLY_PRICE_CENTS = 1200;
-const LEGACY_PRODUCT_GYM_MONTHLY_PRICE_CENTS = 2000;
+const PRODUCT_GYM_MONTHLY_PRICE_CENTS = 700;
+const LEGACY_PRODUCT_GYM_MONTHLY_PRICE_CENTS = 1200;
+const OLDEST_PRODUCT_GYM_MONTHLY_PRICE_CENTS = 2000;
 
-export const PRODUCT_GYM_MONTHLY_PRICE_LABEL = '$12/month';
+export const PRODUCT_GYM_MONTHLY_PRICE_LABEL = '$7/month';
 
 export function formatProductGymDisplayPrice({
   currency,
@@ -15,7 +16,8 @@ export function formatProductGymDisplayPrice({
   const displayUnitAmount =
     currency?.toLowerCase() === 'usd' &&
     interval === 'month' &&
-    unitAmount === LEGACY_PRODUCT_GYM_MONTHLY_PRICE_CENTS
+    (unitAmount === LEGACY_PRODUCT_GYM_MONTHLY_PRICE_CENTS ||
+      unitAmount === OLDEST_PRODUCT_GYM_MONTHLY_PRICE_CENTS)
       ? PRODUCT_GYM_MONTHLY_PRICE_CENTS
       : (unitAmount ?? 0);
 
