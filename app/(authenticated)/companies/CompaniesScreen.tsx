@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Lock } from 'lucide-react';
 import {
   ChevronLeftFilledIcon,
   ChevronRightFilledIcon
@@ -15,14 +16,19 @@ import {
 } from '@/components/ui/interactive';
 import { fadeSlideUp, listVariants } from '@/lib/motion';
 import { cn } from '@/utils/cn';
+import { canAccessCompany } from '@/utils/access';
 import type { CompanySummary } from './company-summary';
 import { getCompanyHref } from './navigation';
 import CompanySummaryCard from './CompanySummaryCard';
 
 export default function CompaniesScreen({
-  companyTracks
+  companyTracks,
+  isPro,
+  isTrialActive
 }: {
   companyTracks: CompanySummary[];
+  isPro: boolean;
+  isTrialActive: boolean;
 }) {
   return (
     <MotionPage>
@@ -49,15 +55,25 @@ export default function CompaniesScreen({
         >
           {companyTracks.map((track) => {
             const boundedProgress = Math.max(0, Math.min(100, track.progress));
-            const ctaLabel = boundedProgress === 0 ? 'Start' : 'Continue';
+            const locked = !canAccessCompany({
+              companySlug: track.name,
+              isPro,
+              isTrialActive
+            });
+            const ctaLabel = locked
+              ? 'Unlock Pro'
+              : boundedProgress === 0
+                ? 'Start'
+                : 'Continue';
 
             return (
               <motion.div key={track.id} variants={fadeSlideUp}>
                 <MotionCard>
                   <Link
-                    href={getCompanyHref(track.id)}
+                    href={locked ? '/home?upgrade=1' : getCompanyHref(track.id)}
                     className={cn(
                       'app-card block cursor-pointer',
+                      locked && 'bg-slate-50 opacity-75',
                       cardInteractive,
                       focusRingInteractive
                     )}
@@ -68,7 +84,12 @@ export default function CompaniesScreen({
                       className="p-0"
                       footer={
                         <div className="flex items-center gap-3">
-                          <span className="t-label ml-auto text-primary">{ctaLabel}</span>
+                          {locked ? (
+                            <Lock className="h-4 w-4 text-muted" />
+                          ) : null}
+                          <span className="t-label ml-auto text-primary">
+                            {ctaLabel}
+                          </span>
                           <span
                             className={cn(
                               'grid h-8 w-8 place-items-center rounded-pill bg-primary-soft text-primary',
@@ -76,7 +97,11 @@ export default function CompaniesScreen({
                             )}
                             aria-hidden="true"
                           >
-                            <ChevronRightFilledIcon className="h-4 w-4" />
+                            {locked ? (
+                              <Lock className="h-4 w-4" />
+                            ) : (
+                              <ChevronRightFilledIcon className="h-4 w-4" />
+                            )}
                           </span>
                         </div>
                       }

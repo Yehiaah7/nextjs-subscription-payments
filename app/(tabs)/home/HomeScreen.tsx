@@ -22,6 +22,7 @@ import {
   Clock3,
   Crosshair,
   HelpCircle,
+  Lock,
   LogOut,
   Package,
   Settings,
@@ -50,7 +51,7 @@ import {
 } from '@/components/seniority/constants';
 import { fadeSlideUp, listVariants, springTransition } from '@/lib/motion';
 import { cn } from '@/utils/cn';
-import { getProTrialRemainingCopy } from '@/lib/trial';
+import { formatTrialCountdownLabel, canAccessCompany } from '@/utils/access';
 import type { CompanySummary } from '@/app/(authenticated)/companies/company-summary';
 import CompanyThumbnail from '@/app/(authenticated)/companies/CompanyThumbnail';
 import UserAvatar from '@/components/ui/UserAvatar';
@@ -106,7 +107,11 @@ export default function HomeScreen({
   userAvatarUrl,
   userEmail,
   userStats,
-  challengesByCompany
+  challengesByCompany,
+  isPro,
+  isTrialActive,
+  trialDaysLeft,
+  trialEndAt
 }: {
   companyTracks: HomeTrack[];
   skillPathCategories: SkillPathCategory[];
@@ -119,6 +124,10 @@ export default function HomeScreen({
   userEmail?: string | null;
   userStats: UserProfileStats;
   challengesByCompany: Record<string, CompanyChallenge[]>;
+  isPro: boolean;
+  isTrialActive: boolean;
+  trialDaysLeft: number;
+  trialEndAt: string;
 }) {
   const searchParams = useSearchParams();
   const { avatar } = useUserAvatar();
@@ -140,8 +149,9 @@ export default function HomeScreen({
   const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
   const [selectedSeniority, setSelectedSeniority] =
     useState<SeniorityFilter>('all');
-  const trialDaysLeft = 7;
-  const freeTrialCopy = getProTrialRemainingCopy(trialDaysLeft);
+  const freeTrialCopy = isTrialActive
+    ? formatTrialCountdownLabel(trialDaysLeft)
+    : 'Free trial ended';
 
   const handleSelectContentTab = (nextTab: MainTab) => {
     setSelectedContentTab(nextTab);
@@ -151,6 +161,19 @@ export default function HomeScreen({
   };
 
   const handleSelectCompany = (companyId: string) => {
+    const company = companyTracks.find(
+      (track) => track.companySummary.id === companyId
+    )?.companySummary;
+    if (
+      company &&
+      !canAccessCompany({ companySlug: company.name, isPro, isTrialActive })
+    ) {
+      toast({
+        title:
+          'Upgrade to Pro to unlock this company and all practice challenges.'
+      });
+      return;
+    }
     setSelectedCompanyId(companyId);
     setSelectedSkillPathId(null);
     setSelectedProductId(null);
@@ -268,7 +291,7 @@ export default function HomeScreen({
           <NotificationsBellButton />
         </header>
 
-        {showFreeTrialCard ? (
+        {!isPro && showFreeTrialCard ? (
           <MotionCard
             className={cn(
               'mb-4 rounded-[16px] bg-productGym-yellow p-3 text-productGym-ink shadow-sm shadow-black/5',
@@ -282,7 +305,7 @@ export default function HomeScreen({
                 </div>
                 <div className="min-w-0">
                   <p className="t-label text-productGym-ink">
-                    Free Trial Active
+                    {isTrialActive ? 'Free Trial Active' : 'Free Trial Ended'}
                   </p>
                   <p className="text-[11px] font-semibold text-productGym-ink/75">
                     {freeTrialCopy}
@@ -374,6 +397,8 @@ export default function HomeScreen({
           selectedSkillPathId={selectedSkillPathId}
           filteredCompanyTracks={filteredCompanyTracks}
           skillPathCategories={skillPathCategories}
+          isPro={isPro}
+          isTrialActive={isTrialActive}
         />
 
         <section className="pb-8">
@@ -424,6 +449,10 @@ export default function HomeScreen({
         userStats={userStats}
         userAvatarUrl={userAvatarUrl}
         avatar={avatar}
+        isPro={isPro}
+        isTrialActive={isTrialActive}
+        trialDaysLeft={trialDaysLeft}
+        trialEndAt={trialEndAt}
       />
     </MotionPage>
   );
@@ -438,7 +467,9 @@ function PracticeLibraryPanel({
   onSelectSkillPath,
   selectedSkillPathId,
   filteredCompanyTracks,
-  skillPathCategories
+  skillPathCategories,
+  isPro,
+  isTrialActive
 }: {
   className?: string;
   selectedContentTab: MainTab;
@@ -449,6 +480,8 @@ function PracticeLibraryPanel({
   selectedSkillPathId: string | null;
   filteredCompanyTracks: HomeTrack[];
   skillPathCategories: SkillPathCategory[];
+  isPro: boolean;
+  isTrialActive: boolean;
 }) {
   return (
     <aside
@@ -507,6 +540,13 @@ function PracticeLibraryPanel({
                   track={track}
                   active={selectedCompanyId === track.companySummary.id}
                   onClick={() => onSelectCompany(track.companySummary.id)}
+                  locked={
+                    !canAccessCompany({
+                      companySlug: track.companySummary.name,
+                      isPro,
+                      isTrialActive
+                    })
+                  }
                 />
               ))
             )}
@@ -600,7 +640,11 @@ function DesktopHomeLayout({
   userEmail,
   userStats,
   userAvatarUrl,
-  avatar
+  avatar,
+  isPro,
+  isTrialActive,
+  trialDaysLeft,
+  trialEndAt
 }: {
   selectedDesktopSection: DesktopSection;
   onSelectDesktopSection: (section: DesktopSection) => void;
@@ -631,6 +675,10 @@ function DesktopHomeLayout({
     fullName?: string | null;
     email?: string | null;
   };
+  isPro: boolean;
+  isTrialActive: boolean;
+  trialDaysLeft: number;
+  trialEndAt: string;
 }) {
   const selectedCompanyChallenges = selectedCompanyId
     ? (challengesByCompany[selectedCompanyId] ?? [])
@@ -749,6 +797,8 @@ function DesktopHomeLayout({
             selectedSkillPathId={selectedSkillPathId}
             filteredCompanyTracks={filteredCompanyTracks}
             skillPathCategories={skillPathCategories}
+            isPro={isPro}
+            isTrialActive={isTrialActive}
           />
         ) : null}
 
@@ -905,7 +955,13 @@ function DesktopHomeLayout({
                 userAvatarUrl={userAvatarUrl}
                 avatar={avatar}
               />
-              <ProGymPassCard />
+              {!isPro ? (
+                <ProGymPassCard
+                  subscriptionState={isTrialActive ? 'trial' : 'expired'}
+                  trialDaysLeft={trialDaysLeft}
+                  trialEndAt={trialEndAt}
+                />
+              ) : null}
             </div>
           </aside>
         ) : null}
@@ -1290,11 +1346,13 @@ function DesktopLeaderboardSegmentButton({
 function DesktopCompanyBrowseCard({
   track,
   active,
-  onClick
+  onClick,
+  locked
 }: {
   track: HomeTrack;
   active: boolean;
   onClick: () => void;
+  locked: boolean;
 }) {
   const boundedProgress = Math.max(
     0,
@@ -1307,9 +1365,11 @@ function DesktopCompanyBrowseCard({
       onClick={onClick}
       className={cn(
         'group w-full rounded-[18px] border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-        active
-          ? 'border-primary bg-primary-soft shadow-sm shadow-primary/10'
-          : 'border-border bg-white hover:border-primary/40 hover:bg-surface-soft',
+        locked
+          ? 'border-border bg-slate-50 opacity-75 hover:border-primary/30'
+          : active
+            ? 'border-primary bg-primary-soft shadow-sm shadow-primary/10'
+            : 'border-border bg-white hover:border-primary/40 hover:bg-surface-soft',
         cardInteractive
       )}
     >
@@ -1321,9 +1381,14 @@ function DesktopCompanyBrowseCard({
           className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-white"
         />
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-[15px] font-black text-[var(--color-ink)]">
-            {track.companySummary.name}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="truncate text-[15px] font-black text-[var(--color-ink)]">
+              {track.companySummary.name}
+            </h3>
+            {locked ? (
+              <Lock className="h-3.5 w-3.5 shrink-0 text-muted" />
+            ) : null}
+          </div>
           <p className="truncate text-[11px] font-semibold text-[#9a7a30]">
             {track.companySummary.focus
               ? `Focus: ${track.companySummary.focus}`
@@ -1352,8 +1417,12 @@ function DesktopCompanyBrowseCard({
           {boundedProgress}%
         </span>
         <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-primary shadow-sm shadow-primary/10 transition-colors group-hover:bg-primary/15 group-focus-visible:bg-primary/15">
-          {boundedProgress > 0 ? 'Continue' : 'Start'}
-          <ChevronRightFilledIcon className="h-3.5 w-3.5" />
+          {locked ? 'Unlock Pro' : boundedProgress > 0 ? 'Continue' : 'Start'}
+          {locked ? (
+            <Lock className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronRightFilledIcon className="h-3.5 w-3.5" />
+          )}
         </span>
       </div>
     </button>

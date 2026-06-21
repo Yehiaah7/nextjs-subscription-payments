@@ -1,5 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { requireUser } from '@/utils/auth/require-user';
+import { getHasProSubscription } from '@/utils/supabase/queries';
+import { isFreeTrialActive, resolveTrialEndAt } from '@/utils/access';
 import CompaniesScreen from '../CompaniesScreen';
 import {
   buildCanonicalAttemptByQuizId,
@@ -41,6 +43,26 @@ type AnswerRow = {
 export default async function ViewAllCompaniesPage() {
   const user = await requireUser();
   const db = createClient();
+
+  const [{ data: profileData }, isPro] = await Promise.all([
+    (db as any)
+      .from('profiles')
+      .select('created_at')
+      .eq('id', user.id)
+      .maybeSingle(),
+    getHasProSubscription(db)
+  ]);
+  const trialEndAt = resolveTrialEndAt({
+    trialEndAt:
+      user.user_metadata?.trialEndAt ?? user.user_metadata?.trial_end_at,
+    trialStartedAt:
+      user.user_metadata?.trialStartedAt ??
+      user.user_metadata?.trial_started_at,
+    createdAt:
+      (profileData as { created_at?: string } | null)?.created_at ??
+      user.created_at
+  });
+  const isTrialActive = isFreeTrialActive(trialEndAt);
 
   const { data: tracksData, error: tracksError } = await db
     .from('tracks')
@@ -162,5 +184,11 @@ export default async function ViewAllCompaniesPage() {
     });
   });
 
-  return <CompaniesScreen companyTracks={companyTracks} />;
+  return (
+    <CompaniesScreen
+      companyTracks={companyTracks}
+      isPro={isPro}
+      isTrialActive={isTrialActive}
+    />
+  );
 }
