@@ -45,13 +45,17 @@ function verifySignature(rawBody: string, signature: string | null) {
     .update(rawBody)
     .digest('hex');
 
-  const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-  const signatureBuffer = Buffer.from(signature, 'hex');
+  try {
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    const signatureBuffer = Buffer.from(signature.trim(), 'hex');
 
-  return (
-    expectedBuffer.length === signatureBuffer.length &&
-    timingSafeEqual(expectedBuffer, signatureBuffer)
-  );
+    return (
+      expectedBuffer.length === signatureBuffer.length &&
+      timingSafeEqual(expectedBuffer, signatureBuffer)
+    );
+  } catch {
+    return false;
+  }
 }
 
 function normalizeDate(value: unknown) {
@@ -74,6 +78,18 @@ function getSubscriptionId(payload: LemonSqueezyWebhookPayload) {
     (payload.data?.type === 'subscriptions' ? payload.data?.id : null) ??
     attributes.subscription_id ??
     getRelationshipId(payload, 'subscription')
+  );
+}
+
+function getEventName(
+  payload: LemonSqueezyWebhookPayload,
+  headers: Headers
+): string | null {
+  return (
+    payload.meta?.event_name ??
+    headers.get('x-event-name') ??
+    headers.get('x-lemonsqueezy-event-name') ??
+    headers.get('x-lemon-squeezy-event-name')
   );
 }
 
@@ -182,23 +198,35 @@ export async function POST(request: Request) {
     });
   }
 
-  const eventName = payload.meta?.event_name;
+  const eventName = getEventName(payload, request.headers);
 
   if (!eventName || !handledEvents.has(eventName)) {
+    console.log('Lemon Squeezy webhook ignored:', {
+      eventName: eventName ?? 'unknown'
+    });
     return NextResponse.json({ received: true, ignored: true });
   }
 
   try {
     const subscriptionId = getSubscriptionId(payload);
+    if (!subscriptionId) {
+      console.warn('Lemon Squeezy webhook missing subscription id:', {
+        eventName
+      });
+      return NextResponse.json({ received: true, ignored: true });
+    }
+
     const userId = await getUserIdForSubscription(
       payload,
-      subscriptionId ? String(subscriptionId) : null
+      String(subscriptionId)
     );
 
     if (!userId) {
-      throw new Error(
-        `Missing Supabase user id for Lemon Squeezy ${eventName}.`
-      );
+      console.warn('Lemon Squeezy webhook missing Supabase user id:', {
+        eventName,
+        subscriptionId: String(subscriptionId)
+      });
+      return NextResponse.json({ received: true, ignored: true });
     }
 
     const subscriptionRecord = getSubscriptionRecord(
@@ -218,6 +246,13 @@ export async function POST(request: Request) {
         `Lemon Squeezy subscription upsert failed: ${error.message}`
       );
     }
+
+    console.log('Lemon Squeezy webhook handled:', {
+      eventName,
+      subscriptionId: subscriptionRecord.lemon_squeezy_subscription_id,
+      userId,
+      status: subscriptionRecord.status
+    });
   } catch (error) {
     console.error('Lemon Squeezy webhook handler failed:', error);
     return new Response('Lemon Squeezy webhook handler failed.', {
