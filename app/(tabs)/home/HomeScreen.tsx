@@ -374,7 +374,7 @@ export default function HomeScreen({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2.5">
             <UserStatTile
               icon={<TrophyFilledIcon className="h-3.5 w-3.5 text-[#eab308]" />}
               label="Rank"
@@ -393,6 +393,24 @@ export default function HomeScreen({
               }
               label="Solving Days"
               stat={userStats.solvingDays}
+            />
+            <UserStatTile
+              icon={<HelpCircle className="h-3.5 w-3.5 text-sky-500" />}
+              label="Questions Solved"
+              stat={userStats.questionsSolved}
+              showInfoIcon={false}
+            />
+            <UserStatTile
+              icon={<Crosshair className="h-3.5 w-3.5 text-violet-500" />}
+              label="Accuracy"
+              stat={userStats.firstTryAccuracy}
+              showInfoIcon={false}
+            />
+            <UserStatTile
+              icon={<Clock3 className="h-3.5 w-3.5 text-indigo-500" />}
+              label="Practice Time"
+              stat={userStats.practiceTime}
+              showInfoIcon={false}
             />
           </div>
         </MotionCard>
