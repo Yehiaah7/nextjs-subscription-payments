@@ -99,11 +99,15 @@ export default function ProGymPassCard({
               Pro Gym Pass
             </h2>
             <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[1px] text-productGym-ink/80">
-              {isPro ? 'Pro Active' : 'Free Trial'}
+              {isPro
+                ? 'Pro Active'
+                : hasExpiredTrial
+                  ? 'Free Trial Ended'
+                  : 'Free Trial'}
             </p>
             {isTrial || hasExpiredTrial ? (
               <p className="mt-1 inline-flex rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[1px] text-productGym-ink shadow-sm shadow-black/10">
-                {trialDaysLabel}
+                {hasExpiredTrial ? 'Free trial ended' : trialDaysLabel}
               </p>
             ) : null}
           </div>
@@ -136,6 +140,12 @@ export default function ProGymPassCard({
             </li>
           </ul>
         </div>
+      ) : null}
+
+      {hasExpiredTrial ? (
+        <p className="mt-3 text-[12px] font-semibold leading-5 text-productGym-ink/85">
+          Upgrade to Pro to unlock all companies and continue practicing.
+        </p>
       ) : null}
 
       <p className="mt-3 text-[11px] font-bold uppercase tracking-[1px] text-productGym-ink/80">

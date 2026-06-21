@@ -1,6 +1,12 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
+import {
+  canAccessCompany,
+  isFreeTrialActive,
+  resolveTrialEndAt
+} from '@/utils/access';
+import { getHasProSubscription } from '@/utils/supabase/queries';
 import CompanyDetailsScreen, { CompanyChallenge } from './CompanyDetailsScreen';
 import {
   buildCanonicalAttemptByQuizId,
@@ -110,6 +116,34 @@ export default async function CompanyDetailsPage({
 
   const company = companyData as TrackRow | null;
   if (!company) notFound();
+
+  const [{ data: profileData }, isPro] = await Promise.all([
+    (supabase as any)
+      .from('profiles')
+      .select('created_at')
+      .eq('id', user.id)
+      .maybeSingle(),
+    getHasProSubscription(supabase)
+  ]);
+  const trialEndAt = resolveTrialEndAt({
+    trialEndAt:
+      user.user_metadata?.trialEndAt ?? user.user_metadata?.trial_end_at,
+    trialStartedAt:
+      user.user_metadata?.trialStartedAt ??
+      user.user_metadata?.trial_started_at,
+    createdAt:
+      (profileData as { created_at?: string } | null)?.created_at ??
+      user.created_at
+  });
+  if (
+    !canAccessCompany({
+      companySlug: company.title,
+      isPro,
+      isTrialActive: isFreeTrialActive(trialEndAt)
+    })
+  ) {
+    redirect('/home?upgrade=1');
+  }
 
   const { data: quizzesData, error: quizzesError } = await supabase
     .from('quizzes')

@@ -14,6 +14,12 @@ import type {
 import type { CompanyChallenge } from '@/app/(authenticated)/companies/[trackId]/CompanyDetailsScreen';
 import { getUserDisplayName } from '@/utils/user-avatar';
 import { getUserProfileStats } from '@/lib/user-profile-stats';
+import { getHasProSubscription } from '@/utils/supabase/queries';
+import {
+  getTrialDaysLeft,
+  isFreeTrialActive,
+  resolveTrialEndAt
+} from '@/utils/access';
 import type { UserProfileStats } from '@/types/user-profile-stats';
 
 type Seniority = 'junior' | 'mid' | 'senior';
@@ -65,6 +71,7 @@ type ProfileRecord = {
   first_name: string | null;
   last_name: string | null;
   avatar_url: string | null;
+  created_at: string | null;
 };
 
 type UserRecord = {
@@ -83,13 +90,17 @@ export async function getHomePageData(): Promise<{
   userEmail: string | null;
   userStats: UserProfileStats;
   challengesByCompany: Record<string, CompanyChallenge[]>;
+  isPro: boolean;
+  isTrialActive: boolean;
+  trialDaysLeft: number;
+  trialEndAt: string;
 }> {
   const user = await requireUser();
   const db = createClient();
   const [{ data: profileData }, { data: userData }] = await Promise.all([
     (db as any)
       .from('profiles')
-      .select('name, first_name, last_name, avatar_url')
+      .select('name, first_name, last_name, avatar_url, created_at')
       .eq('id', user.id)
       .maybeSingle(),
     (db as any)
@@ -315,7 +326,20 @@ export async function getHomePageData(): Promise<{
     email: user.email
   });
 
-  const userStats = await getUserProfileStats(user.id);
+  const trialEndAtDate = resolveTrialEndAt({
+    trialEndAt:
+      user.user_metadata?.trialEndAt ?? user.user_metadata?.trial_end_at,
+    trialStartedAt:
+      user.user_metadata?.trialStartedAt ??
+      user.user_metadata?.trial_started_at,
+    createdAt: profile?.created_at ?? user.created_at
+  });
+  const [userStats, isPro] = await Promise.all([
+    getUserProfileStats(user.id),
+    getHasProSubscription(db)
+  ]);
+  const trialDaysLeft = getTrialDaysLeft(trialEndAtDate);
+  const isTrialActive = isFreeTrialActive(trialEndAtDate);
 
   return {
     companyTracks,
@@ -328,6 +352,10 @@ export async function getHomePageData(): Promise<{
     userLastName: profile?.last_name ?? null,
     userAvatarUrl: profile?.avatar_url ?? null,
     userEmail: user.email ?? null,
-    userStats
+    userStats,
+    isPro,
+    isTrialActive,
+    trialDaysLeft,
+    trialEndAt: trialEndAtDate.toISOString()
   };
 }
