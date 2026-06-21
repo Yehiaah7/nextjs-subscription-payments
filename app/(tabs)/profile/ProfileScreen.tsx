@@ -258,6 +258,7 @@ export default function ProfileScreen({
   subscriptionState = 'trial'
 }: ProfileScreenProps) {
   const router = useRouter();
+  const isPro = subscriptionState === 'pro';
   const { avatar, setAvatarImageUrl } = useUserAvatar();
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
@@ -704,8 +705,13 @@ export default function ProfileScreen({
               <p className="mt-4 text-center text-[16px] font-bold tracking-[-0.3px] text-[#0f172b]">
                 {fullName}
               </p>
-              <p className="mt-1 text-[10px] font-black tracking-[0.04em] text-primary">
-                Product Gym member
+              <p
+                className={cn(
+                  'mt-1 text-[10px] font-black tracking-[0.04em]',
+                  isPro ? 'text-[#a16207]' : 'text-primary'
+                )}
+              >
+                {isPro ? 'Pro Product Gym member' : 'Product Gym member'}
               </p>
               {isAvatarActionPending ? (
                 <p className="mt-2 text-center text-[10px] font-semibold text-slate-500">

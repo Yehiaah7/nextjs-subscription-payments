@@ -76,6 +76,40 @@ export default function ProGymPassCard({
 
   const trialDaysLabel = formatTrialCountdownLabel(calculatedTrialDaysLeft);
 
+  if (isPro) {
+    return (
+      <section
+        id={id}
+        className="rounded-[16px] border border-amber-200/80 bg-[#fff4c7] p-[14px] text-[#1f2933] shadow-sm shadow-amber-900/5"
+      >
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#d69e2e] text-white shadow-sm shadow-amber-900/15">
+            <svg
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+              className="h-4 w-4"
+            >
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+            </svg>
+          </span>
+
+          <div className="min-w-0">
+            <h2 className="text-[16px] font-black tracking-[-0.4px] text-[#18181b]">
+              Pro Plan Active
+            </h2>
+            <p className="mt-1 text-[12px] font-semibold leading-5 text-[#3f3f46]">
+              You’re currently on Product Gym Pro.
+            </p>
+            <p className="mt-3 inline-flex rounded-full bg-[#8a5a00] px-3 py-1 text-[10px] font-black uppercase tracking-[0.9px] text-white shadow-sm shadow-amber-900/10">
+              All companies unlocked
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       id={id}

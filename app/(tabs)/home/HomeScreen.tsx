@@ -363,8 +363,13 @@ export default function HomeScreen({
               <h2 className="text-[16px] font-bold leading-[1.35] text-[var(--color-ink)]">
                 {userName}
               </h2>
-              <p className="text-[10px] font-black tracking-[0.04em] text-primary">
-                Product Gym member
+              <p
+                className={cn(
+                  'text-[10px] font-black tracking-[0.04em]',
+                  isPro ? 'text-[#a16207]' : 'text-primary'
+                )}
+              >
+                {isPro ? 'Pro Product Gym member' : 'Product Gym member'}
               </p>
             </div>
           </div>
@@ -720,7 +725,11 @@ function DesktopHomeLayout({
 
   return (
     <div className="hidden h-screen overflow-hidden bg-[#f6f8fb] text-text lg:flex lg:flex-col">
-      <DesktopTopNavbar onUpgrade={handleUpgrade} isUpgrading={isUpgrading} />
+      <DesktopTopNavbar
+        onUpgrade={handleUpgrade}
+        isUpgrading={isUpgrading}
+        isPro={isPro}
+      />
       <section
         className={cn(
           'grid min-h-0 flex-1 overflow-hidden',
@@ -969,14 +978,15 @@ function DesktopHomeLayout({
                 userStats={userStats}
                 userAvatarUrl={userAvatarUrl}
                 avatar={avatar}
+                isPro={isPro}
               />
-              {!isPro ? (
-                <ProGymPassCard
-                  subscriptionState={isTrialActive ? 'trial' : 'expired'}
-                  trialDaysLeft={trialDaysLeft}
-                  trialEndAt={trialEndAt}
-                />
-              ) : null}
+              <ProGymPassCard
+                subscriptionState={
+                  isPro ? 'pro' : isTrialActive ? 'trial' : 'expired'
+                }
+                trialDaysLeft={trialDaysLeft}
+                trialEndAt={trialEndAt}
+              />
             </div>
           </aside>
         ) : null}
@@ -987,10 +997,12 @@ function DesktopHomeLayout({
 
 function DesktopTopNavbar({
   onUpgrade,
-  isUpgrading
+  isUpgrading,
+  isPro
 }: {
   onUpgrade: () => void;
   isUpgrading: boolean;
+  isPro: boolean;
 }) {
   return (
     <header className="flex h-[64px] shrink-0 items-center justify-between border-b border-border bg-white px-6">
@@ -1009,25 +1021,29 @@ function DesktopTopNavbar({
       </div>
 
       <div className="flex items-center gap-2">
-        <MotionButton
-          type="button"
-          onClick={onUpgrade}
-          disabled={isUpgrading}
-          className={cn(
-            'inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-[12px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70',
-            btnInteractive,
-            btnInteractiveColored
-          )}
-        >
-          {isUpgrading ? 'Opening…' : 'Upgrade'}
-        </MotionButton>
+        {!isPro ? (
+          <MotionButton
+            type="button"
+            onClick={onUpgrade}
+            disabled={isUpgrading}
+            className={cn(
+              'inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-[12px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70',
+              btnInteractive,
+              btnInteractiveColored
+            )}
+          >
+            {isUpgrading ? 'Opening…' : 'Upgrade'}
+          </MotionButton>
+        ) : null}
         <motion.a
           href="https://t.me/product_gym_builders"
           target="_blank"
           rel="noopener noreferrer"
           title="Send feedback on Telegram"
           className={cn(
-            'inline-flex h-10 items-center justify-center rounded-full border border-border bg-white px-5 text-[12px] font-black uppercase tracking-[0.08em] text-[var(--color-ink)] shadow-sm shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+            isPro
+              ? 'inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-[12px] font-black uppercase tracking-[0.08em] text-white shadow-sm shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+              : 'inline-flex h-10 items-center justify-center rounded-full border border-border bg-white px-5 text-[12px] font-black uppercase tracking-[0.08em] text-[var(--color-ink)] shadow-sm shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
             btnInteractive,
             btnInteractiveNeutral
           )}
@@ -1461,7 +1477,8 @@ function UserStatsProfileCard({
   userEmail,
   userStats,
   userAvatarUrl,
-  avatar
+  avatar,
+  isPro
 }: {
   userName: string;
   userFirstName?: string | null;
@@ -1476,6 +1493,7 @@ function UserStatsProfileCard({
     fullName?: string | null;
     email?: string | null;
   };
+  isPro: boolean;
 }) {
   return (
     <MotionCard
@@ -1496,8 +1514,13 @@ function UserStatsProfileCard({
           <h2 className="text-[16px] font-bold leading-[1.35] text-[var(--color-ink)]">
             {userName}
           </h2>
-          <p className="text-[10px] font-black tracking-[0.04em] text-primary">
-            Product Gym member
+          <p
+            className={cn(
+              'text-[10px] font-black tracking-[0.04em]',
+              isPro ? 'text-[#a16207]' : 'text-primary'
+            )}
+          >
+            {isPro ? 'Pro Product Gym member' : 'Product Gym member'}
           </p>
         </div>
       </div>
