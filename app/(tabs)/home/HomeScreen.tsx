@@ -826,9 +826,7 @@ function DesktopHomeLayout({
                 title="Coming soon"
                 message="This practice area is being prepared for Product Gym members."
               />
-            ) : (
-              <DesktopEmptyState message="Choose a company, skill path, or product to start elevating your PM skills." />
-            )
+            ) : null
           ) : selectedDesktopSection === 'notifications' ? (
             <DesktopNotificationsWorkspace
               notifications={notifications}
