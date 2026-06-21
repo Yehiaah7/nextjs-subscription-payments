@@ -80,10 +80,10 @@ export default function ProGymPassCard({
     return (
       <section
         id={id}
-        className="rounded-[16px] border border-amber-200/80 bg-[#fff4c7] p-[14px] text-[#1f2933] shadow-sm shadow-amber-900/5"
+        className="rounded-[16px] border border-[#BFE3C8] bg-[#EEF8F1] p-[14px] text-[#111827] shadow-sm shadow-emerald-900/5"
       >
         <div className="flex items-start gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#d69e2e] text-white shadow-sm shadow-amber-900/15">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#3FAE5A] text-white shadow-sm shadow-emerald-900/15">
             <svg
               viewBox="0 0 20 20"
               fill="currentColor"
@@ -95,13 +95,13 @@ export default function ProGymPassCard({
           </span>
 
           <div className="min-w-0">
-            <h2 className="text-[16px] font-black tracking-[-0.4px] text-[#18181b]">
+            <h2 className="text-[16px] font-black tracking-[-0.4px] text-[#111827]">
               Pro Plan Active
             </h2>
-            <p className="mt-1 text-[12px] font-semibold leading-5 text-[#3f3f46]">
+            <p className="mt-1 text-[12px] font-semibold leading-5 text-[#4B5563]">
               You’re currently on Product Gym Pro.
             </p>
-            <p className="mt-3 inline-flex rounded-full bg-[#8a5a00] px-3 py-1 text-[10px] font-black uppercase tracking-[0.9px] text-white shadow-sm shadow-amber-900/10">
+            <p className="mt-3 inline-flex rounded-full bg-[#2F8F4A] px-3 py-1 text-[10px] font-black uppercase tracking-[0.9px] text-white shadow-sm shadow-emerald-900/10">
               All companies unlocked
             </p>
           </div>
