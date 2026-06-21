@@ -34,28 +34,19 @@ const handledEvents = new Set([
   'subscription_payment_failed'
 ]);
 
-function verifySignature(rawBody: string, signature: string | null) {
-  const webhookSecret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+function getCalculatedSignature(rawBody: string, webhookSecret: string) {
+  return createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
+}
 
-  if (!webhookSecret || !signature) {
+function signaturesMatch(calculatedSignature: string, receivedSignature: string) {
+  if (calculatedSignature.length !== receivedSignature.length) {
     return false;
   }
 
-  const expectedSignature = createHmac('sha256', webhookSecret)
-    .update(rawBody)
-    .digest('hex');
-
-  try {
-    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-    const signatureBuffer = Buffer.from(signature.trim(), 'hex');
-
-    return (
-      expectedBuffer.length === signatureBuffer.length &&
-      timingSafeEqual(expectedBuffer, signatureBuffer)
-    );
-  } catch {
-    return false;
-  }
+  return timingSafeEqual(
+    Buffer.from(calculatedSignature, 'utf8'),
+    Buffer.from(receivedSignature, 'utf8')
+  );
 }
 
 function normalizeDate(value: unknown) {
@@ -180,9 +171,33 @@ async function getUserIdForSubscription(
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
-  const signature = request.headers.get('x-signature');
+  const receivedSignature = request.headers.get('x-signature');
+  const webhookSecret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
 
-  if (!verifySignature(rawBody, signature)) {
+  console.log('Lemon Squeezy webhook signature debug:', {
+    hasWebhookSecret: Boolean(webhookSecret),
+    receivedSignatureLength: receivedSignature?.length ?? 0
+  });
+
+  if (!receivedSignature) {
+    return new Response('Missing Lemon Squeezy webhook signature.', {
+      status: 400
+    });
+  }
+
+  if (!webhookSecret) {
+    return new Response('Missing Lemon Squeezy webhook secret.', {
+      status: 400
+    });
+  }
+
+  const calculatedSignature = getCalculatedSignature(rawBody, webhookSecret);
+
+  console.log('Lemon Squeezy webhook calculated signature debug:', {
+    calculatedSignatureLength: calculatedSignature.length
+  });
+
+  if (!signaturesMatch(calculatedSignature, receivedSignature)) {
     return new Response('Invalid Lemon Squeezy webhook signature.', {
       status: 400
     });
@@ -199,6 +214,12 @@ export async function POST(request: Request) {
   }
 
   const eventName = getEventName(payload, request.headers);
+  const webhookUserId = payload.meta?.custom_data?.user_id ?? null;
+
+  console.log('Lemon Squeezy webhook verified:', {
+    eventName: eventName ?? 'unknown',
+    userId: webhookUserId
+  });
 
   if (!eventName || !handledEvents.has(eventName)) {
     console.log('Lemon Squeezy webhook ignored:', {
