@@ -1,26 +1,14 @@
 const LEMON_SQUEEZY_API_BASE_URL = 'https://api.lemonsqueezy.com/v1';
 
 export type LemonSqueezyRequestOptions = Omit<RequestInit, 'body'> & {
+  apiKey: string;
   body?: unknown;
 };
 
-function getLemonSqueezyApiKey() {
-  const apiKey = process.env.LEMONSQUEEZY_API_KEY;
-
-  if (!apiKey) {
-    throw new Error(
-      'Missing LEMONSQUEEZY_API_KEY. Set it on the server before calling Lemon Squeezy.'
-    );
-  }
-
-  return apiKey;
-}
-
 export async function lemonSqueezyRequest<TResponse>(
   path: string,
-  options: LemonSqueezyRequestOptions = {}
+  { apiKey, ...options }: LemonSqueezyRequestOptions
 ): Promise<TResponse> {
-  const apiKey = getLemonSqueezyApiKey();
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   const response = await fetch(
     `${LEMON_SQUEEZY_API_BASE_URL}${normalizedPath}`,

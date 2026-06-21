@@ -147,6 +147,8 @@ export default function HomeScreen({
     null
   );
   const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
+  const { handleUpgrade: handleMobileUpgrade, isUpgrading: isMobileUpgrading } =
+    useLemonSqueezyUpgrade();
   const [selectedSeniority, setSelectedSeniority] =
     useState<SeniorityFilter>('all');
   const freeTrialCopy = isTrialActive
@@ -314,12 +316,15 @@ export default function HomeScreen({
               </div>
               <div className="flex shrink-0 items-center gap-1">
                 <MotionButton
+                  type="button"
+                  onClick={handleMobileUpgrade}
+                  disabled={isMobileUpgrading}
                   className={cn(
                     btnInteractive,
                     'rounded-full bg-productGym-ink px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-white shadow-sm shadow-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-yellow'
                   )}
                 >
-                  Upgrade
+                  {isMobileUpgrading ? 'Opening…' : 'Upgrade'}
                 </MotionButton>
                 <button
                   type="button"
