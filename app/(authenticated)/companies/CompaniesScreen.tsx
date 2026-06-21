@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/interactive';
 import { fadeSlideUp, listVariants } from '@/lib/motion';
 import { cn } from '@/utils/cn';
+import { useLemonSqueezyUpgrade } from '@/components/useLemonSqueezyUpgrade';
 import { canAccessCompany } from '@/utils/access';
 import type { CompanySummary } from './company-summary';
 import { getCompanyHref } from './navigation';
@@ -30,6 +31,8 @@ export default function CompaniesScreen({
   isPro: boolean;
   isTrialActive: boolean;
 }) {
+  const { startProCheckout, isCheckoutLoading } = useLemonSqueezyUpgrade();
+
   return (
     <MotionPage>
       <section>
@@ -70,7 +73,13 @@ export default function CompaniesScreen({
               <motion.div key={track.id} variants={fadeSlideUp}>
                 <MotionCard>
                   <Link
-                    href={locked ? '/home?upgrade=1' : getCompanyHref(track.id)}
+                    href={locked ? '#' : getCompanyHref(track.id)}
+                    onClick={(event) => {
+                      if (!locked) return;
+
+                      event.preventDefault();
+                      void startProCheckout();
+                    }}
                     className={cn(
                       'app-card block cursor-pointer',
                       locked && 'bg-slate-50 opacity-75',
@@ -88,7 +97,9 @@ export default function CompaniesScreen({
                             <Lock className="h-4 w-4 text-muted" />
                           ) : null}
                           <span className="t-label ml-auto text-primary">
-                            {ctaLabel}
+                            {locked && isCheckoutLoading
+                              ? 'Opening…'
+                              : ctaLabel}
                           </span>
                           <span
                             className={cn(

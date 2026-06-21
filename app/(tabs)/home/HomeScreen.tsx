@@ -147,8 +147,7 @@ export default function HomeScreen({
     null
   );
   const [showFreeTrialCard, setShowFreeTrialCard] = useState(true);
-  const { handleUpgrade: handleMobileUpgrade, isUpgrading: isMobileUpgrading } =
-    useLemonSqueezyUpgrade();
+  const { startProCheckout, isCheckoutLoading } = useLemonSqueezyUpgrade();
   const [selectedSeniority, setSelectedSeniority] =
     useState<SeniorityFilter>('all');
   const freeTrialCopy = isTrialActive
@@ -174,6 +173,7 @@ export default function HomeScreen({
         title:
           'Upgrade to Pro to unlock this company and all practice challenges.'
       });
+      void startProCheckout();
       return;
     }
     setSelectedCompanyId(companyId);
@@ -317,14 +317,14 @@ export default function HomeScreen({
               <div className="flex shrink-0 items-center gap-1">
                 <MotionButton
                   type="button"
-                  onClick={handleMobileUpgrade}
-                  disabled={isMobileUpgrading}
+                  onClick={startProCheckout}
+                  disabled={isCheckoutLoading}
                   className={cn(
                     btnInteractive,
                     'rounded-full bg-productGym-ink px-3 py-1 text-[10px] font-black uppercase tracking-[1px] text-white shadow-sm shadow-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2 focus-visible:ring-offset-productGym-yellow'
                   )}
                 >
-                  {isMobileUpgrading ? 'Opening…' : 'Upgrade'}
+                  {isCheckoutLoading ? 'Opening…' : 'Upgrade'}
                 </MotionButton>
                 <button
                   type="button"
@@ -404,6 +404,8 @@ export default function HomeScreen({
           skillPathCategories={skillPathCategories}
           isPro={isPro}
           isTrialActive={isTrialActive}
+          onUpgrade={startProCheckout}
+          isUpgrading={isCheckoutLoading}
         />
 
         <section className="pb-8">
@@ -474,7 +476,9 @@ function PracticeLibraryPanel({
   filteredCompanyTracks,
   skillPathCategories,
   isPro,
-  isTrialActive
+  isTrialActive,
+  onUpgrade,
+  isUpgrading
 }: {
   className?: string;
   selectedContentTab: MainTab;
@@ -487,6 +491,8 @@ function PracticeLibraryPanel({
   skillPathCategories: SkillPathCategory[];
   isPro: boolean;
   isTrialActive: boolean;
+  onUpgrade: () => void;
+  isUpgrading: boolean;
 }) {
   return (
     <aside
@@ -552,6 +558,8 @@ function PracticeLibraryPanel({
                       isTrialActive
                     })
                   }
+                  onUpgrade={onUpgrade}
+                  isUpgrading={isUpgrading}
                 />
               ))
             )}
@@ -804,6 +812,8 @@ function DesktopHomeLayout({
             skillPathCategories={skillPathCategories}
             isPro={isPro}
             isTrialActive={isTrialActive}
+            onUpgrade={handleUpgrade}
+            isUpgrading={isUpgrading}
           />
         ) : null}
 
@@ -1352,12 +1362,16 @@ function DesktopCompanyBrowseCard({
   track,
   active,
   onClick,
-  locked
+  locked,
+  onUpgrade,
+  isUpgrading
 }: {
   track: HomeTrack;
   active: boolean;
   onClick: () => void;
   locked: boolean;
+  onUpgrade: () => void;
+  isUpgrading: boolean;
 }) {
   const boundedProgress = Math.max(
     0,
@@ -1367,7 +1381,7 @@ function DesktopCompanyBrowseCard({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={locked ? onUpgrade : onClick}
       className={cn(
         'group w-full rounded-[18px] border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         locked
@@ -1422,7 +1436,13 @@ function DesktopCompanyBrowseCard({
           {boundedProgress}%
         </span>
         <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-primary shadow-sm shadow-primary/10 transition-colors group-hover:bg-primary/15 group-focus-visible:bg-primary/15">
-          {locked ? 'Unlock Pro' : boundedProgress > 0 ? 'Continue' : 'Start'}
+          {locked
+            ? isUpgrading
+              ? 'Opening…'
+              : 'Unlock Pro'
+            : boundedProgress > 0
+              ? 'Continue'
+              : 'Start'}
           {locked ? (
             <Lock className="h-3.5 w-3.5" />
           ) : (

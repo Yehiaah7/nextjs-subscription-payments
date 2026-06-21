@@ -7,7 +7,7 @@ export function useLemonSqueezyUpgrade(onUpgrade?: () => void) {
   const router = useRouter();
   const currentPath = usePathname();
   const [isUpgrading, setIsUpgrading] = useState(false);
-  const handleUpgrade = async () => {
+  const startProCheckout = async () => {
     onUpgrade?.();
 
     setIsUpgrading(true);
@@ -40,5 +40,11 @@ export function useLemonSqueezyUpgrade(onUpgrade?: () => void) {
     }
   };
 
-  return { handleUpgrade, isUpgrading };
+  return {
+    handleUpgrade: startProCheckout,
+    startProCheckout,
+    createProCheckout: startProCheckout,
+    isUpgrading,
+    isCheckoutLoading: isUpgrading
+  };
 }
