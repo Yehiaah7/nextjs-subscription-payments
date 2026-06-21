@@ -708,7 +708,7 @@ export default function ProfileScreen({
               <p
                 className={cn(
                   'mt-1 text-[10px] font-black tracking-[0.04em]',
-                  isPro ? 'text-[#a16207]' : 'text-primary'
+                  isPro ? 'text-[#2F8F4A]' : 'text-primary'
                 )}
               >
                 {isPro ? 'Pro Product Gym member' : 'Product Gym member'}
